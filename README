@@ -1,7 +1,9 @@
-This is a clone of Infinite Mario, written in JavaScript for web browsers using HTML5.
+## Google Scripts Deployment ID
 
-A good demonstration of what can be accomplished with the Canvas and Audio elements.
+Value: AKfycbym0N_gk71EJgRuFozPkJzV78dIdNvcYxLiaRhBypCBWFIyL311B1R80btiMIJQKdV_
 
-Background music currently does not work in any browser besides Firefox 4. I think. There were too many problems with other browsers.
+## Google Scripts Web App 
 
-Ported from the Java version by Notch (Markus Persson).
+Allows to store data in a google sheet.
+
+Link for AJAX requests: https://script.google.com/macros/s/AKfycbym0N_gk71EJgRuFozPkJzV78dIdNvcYxLiaRhBypCBWFIyL311B1R80btiMIJQKdV_/exec

@@ -9,6 +9,7 @@ canvas {
     right: 0;
 }
 
-.sv-header__text, .sv-logo__image, .sv-btn {
+/* TODO Delete sv-footer__prev-btn to hide complete button */
+.sv-header__text, .sv-logo__image, .sv-btn.sv-footer__prev-btn {
     display: none;
 }
