@@ -1,9 +1,9 @@
 /**
-	Creates a specific type of sprite based on the information given.
-	Code by Rob Kleffner, 2011
+    Creates a specific type of sprite based on the information given.
+    Code by Rob Kleffner, 2011
 */
 
-Mario.SpriteTemplate = function(type, winged) {
+Mario.SpriteTemplate = function (type, winged) {
     this.Type = type;
     this.Winged = winged;
     this.LastVisibleTick = -1;
@@ -12,11 +12,11 @@ Mario.SpriteTemplate = function(type, winged) {
 };
 
 Mario.SpriteTemplate.prototype = {
-    Spawn: function(world, x, y, dir) {
+    Spawn: function (world, x, y, dir) {
         if (this.IsDead) {
             return;
         }
-        
+
         if (this.Type === Mario.Enemy.Flower) {
             this.Sprite = new Mario.FlowerEnemy(world, x * 16 + 15, y * 16 + 24);
         } else {

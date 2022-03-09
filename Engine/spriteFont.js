@@ -1,9 +1,9 @@
 /**
-	Represents a sprite sheet for a font.
-	Code by Rob Kleffner, 2011
+    Represents a sprite sheet for a font.
+    Code by Rob Kleffner, 2011
 */
 
-Engine.SpriteFont = function(strings, image, letterWidth, letterHeight, letters) {
+Engine.SpriteFont = function (strings, image, letterWidth, letterHeight, letters) {
     this.Image = image;
     this.Letters = letters;
     this.LetterWidth = letterWidth;
@@ -13,7 +13,7 @@ Engine.SpriteFont = function(strings, image, letterWidth, letterHeight, letters)
 
 Engine.SpriteFont.prototype = new Engine.Drawable();
 
-Engine.SpriteFont.prototype.Draw = function(context, camera) {
+Engine.SpriteFont.prototype.Draw = function (context, camera) {
     for (var s = 0; s < this.Strings.length; s++) {
         var string = this.Strings[s];
         for (var i = 0; i < string.String.length; i++) {

@@ -3,15 +3,15 @@
 	Code by Rob Kleffner, 2011
 */
 
-Engine.GameCanvas = function() {
+Engine.GameCanvas = function () {
 	this.Canvas = null;
 	this.Context2D = null;
-    this.BackBuffer = null;
+	this.BackBuffer = null;
 	this.BackBufferContext2D = null;
 };
 
 Engine.GameCanvas.prototype = {
-    Initialize: function(canvasId, resWidth, resHeight) {
+	Initialize: function (canvasId, resWidth, resHeight) {
 		this.Canvas = document.getElementById(canvasId);
 		this.Context2D = this.Canvas.getContext("2d");
 		this.BackBuffer = document.createElement("canvas");
@@ -19,13 +19,13 @@ Engine.GameCanvas.prototype = {
 		this.BackBuffer.height = resHeight;
 		this.BackBufferContext2D = this.BackBuffer.getContext("2d");
 	},
-	
-    BeginDraw: function() {
-        this.BackBufferContext2D.clearRect(0, 0, this.BackBuffer.width, this.BackBuffer.height);
-        this.Context2D.clearRect(0, 0, this.Canvas.width, this.Canvas.height);
-    },
-    
-    EndDraw: function() {
-        this.Context2D.drawImage(this.BackBuffer, 0, 0, this.BackBuffer.width, this.BackBuffer.height, 0, 0, this.Canvas.width, this.Canvas.height);
-    }
+
+	BeginDraw: function () {
+		this.BackBufferContext2D.clearRect(0, 0, this.BackBuffer.width, this.BackBuffer.height);
+		this.Context2D.clearRect(0, 0, this.Canvas.width, this.Canvas.height);
+	},
+
+	EndDraw: function () {
+		this.Context2D.drawImage(this.BackBuffer, 0, 0, this.BackBuffer.width, this.BackBuffer.height, 0, 0, this.Canvas.width, this.Canvas.height);
+	}
 };

@@ -3,7 +3,7 @@
 	Code by Rob Kleffner, 2011
 */
 
-Mario.Particle = function(world, x, y, xa, ya, xPic, yPic) {
+Mario.Particle = function (world, x, y, xa, ya, xPic, yPic) {
 	this.World = world;
 	this.X = x;
 	this.Y = y;
@@ -13,22 +13,22 @@ Mario.Particle = function(world, x, y, xa, ya, xPic, yPic) {
 	this.YPic = 0;
 	this.XPicO = 4;
 	this.YPicO = 4;
-	
+
 	this.PicWidth = 8;
 	this.PicHeight = 8;
 	this.Life = 10;
-	
+
 	this.Image = Engine.Resources.Images["particles"];
 };
 
 Mario.Particle.prototype = new Mario.NotchSprite();
 
-Mario.Particle.prototype.Move = function() {
+Mario.Particle.prototype.Move = function () {
 	if (this.Life - this.Delta < 0) {
 		this.World.RemoveSprite(this);
 	}
 	this.Life -= this.Delta;
-	
+
 	this.X += this.Xa;
 	this.Y += this.Ya;
 	this.Ya *= 0.95;

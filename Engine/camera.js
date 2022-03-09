@@ -3,7 +3,7 @@
 	Code by Rob Kleffner, 2011
 */
 
-Engine.Camera = function() {
+Engine.Camera = function () {
 	this.X = 0;
 	this.Y = 0;
 };

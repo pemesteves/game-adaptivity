@@ -1,6 +1,6 @@
 /**
-	State for moving between different playable levels.
-	Code by Rob Kleffner, 2011
+    State for moving between different playable levels.
+    Code by Rob Kleffner, 2011
 */
 
 Mario.MapTile = {
@@ -11,9 +11,9 @@ Mario.MapTile = {
     Decoration: 4
 };
 
-Mario.MapState = function() {
+Mario.MapState = function () {
     this.camera = new Engine.Camera();
-    
+
     this.Level = [];
     this.Data = [];
     this.XMario = 0; this.YMario = 0;
@@ -31,24 +31,24 @@ Mario.MapState = function() {
     this.EnterLevel = false;
     this.LevelDifficulty = 0;
     this.LevelType = 0;
-    
+
     this.WorldNumber = -1;
     this.NextWorld();
 };
 
 Mario.MapState.prototype = new Engine.GameState();
 
-Mario.MapState.prototype.Enter = function() {
+Mario.MapState.prototype.Enter = function () {
     this.WaterSprite = new Engine.AnimatedSprite();
     this.WaterSprite.Image = Engine.Resources.Images["worldMap"];
     this.WaterSprite.SetColumnCount(16);
     this.WaterSprite.SetRowCount(16);
     this.WaterSprite.AddNewSequence("loop", 14, 0, 14, 3);
-    this.WaterSprite.FramesPerSecond = 1/3;
+    this.WaterSprite.FramesPerSecond = 1 / 3;
     this.WaterSprite.PlaySequence("loop", true);
     this.WaterSprite.X = 0;
     this.WaterSprite.Y = 0;
-    
+
     this.DecoSprite = new Engine.AnimatedSprite();
     this.DecoSprite.Image = Engine.Resources.Images["worldMap"];
     this.DecoSprite.SetColumnCount(16);
@@ -57,45 +57,45 @@ Mario.MapState.prototype.Enter = function() {
     this.DecoSprite.AddNewSequence("world1", 11, 0, 11, 3);
     this.DecoSprite.AddNewSequence("world2", 12, 0, 12, 3);
     this.DecoSprite.AddNewSequence("world3", 13, 0, 13, 3);
-    this.DecoSprite.FramesPerSecond = 1/3;
+    this.DecoSprite.FramesPerSecond = 1 / 3;
     this.DecoSprite.PlaySequence("world0", true);
     this.DecoSprite.X = 0;
     this.DecoSprite.Y = 0;
-    
+
     this.HelpSprite = new Engine.AnimatedSprite();
     this.HelpSprite.Image = Engine.Resources.Images["worldMap"];
     this.HelpSprite.SetColumnCount(16);
     this.HelpSprite.SetRowCount(16);
     this.HelpSprite.AddNewSequence("help", 7, 3, 7, 5);
-    this.HelpSprite.FramesPerSecond = 1/2;
+    this.HelpSprite.FramesPerSecond = 1 / 2;
     this.HelpSprite.PlaySequence("help", true);
     this.HelpSprite.X = 0;
     this.HelpSprite.Y = 0;
-    
+
     this.SmallMario = new Engine.AnimatedSprite();
     this.SmallMario.Image = Engine.Resources.Images["worldMap"];
     this.SmallMario.SetColumnCount(16);
     this.SmallMario.SetRowCount(16);
     this.SmallMario.AddNewSequence("small", 1, 0, 1, 1);
-    this.SmallMario.FramesPerSecond = 1/3;
+    this.SmallMario.FramesPerSecond = 1 / 3;
     this.SmallMario.PlaySequence("small", true);
     this.SmallMario.X = 0;
     this.SmallMario.Y = 0;
-    
+
     this.LargeMario = new Engine.AnimatedSprite();
     this.LargeMario.Image = Engine.Resources.Images["worldMap"];
     this.LargeMario.SetColumnCount(16);
     this.LargeMario.SetRowCount(8);
     this.LargeMario.AddNewSequence("large", 0, 2, 0, 3);
     this.LargeMario.AddNewSequence("fire", 0, 4, 0, 5);
-    this.LargeMario.FramesPerSecond = 1/3;
+    this.LargeMario.FramesPerSecond = 1 / 3;
     this.LargeMario.PlaySequence("large", true);
     this.LargeMario.X = 0;
     this.LargeMario.Y = 0;
-    
+
     this.FontShadow = Mario.SpriteCuts.CreateBlackFont();
     this.Font = Mario.SpriteCuts.CreateWhiteFont();
-    
+
     //get the correct world decoration
     this.DecoSprite.PlaySequence("world" + (this.WorldNumber % 4), true);
 
@@ -104,16 +104,16 @@ Mario.MapState.prototype.Enter = function() {
     } else {
         this.LargeMario.PlaySequence("fire", true);
     }
-    
+
     this.EnterLevel = false;
     this.LevelDifficulty = 0;
     this.LevelType = 0;
-	
-	//Mario.PlayMapMusic();
+
+    //Mario.PlayMapMusic();
 };
 
-Mario.MapState.prototype.Exit = function() {
-	//Mario.StopMusic();
+Mario.MapState.prototype.Exit = function () {
+    //Mario.StopMusic();
 
     delete this.WaterSprite;
     delete this.DecoSprite;
@@ -124,62 +124,62 @@ Mario.MapState.prototype.Exit = function() {
     delete this.Font;
 };
 
-Mario.MapState.prototype.NextWorld = function() {
+Mario.MapState.prototype.NextWorld = function () {
     var generated = false;
     this.WorldNumber++;
-    
+
     //The player has won, wait for CheckForChange to get called
     if (this.WorldNumber === 8) {
         return;
     }
-    
+
     this.MoveTime = 0;
     this.LevelId = 0;
     this.Farthest = 0;
     this.XFarthestCap = 0;
     this.YFarthestCap = 0;
-    
+
     while (!generated) {
         generated = this.GenerateLevel();
     }
     this.RenderStatic();
 };
 
-Mario.MapState.prototype.GenerateLevel = function() {
+Mario.MapState.prototype.GenerateLevel = function () {
     var x = 0, y = 0, t0 = 0, t1 = 0, td = 0, t = 0;
 
     var n0 = new Mario.ImprovedNoise((Math.random() * 9223372036854775807) | 0);
     var n1 = new Mario.ImprovedNoise((Math.random() * 9223372036854775807) | 0);
     var dec = new Mario.ImprovedNoise((Math.random() * 9223372036854775807) | 0);
-    
+
     var width = 320 / 16 + 1;
     var height = 240 / 16 + 1;
     this.Level = [];
     this.Data = [];
-    
+
     var xo0 = Math.random() * 512;
     var yo0 = Math.random() * 512;
     var xo1 = Math.random() * 512;
     var yo1 = Math.random() * 512;
-    
+
     for (x = 0; x < width; x++) {
         this.Level[x] = [];
         this.Data[x] = [];
-        
+
         for (y = 0; y < height; y++) {
-            
+
             t0 = n0.PerlinNoise(x * 10 + xo0, y * 10 + yo0);
             t1 = n1.PerlinNoise(x * 10 + xo1, y * 10 + yo1);
             td = t0 - t1;
             t = td * 2;
-            
+
             this.Level[x][y] = t > 0 ? Mario.MapTile.Water : Mario.MapTile.Grass;
         }
     }
-    
+
     var lowestX = 9999, lowestY = 9999, i = 0;
     t = 0;
-    
+
     for (i = 0; i < 100 && t < 12; i++) {
         x = ((Math.random() * (((width - 1) / 3) | 0)) | 0) * 3 + 2;
         y = ((Math.random() * (((height - 1) / 3) | 0)) | 0) * 3 + 1;
@@ -193,20 +193,20 @@ Mario.MapState.prototype.GenerateLevel = function() {
             t++;
         }
     }
-    
+
     this.Data[lowestX][lowestY] = -2;
-    
+
     var connection = true;
     while (connection) { connection = this.FindConnection(width, height); }
     this.FindCaps(width, height);
-    
+
     if (this.XFarthestCap === 0) {
         return false;
     }
-    
+
     this.Data[this.XFarthestCap][this.YFarthestCap] = -2;
     this.Data[(this.XMario / 16) | 0][(this.YMario / 16) | 0] = -11;
-    
+
     for (x = 0; x < width; x++) {
         for (y = 0; y < height; y++) {
             if (this.Level[x][y] === Mario.MapTile.Grass && (x !== this.XFarthestCap || y !== this.YFarthestCap - 1)) {
@@ -217,11 +217,11 @@ Mario.MapState.prototype.GenerateLevel = function() {
             }
         }
     }
-    
+
     return true;
 };
 
-Mario.MapState.prototype.FindConnection = function(width, height) {
+Mario.MapState.prototype.FindConnection = function (width, height) {
     var x = 0, y = 0;
     for (x = 0; x < width; x++) {
         for (y = 0; y < height; y++) {
@@ -234,10 +234,10 @@ Mario.MapState.prototype.FindConnection = function(width, height) {
     return false;
 };
 
-Mario.MapState.prototype.Connect = function(xSource, ySource, width, height) {
+Mario.MapState.prototype.Connect = function (xSource, ySource, width, height) {
     var maxDistance = 10000, xTarget = 0, yTarget = 0, x = 0, y = 0,
         xd = 0, yd = 0, d = 0;
-    
+
     for (x = 0; x < width; x++) {
         for (y = 0; y < height; y++) {
             if (this.Level[x][y] === Mario.MapTile.Level && this.Data[x][y] === -2) {
@@ -252,19 +252,19 @@ Mario.MapState.prototype.Connect = function(xSource, ySource, width, height) {
             }
         }
     }
-    
+
     this.DrawRoad(xSource, ySource, xTarget, yTarget);
     this.Level[xSource][ySource] = Mario.MapTile.Level;
     this.Data[xSource][ySource] = -2;
     return;
 };
 
-Mario.MapState.prototype.DrawRoad = function(x0, y0, x1, y1) {
+Mario.MapState.prototype.DrawRoad = function (x0, y0, x1, y1) {
     var xFirst = false;
     if (Math.random() > 0.5) {
         xFirst = true;
     }
-    
+
     if (xFirst) {
         while (x0 > x1) {
             this.Data[x0][y0] = 0;
@@ -275,7 +275,7 @@ Mario.MapState.prototype.DrawRoad = function(x0, y0, x1, y1) {
             this.Level[x0++][y0] = Mario.MapTile.Road;
         }
     }
-    
+
     while (y0 > y1) {
         this.Data[x0][y0] = 0;
         this.Level[x0][y0--] = Mario.MapTile.Road;
@@ -284,7 +284,7 @@ Mario.MapState.prototype.DrawRoad = function(x0, y0, x1, y1) {
         this.Data[x0][y0] = 0;
         this.Level[x0][y0++] = Mario.MapTile.Road;
     }
-    
+
     if (!xFirst) {
         while (x0 > x1) {
             this.Data[x0][y0] = 0;
@@ -297,14 +297,14 @@ Mario.MapState.prototype.DrawRoad = function(x0, y0, x1, y1) {
     }
 };
 
-Mario.MapState.prototype.FindCaps = function(width, height) {
+Mario.MapState.prototype.FindCaps = function (width, height) {
     var x = 0, y = 0, xCap = -1, yCap = -1, roads = 0, xx = 0, yy = 0;
-    
+
     for (x = 0; x < width; x++) {
         for (y = 0; y < height; y++) {
             if (this.Level[x][y] === Mario.MapTile.Level) {
                 roads = 0;
-                
+
                 for (xx = x - 1; xx <= x + 1; xx++) {
                     for (yy = y - 1; yy <= y + 1; yy++) {
                         if (this.Level[xx][yy] === Mario.MapTile.Road) {
@@ -312,7 +312,7 @@ Mario.MapState.prototype.FindCaps = function(width, height) {
                         }
                     }
                 }
-                
+
                 if (roads === 1) {
                     if (xCap === -1) {
                         xCap = x;
@@ -325,18 +325,18 @@ Mario.MapState.prototype.FindCaps = function(width, height) {
             }
         }
     }
-    
+
     this.XMario = xCap * 16;
     this.YMario = yCap * 16;
-    
+
     this.Travel(xCap, yCap, -1, 0);
 };
 
-Mario.MapState.prototype.Travel = function(x, y, dir, depth) {
+Mario.MapState.prototype.Travel = function (x, y, dir, depth) {
     if (this.Level[x][y] !== Mario.MapTile.Road && this.Level[x][y] !== Mario.MapTile.Level) {
         return;
     }
-    
+
     if (this.Level[x][y] === Mario.MapTile.Road) {
         if (this.Data[x][y] === 1) {
             return;
@@ -344,7 +344,7 @@ Mario.MapState.prototype.Travel = function(x, y, dir, depth) {
             this.Data[x][y] = 1;
         }
     }
-    
+
     if (this.Level[x][y] === Mario.MapTile.Level) {
         if (this.Data[x][y] > 0) {
             if (this.LevelId !== 0 && ((Math.random() * 4) | 0) === 0) {
@@ -361,7 +361,7 @@ Mario.MapState.prototype.Travel = function(x, y, dir, depth) {
             }
         }
     }
-    
+
     if (dir !== 2) {
         this.Travel(x - 1, y, 0, depth++);
     }
@@ -376,16 +376,16 @@ Mario.MapState.prototype.Travel = function(x, y, dir, depth) {
     }
 };
 
-Mario.MapState.prototype.RenderStatic = function() {
+Mario.MapState.prototype.RenderStatic = function () {
     var x = 0, y = 0, p0 = 0, p1 = 0, p2 = 0, p3 = 0, s = 0, xx = 0, yy = 0,
         image = Engine.Resources.Images["worldMap"], type = 0;
-    
+
     //320 / 16 = 20
     for (x = 0; x < 20; x++) {
         //240 / 16 = 15
         for (y = 0; y < 15; y++) {
             this.MapContext.drawImage(image, ((this.WorldNumber / 4) | 0) * 16, 0, 16, 16, x * 16, y * 16, 16, 16);
-            
+
             if (this.Level[x][y] === Mario.MapTile.Level) {
                 type = this.Data[x][y];
                 if (type === 0) {
@@ -429,7 +429,7 @@ Mario.MapState.prototype.RenderStatic = function() {
     }
 };
 
-Mario.MapState.prototype.IsRoad = function(x, y) {
+Mario.MapState.prototype.IsRoad = function (x, y) {
     if (x < 0) {
         x = 0;
     }
@@ -445,7 +445,7 @@ Mario.MapState.prototype.IsRoad = function(x, y) {
     return false;
 };
 
-Mario.MapState.prototype.IsWater = function(x, y) {
+Mario.MapState.prototype.IsWater = function (x, y) {
     var xx = 0, yy = 0;
     if (x < 0) {
         x = 0;
@@ -453,7 +453,7 @@ Mario.MapState.prototype.IsWater = function(x, y) {
     if (y < 0) {
         y = 0;
     }
-    
+
     for (xx = 0; xx < 2; xx++) {
         for (yy = 0; yy < 2; yy++) {
             if (this.Level[((x + xx) / 2) | 0][((y + yy) / 2) | 0] !== Mario.MapTile.Water) {
@@ -461,44 +461,44 @@ Mario.MapState.prototype.IsWater = function(x, y) {
             }
         }
     }
-    
+
     return true;
 };
 
-Mario.MapState.prototype.Update = function(delta) {
+Mario.MapState.prototype.Update = function (delta) {
     var x = 0, y = 0, difficulty = 0, type = 0;
-    
+
     if (this.WorldNumber === 8) {
         return;
     }
 
     this.XMario += this.XMarioA;
     this.YMario += this.YMarioA;
-    
+
     x = (this.XMario / 16) | 0;
     y = (this.YMario / 16) | 0;
-    
+
     if (this.Level[x][y] === Mario.MapTile.Road) {
         this.Data[x][y] = 0;
     }
-    
+
     if (this.MoveTime > 0) {
         this.MoveTime--;
     } else {
         this.XMarioA = 0;
         this.YMarioA = 0;
-        
+
         if (this.CanEnterLevel && Engine.KeyboardInput.IsKeyDown(Engine.Keys.S)) {
             if (this.Level[x][y] === Mario.MapTile.Level && this.Data[x][y] !== -11) {
                 if (this.Level[x][y] === Mario.MapTile.Level && this.Data[x][y] !== 0 && this.Data[x][y] > -10) {
                     difficulty = this.WorldNumber + 1;
                     Mario.MarioCharacter.LevelString = difficulty + "-";
                     type = Mario.LevelType.Overground;
-                    
+
                     if (this.Data[x][y] > 1 && ((Math.random() * 3) | 0) === 0) {
                         type = Mario.LevelType.Underground;
                     }
-                    
+
                     if (this.Data[x][y] < 0) {
                         if (this.Data[x][y] === -2) {
                             Mario.MarioCharacter.LevelString += "X";
@@ -509,12 +509,12 @@ Mario.MapState.prototype.Update = function(delta) {
                             Mario.MarioCharacter.LevelString += "#";
                             difficulty += 1;
                         }
-                        
+
                         type = Mario.LevelType.Castle;
                     } else {
                         Mario.MarioCharacter.LevelString += this.Data[x][y];
                     }
-                    
+
                     //TODO: stop music here
                     this.EnterLevel = true;
                     this.LevelDifficulty = difficulty;
@@ -522,9 +522,9 @@ Mario.MapState.prototype.Update = function(delta) {
                 }
             }
         }
-        
+
         this.CanEnterLevel = !Engine.KeyboardInput.IsKeyDown(Engine.Keys.S);
-        
+
         if (Engine.KeyboardInput.IsKeyDown(Engine.Keys.Left)) {
             this.TryWalking(-1, 0);
         }
@@ -538,7 +538,7 @@ Mario.MapState.prototype.Update = function(delta) {
             this.TryWalking(0, 1);
         }
     }
-    
+
     this.WaterSprite.Update(delta);
     this.DecoSprite.Update(delta);
     this.HelpSprite.Update(delta);
@@ -553,23 +553,23 @@ Mario.MapState.prototype.Update = function(delta) {
     }
 };
 
-Mario.MapState.prototype.TryWalking = function(xd, yd) {
+Mario.MapState.prototype.TryWalking = function (xd, yd) {
     var x = (this.XMario / 16) | 0, y = (this.YMario / 16) | 0, xt = x + xd, yt = y + yd;
-    
+
     if (this.Level[xt][yt] === Mario.MapTile.Road || this.Level[xt][yt] === Mario.MapTile.Level) {
         if (this.Level[xt][yt] === Mario.MapTile.Road) {
             if ((this.Data[xt][yt] !== 0) && (this.Data[x][y] !== 0 && this.Data[x][y] > -10)) {
                 return;
             }
         }
-        
+
         this.XMarioA = xd * 8;
         this.YMarioA = yd * 8;
         this.MoveTime = this.CalcDistance(x, y, xd, yd) * 2 + 1;
     }
 };
 
-Mario.MapState.prototype.CalcDistance = function(x, y, xa, ya) {
+Mario.MapState.prototype.CalcDistance = function (x, y, xa, ya) {
     var distance = 0;
     while (true) {
         x += xa;
@@ -587,15 +587,15 @@ Mario.MapState.prototype.CalcDistance = function(x, y, xa, ya) {
     }
 };
 
-Mario.MapState.prototype.Draw = function(context) {
+Mario.MapState.prototype.Draw = function (context) {
     var x = 0, y = 0;
-    
+
     if (this.WorldNumber === 8) {
         return;
     }
-    
+
     context.drawImage(this.MapImage, 0, 0);
-    
+
     for (y = 0; y <= 15; y++) {
         for (x = 20; x >= 0; x--) {
             if (this.Level[x][y] === Mario.MapTile.Water) {
@@ -615,23 +615,23 @@ Mario.MapState.prototype.Draw = function(context) {
             }
         }
     }
-    
+
     if (!Mario.MarioCharacter.Large) {
         this.SmallMario.Draw(context, this.camera);
     } else {
         this.LargeMario.Draw(context, this.camera);
     }
-    
+
     this.Font.Strings[0] = { String: "MARIO " + Mario.MarioCharacter.Lives, X: 4, Y: 4 };
     this.FontShadow.Strings[0] = { String: "MARIO " + Mario.MarioCharacter.Lives, X: 5, Y: 5 };
     this.Font.Strings[1] = { String: "WORLD " + (this.WorldNumber + 1), X: 256, Y: 4 };
     this.FontShadow.Strings[1] = { String: "WORLD " + (this.WorldNumber + 1), X: 257, Y: 5 };
-    
+
     this.FontShadow.Draw(context, this.camera);
     this.Font.Draw(context, this.camera);
 };
 
-Mario.MapState.prototype.LevelWon = function() {
+Mario.MapState.prototype.LevelWon = function () {
     var x = this.XMario / 16, y = this.YMario / 16;
     if (this.Data[x][y] === -2) {
         this.NextWorld();
@@ -645,15 +645,15 @@ Mario.MapState.prototype.LevelWon = function() {
     this.RenderStatic();
 };
 
-Mario.MapState.prototype.GetX = function() {
+Mario.MapState.prototype.GetX = function () {
     return 160;
 };
 
-Mario.MapState.prototype.GetY = function() {
+Mario.MapState.prototype.GetY = function () {
     return 120;
 };
 
-Mario.MapState.prototype.CheckForChange = function(context) {
+Mario.MapState.prototype.CheckForChange = function (context) {
     if (this.WorldNumber === 8) {
         context.ChangeState(new Mario.WinState());
     }

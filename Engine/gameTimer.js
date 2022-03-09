@@ -1,33 +1,33 @@
 /**
-	Represents a very basic game timer.
-	Code by Rob Kleffner, 2011
+    Represents a very basic game timer.
+    Code by Rob Kleffner, 2011
 */
 
-Engine.GameTimer = function() {
+Engine.GameTimer = function () {
     this.FramesPerSecond = 1000 / 30;
-	this.LastTime = 0;
+    this.LastTime = 0;
     this.IntervalFunc = null;
     this.UpdateObject = null;
 };
 
 Engine.GameTimer.prototype = {
-    Start: function() {
+    Start: function () {
         this.LastTime = new Date().getTime();
         var self = this;
-        this.IntervalFunc = setInterval(function() { self.Tick() }, this.FramesPerSecond);
+        this.IntervalFunc = setInterval(function () { self.Tick() }, this.FramesPerSecond);
     },
-    
-    Tick: function() {
+
+    Tick: function () {
         if (this.UpdateObject != null) {
             var newTime = new Date().getTime();
-    		var delta = (newTime - this.LastTime) / 1000;
-    		this.LastTime = newTime;
-            
+            var delta = (newTime - this.LastTime) / 1000;
+            this.LastTime = newTime;
+
             this.UpdateObject.Update(delta);
         }
     },
-    
-    Stop: function() {
+
+    Stop: function () {
         clearInterval(this.IntervalFunc);
     }
 };

@@ -1,9 +1,9 @@
 /**
-	Represents a simple little coin animation when popping out of the box.
-	Code by Rob Kleffner, 2011
+    Represents a simple little coin animation when popping out of the box.
+    Code by Rob Kleffner, 2011
 */
 
-Mario.CoinAnim = function(world, x, y) {
+Mario.CoinAnim = function (world, x, y) {
     this.World = world;
     this.Life = 10;
     this.Image = Engine.Resources.Images["map"];
@@ -18,7 +18,7 @@ Mario.CoinAnim = function(world, x, y) {
 
 Mario.CoinAnim.prototype = new Mario.NotchSprite();
 
-Mario.CoinAnim.prototype.Move = function() {
+Mario.CoinAnim.prototype.Move = function () {
     var x = 0, y = 0;
     if (this.Life-- < 0) {
         this.World.RemoveSprite(this);
@@ -28,7 +28,7 @@ Mario.CoinAnim.prototype.Move = function() {
             }
         }
     }
-    
+
     this.XPic = this.Life & 3;
     this.X += this.Xa;
     this.Y += this.Ya;
