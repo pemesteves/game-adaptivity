@@ -658,6 +658,6 @@ Mario.MapState.prototype.CheckForChange = function (context) {
         context.ChangeState(new Mario.WinState());
     }
     if (this.EnterLevel) {
-        context.ChangeState(new Mario.LevelState(this.LevelDifficulty, this.LevelType));
+        context.ChangeState(new LevelState(this.LevelDifficulty, this.LevelType));
     }
 };
