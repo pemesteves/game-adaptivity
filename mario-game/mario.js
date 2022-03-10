@@ -60,8 +60,8 @@ var Mario = {
         LoadBehaviors: function () {
             for (
                 var a = [0, 20, 28, 0, 130, 130, 130, 130, 2, 2, 2, 2, 2, 0, 138, 0, 162, 146, 154, 162, 146, 146, 154, 146, 2, 0, 2, 2, 2, 0, 2, 0, 192, 192, 192, 192, 0, 0, 0, 0, 2, 2, 0, 0, 0, 0, 2, 0, 0, 0, 0, 0, 0, 0, 0, 0, 2, 2],
-                    b = 0,
-                    b = 58;
+                b = 0,
+                b = 58;
                 b < 128;
                 b++
             )
@@ -220,7 +220,7 @@ Mario.BackgroundGenerator.prototype = {
     },
     GenerateOverground: function (a) {
         for (var b = this.Distant ? 4 : 6, c = this.Distant ? 2 : 1, e = Math.floor(Math.random() * b) + c, d = Math.floor(Math.random() * b) + c, f = 0, g = 0, h = 0, i = 0, i = 2, f = 0; f < this.Width; f++) {
-            for (e = d; e === d; ) d = Math.floor(Math.random() * b) + c;
+            for (e = d; e === d;) d = Math.floor(Math.random() * b) + c;
             for (g = 0; g < this.Height; g++)
                 (h = e < d ? e : d),
                     (i = e < d ? d : e),
@@ -229,10 +229,10 @@ Mario.BackgroundGenerator.prototype = {
                             ? ((i = 2), g < 2 && (i = g), a.SetBlock(f, g, 4 + i * 8))
                             : a.SetBlock(f, g, 5)
                         : g === h
-                        ? ((i = h === d ? 0 : 1), (i += this.Distant ? 2 : 0), a.SetBlock(f, g, i))
-                        : g === i
-                        ? ((i = h === d ? 0 : 1), (i += this.Distant ? 2 : 0), a.SetBlock(f, g, i + 16))
-                        : ((i = g > i ? 1 : 0), h === e && (i = 1 - i), (i += this.Distant ? 2 : 0), a.SetBlock(f, g, i + 8));
+                            ? ((i = h === d ? 0 : 1), (i += this.Distant ? 2 : 0), a.SetBlock(f, g, i))
+                            : g === i
+                                ? ((i = h === d ? 0 : 1), (i += this.Distant ? 2 : 0), a.SetBlock(f, g, i + 16))
+                                : ((i = g > i ? 1 : 0), h === e && (i = 1 - i), (i += this.Distant ? 2 : 0), a.SetBlock(f, g, i + 8));
         }
     },
     GenerateUnderground: function (a) {
@@ -369,12 +369,12 @@ Mario.NotchSprite.prototype.Draw = function (a) {
         c = 0;
     this.Visible &&
         ((b = ((this.XOld + (this.X - this.XOld) * this.Delta) | 0) - this.XPicO),
-        (c = ((this.YOld + (this.Y - this.YOld) * this.Delta) | 0) - this.YPicO),
-        a.save(),
-        a.scale(this.XFlip ? -1 : 1, this.YFlip ? -1 : 1),
-        a.translate(this.XFlip ? -320 : 0, this.YFlip ? -240 : 0),
-        a.drawImage(this.Image, this.XPic * this.PicWidth, this.YPic * this.PicHeight, this.PicWidth, this.PicHeight, this.XFlip ? 320 - b - this.PicWidth : b, this.YFlip ? 240 - c - this.PicHeight : c, this.PicWidth, this.PicHeight),
-        a.restore());
+            (c = ((this.YOld + (this.Y - this.YOld) * this.Delta) | 0) - this.YPicO),
+            a.save(),
+            a.scale(this.XFlip ? -1 : 1, this.YFlip ? -1 : 1),
+            a.translate(this.XFlip ? -320 : 0, this.YFlip ? -240 : 0),
+            a.drawImage(this.Image, this.XPic * this.PicWidth, this.YPic * this.PicHeight, this.PicWidth, this.PicHeight, this.XFlip ? 320 - b - this.PicWidth : b, this.YFlip ? 240 - c - this.PicHeight : c, this.PicWidth, this.PicHeight),
+            a.restore());
 };
 Mario.NotchSprite.prototype.Update = function (a) {
     this.XOld = this.X;
@@ -397,9 +397,9 @@ Mario.NotchSprite.prototype.GetX = function (a) {
 Mario.NotchSprite.prototype.GetY = function (a) {
     return ((this.YOld + (this.Y - this.YOld) * a) | 0) - this.YPicO;
 };
-Mario.NotchSprite.prototype.CollideCheck = function () {};
-Mario.NotchSprite.prototype.BumpCheck = function () {};
-Mario.NotchSprite.prototype.Release = function () {};
+Mario.NotchSprite.prototype.CollideCheck = function () { };
+Mario.NotchSprite.prototype.BumpCheck = function () { };
+Mario.NotchSprite.prototype.Release = function () { };
 Mario.NotchSprite.prototype.ShellCollideCheck = function () {
     return !1;
 };
@@ -425,6 +425,8 @@ Mario.Character = function () {
     this.InvulnerableTime = this.WinTime = this.DeathTime = this.YDeathPos = this.XDeathPos = this.PowerUpTime = this.Facing = 0;
     this.Carried = null;
     this.NewFire = this.NewLarge = this.LastFire = this.LastLarge = !1;
+
+    this.gameplayMetrics = new GameplayMetrics();
 };
 Mario.Character.prototype = new Mario.NotchSprite(null);
 Mario.Character.prototype.Initialize = function (a) {
@@ -476,7 +478,14 @@ Mario.Character.prototype.Move = function () {
         if (this.Xa < -2) this.Facing = -1;
         if (Engine.KeyboardInput.IsKeyDown(Engine.Keys.S) || (this.JumpTime < 0 && !this.OnGround && !this.Sliding))
             if (this.JumpTime < 0) (this.Xa = this.XJumpSpeed), (this.Ya = -this.JumpTime * this.YJumpSpeed), this.JumpTime++;
-            else if (this.OnGround && this.MayJump) Engine.Resources.PlaySound("jump"), (this.XJumpSpeed = 0), (this.YJumpSpeed = -1.9), (this.JumpTime = 7), (this.Ya = this.JumpTime * this.YJumpSpeed), (this.Sliding = this.OnGround = !1);
+            else if (this.OnGround && this.MayJump)
+                Engine.Resources.PlaySound("jump"),
+                    (this.XJumpSpeed = 0),
+                    (this.YJumpSpeed = -1.9),
+                    (this.JumpTime = 7),
+                    (this.Ya = this.JumpTime * this.YJumpSpeed),
+                    (this.Sliding = this.OnGround = !1),
+                    this.gameplayMetrics.registerJump();
             else if (this.Sliding && this.MayJump)
                 Engine.Resources.PlaySound("jump"),
                     (this.XJumpSpeed = -this.Facing * 6),
@@ -485,7 +494,8 @@ Mario.Character.prototype.Move = function () {
                     (this.Xa = this.XJumpSpeed),
                     (this.Ya = -this.JumpTime * this.YJumpSpeed),
                     (this.Sliding = this.OnGround = !1),
-                    (this.Facing = -this.Facing);
+                    (this.Facing = -this.Facing),
+                    this.gameplayMetrics.registerJump();
             else {
                 if (this.JumpTime > 0) (this.Xa += this.XJumpSpeed), (this.Ya = this.JumpTime * this.YJumpSpeed), this.JumpTime--;
             }
@@ -532,10 +542,10 @@ Mario.Character.prototype.CalcPic = function () {
         b = 0;
     this.Large
         ? ((a = ((this.RunTime / 20) | 0) % 4),
-          a === 3 && (a = 1),
-          this.Carried === null && Math.abs(this.Xa) > 10 && (a += 3),
-          this.Carried !== null && (a += 10),
-          this.OnGround || (a = this.Carried !== null ? 12 : Math.abs(this.Xa) > 10 ? 7 : 6))
+            a === 3 && (a = 1),
+            this.Carried === null && Math.abs(this.Xa) > 10 && (a += 3),
+            this.Carried !== null && (a += 10),
+            this.OnGround || (a = this.Carried !== null ? 12 : Math.abs(this.Xa) > 10 ? 7 : 6))
         : ((a = ((this.RunTime / 20) | 0) % 2), this.Carried === null && Math.abs(this.Xa) > 10 && (a += 2), this.Carried !== null && (a += 8), this.OnGround || (a = this.Carried !== null ? 9 : Math.abs(this.Xa) > 10 ? 5 : 4));
     if (this.OnGround && ((this.Facing === -1 && this.Xa > 0) || (this.Facing === 1 && this.Xa < 0))) {
         if (this.Xa > 1 || this.Xa < -1) a = this.Large ? 9 : 7;
@@ -546,19 +556,19 @@ Mario.Character.prototype.CalcPic = function () {
     this.XPic = a;
 };
 Mario.Character.prototype.SubMove = function (a, b) {
-    for (var c = !1; a > 8; ) {
+    for (var c = !1; a > 8;) {
         if (!this.SubMove(8, 0)) return !1;
         a -= 8;
     }
-    for (; a < -8; ) {
+    for (; a < -8;) {
         if (!this.SubMove(-8, 0)) return !1;
         a += 8;
     }
-    for (; b > 8; ) {
+    for (; b > 8;) {
         if (!this.SubMove(0, 8)) return !1;
         b -= 8;
     }
-    for (; b < -8; ) {
+    for (; b < -8;) {
         if (!this.SubMove(0, -8)) return !1;
         b += 8;
     }
@@ -566,10 +576,10 @@ Mario.Character.prototype.SubMove = function (a, b) {
         (this.IsBlocking(this.X + a - this.Width, this.Y + b, a, 0)
             ? (c = !0)
             : this.IsBlocking(this.X + a + this.Width, this.Y + b, a, 0)
-            ? (c = !0)
-            : this.IsBlocking(this.X + a - this.Width, this.Y + b + 1, a, b)
-            ? (c = !0)
-            : this.IsBlocking(this.X + a + this.Width, this.Y + b + 1, a, b) && (c = !0));
+                ? (c = !0)
+                : this.IsBlocking(this.X + a - this.Width, this.Y + b + 1, a, b)
+                    ? (c = !0)
+                    : this.IsBlocking(this.X + a + this.Width, this.Y + b + 1, a, b) && (c = !0));
     if (b < 0)
         if (this.IsBlocking(this.X + a, this.Y + b - this.Height, a, b)) c = !0;
         else if (c || this.IsBlocking(this.X + a - this.Width, this.Y + b - this.Height, a, b)) c = !0;
@@ -682,14 +692,14 @@ Mario.LevelRenderer.prototype.DrawStatic = function (a, b) {
         for (e = 0; e < this.TilesY; e++)
             (d = this.Level.GetBlock(c, e) & 255),
                 (Mario.Tile.Behaviors[d] & Mario.Tile.Animated) === 0 &&
-                    ((d = this.Background[d % 16][(d / 16) | 0]), a.drawImage(Engine.Resources.Images.map, d.X, d.Y, d.Width, d.Height, ((c << 4) - b.X) | 0, (e << 4) | 0, d.Width, d.Height));
+                ((d = this.Background[d % 16][(d / 16) | 0]), a.drawImage(Engine.Resources.Images.map, d.X, d.Y, d.Width, d.Height, ((c << 4) - b.X) | 0, (e << 4) | 0, d.Width, d.Height));
 };
 Mario.LevelRenderer.prototype.DrawDynamic = function (a, b) {
     for (var c = 0, e = 0, d = 0, f = 0, g = 0, d = null, c = (b.X / 16) | 0; (c <= (b.X + this.Width) / 16) | 0; c++)
         for (e = (b.Y / 16) | 0; (e <= (b.Y + this.Height) / 16) | 0; e++)
             (d = this.Level.GetBlock(c, e)),
                 (Mario.Tile.Behaviors[d & 255] & Mario.Tile.Animated) > 0 &&
-                    ((f = ((this.Bounce / 3) | 0) % 4),
+                ((f = ((this.Bounce / 3) | 0) % 4),
                     (((d % 16) / 4) | 0) === 0 && ((d / 16) | 0) === 1 && ((f = ((this.Bounce / 2 + (c + e) / 8) | 0) % 20), f > 3 && (f = 0)),
                     (((d % 16) / 4) | 0) === 3 && ((d / 16) | 0) === 0 && (f = 2),
                     (g = 0),
@@ -703,10 +713,10 @@ Mario.LevelRenderer.prototype.DrawExit0 = function (a, b, c) {
         (d = this.Background[12][e === this.Level.ExitY - 8 ? 4 : 5]), a.drawImage(Engine.Resources.Images.map, d.X, d.Y, d.Width, d.Height, (this.Level.ExitX << 4) - b.X - 16, (e << 4) - b.Y, d.Width, d.Height);
     c &&
         ((e = this.Level.ExitY * 16 - 48 - Math.sin(this.AnimTime) * 48 - 8),
-        (d = this.Background[12][3]),
-        a.drawImage(Engine.Resources.Images.map, d.X, d.Y, d.Width, d.Height, (this.Level.ExitX << 4) - b.X - 16, e - b.Y, d.Width, d.Height),
-        (d = this.Background[13][3]),
-        a.drawImage(Engine.Resources.Images.map, d.X, d.Y, d.Width, d.Height, (this.Level.ExitX << 4) - b.X, e - b.Y, d.Width, d.Height));
+            (d = this.Background[12][3]),
+            a.drawImage(Engine.Resources.Images.map, d.X, d.Y, d.Width, d.Height, (this.Level.ExitX << 4) - b.X - 16, e - b.Y, d.Width, d.Height),
+            (d = this.Background[13][3]),
+            a.drawImage(Engine.Resources.Images.map, d.X, d.Y, d.Width, d.Height, (this.Level.ExitX << 4) - b.X, e - b.Y, d.Width, d.Height));
 };
 Mario.LevelRenderer.prototype.DrawExit1 = function (a, b) {
     for (var c = 0, e = null, c = this.Level.ExitY - 8; c < this.Level.ExitY; c++)
@@ -740,7 +750,7 @@ Mario.LevelGenerator.prototype = {
         this.Type !== Mario.LevelType.Overground && (this.Odds[Mario.Odds.HillStraight] = 0);
         for (c = 0; c < this.Odds.length; c++) this.Odds[c] < 0 && (this.Odds[c] = 0), (this.TotalOdds += this.Odds[c]), (this.Odds[c] = this.TotalOdds - this.Odds[c]);
         i = new Mario.Level(this.Width, this.Height);
-        for (e += this.BuildStraight(i, 0, i.Width, !0); e < i.Width - 64; ) e += this.BuildZone(i, e, i.Width - e);
+        for (e += this.BuildStraight(i, 0, i.Width, !0); e < i.Width - 64;) e += this.BuildZone(i, e, i.Width - e);
         c = (this.Height - 1 - Math.random() * 4) | 0;
         i.ExitX = e + 8;
         i.ExitY = c;
@@ -805,7 +815,7 @@ Mario.LevelGenerator.prototype = {
             n = 0;
         e > c && (e = c);
         for (f = b; f < b + e; f++) for (g = 0; g < this.Height; g++) g >= d && a.SetBlock(f, g, 145);
-        for (this.AddEnemyLine(a, b + 1, b + e - 1, d - 1); i; )
+        for (this.AddEnemyLine(a, b + 1, b + e - 1, d - 1); i;)
             if (((h = (h - 2 - Math.random() * 3) | 0), h <= 0)) i = !1;
             else if (((j = ((Math.random() * 5) | 0) + 3), (k = ((Math.random() * (e - j - 2)) | 0) + b + 1), l[k - b] || l[k - b + j] || l[k - b - 1] || l[k - b + j + 1])) i = !1;
             else {
@@ -877,10 +887,10 @@ Mario.LevelGenerator.prototype = {
                             ? a.SetBlock(g, e - 4, 22)
                             : a.SetBlock(g, e - 4, 21)
                         : ((Math.random() * 4) | 0) === 0
-                        ? ((Math.random() * 4) | 0) === 0
-                            ? a.SetBlock(g, e - 4, 18)
-                            : a.SetBlock(g, e - 4, 17)
-                        : a.SetBlock(g, e - 4, 16);
+                            ? ((Math.random() * 4) | 0) === 0
+                                ? a.SetBlock(g, e - 4, 18)
+                                : a.SetBlock(g, e - 4, 17)
+                            : a.SetBlock(g, e - 4, 16);
         }
     },
     FixWalls: function (a) {
@@ -904,31 +914,31 @@ Mario.LevelGenerator.prototype = {
                     ? f[0][0] === f[0][1]
                         ? f[0][0] && a.SetBlock(g, h, 145 + d)
                         : f[0][0]
-                        ? a.SetBlock(g, h, 161 + d)
-                        : a.SetBlock(g, h, 129 + d)
+                            ? a.SetBlock(g, h, 161 + d)
+                            : a.SetBlock(g, h, 129 + d)
                     : f[0][0] === f[0][1] && f[1][0] === f[1][1]
-                    ? f[0][0]
-                        ? a.SetBlock(g, h, 146 + d)
-                        : a.SetBlock(g, h, 144 + d)
-                    : f[0][0] === f[1][1] && f[0][1] === f[1][0]
-                    ? a.SetBlock(g, h, 145 + d)
-                    : f[0][0] === f[1][0]
-                    ? f[0][0]
-                        ? f[0][1]
-                            ? a.SetBlock(g, h, 163 + d)
-                            : a.SetBlock(g, h, 179 + d)
-                        : f[0][1]
-                        ? a.SetBlock(g, h, 130 + d)
-                        : a.SetBlock(g, h, 128 + d)
-                    : f[0][1] === f[1][1]
-                    ? f[0][1]
                         ? f[0][0]
-                            ? a.SetBlock(g, h, 147 + d)
-                            : a.SetBlock(g, h, 131 + d)
-                        : f[0][0]
-                        ? a.SetBlock(g, h, 162 + d)
-                        : a.SetBlock(g, h, 160 + d)
-                    : a.SetBlock(g, h, 1 + 16 * d);
+                            ? a.SetBlock(g, h, 146 + d)
+                            : a.SetBlock(g, h, 144 + d)
+                        : f[0][0] === f[1][1] && f[0][1] === f[1][0]
+                            ? a.SetBlock(g, h, 145 + d)
+                            : f[0][0] === f[1][0]
+                                ? f[0][0]
+                                    ? f[0][1]
+                                        ? a.SetBlock(g, h, 163 + d)
+                                        : a.SetBlock(g, h, 179 + d)
+                                    : f[0][1]
+                                        ? a.SetBlock(g, h, 130 + d)
+                                        : a.SetBlock(g, h, 128 + d)
+                                : f[0][1] === f[1][1]
+                                    ? f[0][1]
+                                        ? f[0][0]
+                                            ? a.SetBlock(g, h, 147 + d)
+                                            : a.SetBlock(g, h, 131 + d)
+                                        : f[0][0]
+                                            ? a.SetBlock(g, h, 162 + d)
+                                            : a.SetBlock(g, h, 160 + d)
+                                    : a.SetBlock(g, h, 1 + 16 * d);
             }
     },
 };
@@ -1033,19 +1043,19 @@ Mario.Enemy.prototype.Move = function () {
     }
 };
 Mario.Enemy.prototype.SubMove = function (a, b) {
-    for (var c = !1; a > 8; ) {
+    for (var c = !1; a > 8;) {
         if (!this.SubMove(8, 0)) return !1;
         a -= 8;
     }
-    for (; a < -8; ) {
+    for (; a < -8;) {
         if (!this.SubMove(-8, 0)) return !1;
         a += 8;
     }
-    for (; b > 8; ) {
+    for (; b > 8;) {
         if (!this.SubMove(0, 8)) return !1;
         b -= 8;
     }
-    for (; b < -8; ) {
+    for (; b < -8;) {
         if (!this.SubMove(0, -8)) return !1;
         b += 8;
     }
@@ -1053,24 +1063,24 @@ Mario.Enemy.prototype.SubMove = function (a, b) {
         (this.IsBlocking(this.X + a - this.Width, this.Y + b, a, 0)
             ? (c = !0)
             : this.IsBlocking(this.X + a + this.Width, this.Y + b, a, 0)
-            ? (c = !0)
-            : this.IsBlocking(this.X + a - this.Width, this.Y + b + 1, a, b)
-            ? (c = !0)
-            : this.IsBlocking(this.X + a + this.Width, this.Y + b + 1, a, b) && (c = !0));
+                ? (c = !0)
+                : this.IsBlocking(this.X + a - this.Width, this.Y + b + 1, a, b)
+                    ? (c = !0)
+                    : this.IsBlocking(this.X + a + this.Width, this.Y + b + 1, a, b) && (c = !0));
     if (b < 0)
         if (this.IsBlocking(this.X + a, this.Y + b - this.Height, a, b)) c = !0;
         else if (c || this.IsBlocking(this.X + a - this.Width, this.Y + b - this.Height, a, b)) c = !0;
         else if (c || this.IsBlocking(this.X + a + this.Width, this.Y + b - this.Height, a, b)) c = !0;
     a > 0 &&
         (this.IsBlocking(this.X + a + this.Width, this.Y + b - this.Height, a, b) && (c = !0),
-        this.IsBlocking(this.X + a + this.Width, this.Y + b - ((this.Height / 2) | 0), a, b) && (c = !0),
-        this.IsBlocking(this.X + a + this.Width, this.Y + b, a, b) && (c = !0),
-        this.AvoidCliffs && this.OnGround && !this.World.Level.IsBlocking(((this.X + this.Xa + this.Width) / 16) | 0, (this.Y / 16 + 1) | 0, this.Xa, 1) && (c = !0));
+            this.IsBlocking(this.X + a + this.Width, this.Y + b - ((this.Height / 2) | 0), a, b) && (c = !0),
+            this.IsBlocking(this.X + a + this.Width, this.Y + b, a, b) && (c = !0),
+            this.AvoidCliffs && this.OnGround && !this.World.Level.IsBlocking(((this.X + this.Xa + this.Width) / 16) | 0, (this.Y / 16 + 1) | 0, this.Xa, 1) && (c = !0));
     a < 0 &&
         (this.IsBlocking(this.X + a - this.Width, this.Y + b - this.Height, a, b) && (c = !0),
-        this.IsBlocking(this.X + a - this.Width, this.Y + b - ((this.Height / 2) | 0), a, b) && (c = !0),
-        this.IsBlocking(this.X + a - this.Width, this.Y + b, a, b) && (c = !0),
-        this.AvoidCliffs && this.OnGround && !this.World.Level.IsBlocking(((this.X + this.Xa - this.Width) / 16) | 0, (this.Y / 16 + 1) | 0, this.Xa, 1) && (c = !0));
+            this.IsBlocking(this.X + a - this.Width, this.Y + b - ((this.Height / 2) | 0), a, b) && (c = !0),
+            this.IsBlocking(this.X + a - this.Width, this.Y + b, a, b) && (c = !0),
+            this.AvoidCliffs && this.OnGround && !this.World.Level.IsBlocking(((this.X + this.Xa - this.Width) / 16) | 0, (this.Y / 16 + 1) | 0, this.Xa, 1) && (c = !0));
     if (c) {
         if (a < 0) (this.X = (((this.X - this.Width) / 16) | 0) * 16 + this.Width), (this.Xa = 0);
         if (a > 0) (this.X = (((this.X + this.Width) / 16 + 1) | 0) * 16 - this.Width - 1), (this.Xa = 0);
@@ -1147,17 +1157,17 @@ Mario.Enemy.prototype.Draw = function (a, b) {
     this.SubDraw(a, b);
     this.Winged &&
         ((c = ((this.XOld + (this.X - this.XOld) * this.Delta) | 0) - this.XPicO),
-        (e = ((this.YOld + (this.Y - this.YOld) * this.Delta) | 0) - this.YPicO),
-        this.Type === Mario.Enemy.RedKoopa && this.Type === Mario.Enemy.GreenKoopa
-            ? (a.save(),
-              a.scale(this.XFlip ? -1 : 1, this.YFlip ? -1 : 1),
-              a.translate(this.XFlip ? -320 : 0, this.YFlip ? -240 : 0),
-              a.drawImage(this.Image, (((this.WingTime / 4) | 0) % 2) * 16, 128, 16, 32, this.XFlip ? 320 - c - 24 : c - 8, this.YFlip ? 240 - e : e - 8, 16, 32))
-            : (a.save(),
-              a.scale(this.XFlip ? -1 : 1, this.YFlip ? -1 : 1),
-              a.translate(this.XFlip ? -320 : 0, this.YFlip ? -240 : 0),
-              a.drawImage(this.Image, (((this.WingTime / 4) | 0) % 2) * 16, 128, 16, 32, this.XFlip ? 320 - c - 24 : c - 8, this.YFlip ? 240 - e - 32 : e - 8, 16, 32)),
-        a.restore());
+            (e = ((this.YOld + (this.Y - this.YOld) * this.Delta) | 0) - this.YPicO),
+            this.Type === Mario.Enemy.RedKoopa && this.Type === Mario.Enemy.GreenKoopa
+                ? (a.save(),
+                    a.scale(this.XFlip ? -1 : 1, this.YFlip ? -1 : 1),
+                    a.translate(this.XFlip ? -320 : 0, this.YFlip ? -240 : 0),
+                    a.drawImage(this.Image, (((this.WingTime / 4) | 0) % 2) * 16, 128, 16, 32, this.XFlip ? 320 - c - 24 : c - 8, this.YFlip ? 240 - e : e - 8, 16, 32))
+                : (a.save(),
+                    a.scale(this.XFlip ? -1 : 1, this.YFlip ? -1 : 1),
+                    a.translate(this.XFlip ? -320 : 0, this.YFlip ? -240 : 0),
+                    a.drawImage(this.Image, (((this.WingTime / 4) | 0) % 2) * 16, 128, 16, 32, this.XFlip ? 320 - c - 24 : c - 8, this.YFlip ? 240 - e - 32 : e - 8, 16, 32)),
+            a.restore());
 };
 Mario.Enemy.RedKoopa = 0;
 Mario.Enemy.GreenKoopa = 1;
@@ -1210,19 +1220,19 @@ Mario.Fireball.prototype.Move = function () {
     }
 };
 Mario.Fireball.prototype.SubMove = function (a, b) {
-    for (var c = !1; a > 8; ) {
+    for (var c = !1; a > 8;) {
         if (!this.SubMove(8, 0)) return !1;
         a -= 8;
     }
-    for (; a < -8; ) {
+    for (; a < -8;) {
         if (!this.SubMove(-8, 0)) return !1;
         a += 8;
     }
-    for (; b > 8; ) {
+    for (; b > 8;) {
         if (!this.SubMove(0, 8)) return !1;
         b -= 8;
     }
-    for (; b < -8; ) {
+    for (; b < -8;) {
         if (!this.SubMove(0, -8)) return !1;
         b += 8;
     }
@@ -1230,22 +1240,22 @@ Mario.Fireball.prototype.SubMove = function (a, b) {
         (this.IsBlocking(this.X + a - this.Width, this.Y + b, a, 0)
             ? (c = !0)
             : this.IsBlocking(this.X + a + this.Width, this.Y + b, a, 0)
-            ? (c = !0)
-            : this.IsBlocking(this.X + a - this.Width, this.Y + b + 1, a, b)
-            ? (c = !0)
-            : this.IsBlocking(this.X + a + this.Width, this.Y + b + 1, a, b) && (c = !0));
+                ? (c = !0)
+                : this.IsBlocking(this.X + a - this.Width, this.Y + b + 1, a, b)
+                    ? (c = !0)
+                    : this.IsBlocking(this.X + a + this.Width, this.Y + b + 1, a, b) && (c = !0));
     if (b < 0)
         if (this.IsBlocking(this.X + a, this.Y + b - this.Height, a, b)) c = !0;
         else if (c || this.IsBlocking(this.X + a - this.Width, this.Y + b - this.Height, a, b)) c = !0;
         else if (c || this.IsBlocking(this.X + a + this.Width, this.Y + b - this.Height, a, b)) c = !0;
     a > 0 &&
         (this.IsBlocking(this.X + a + this.Width, this.Y + b - this.Height, a, b) && (c = !0),
-        this.IsBlocking(this.X + a + this.Width, this.Y + b - ((this.Height / 2) | 0), a, b) && (c = !0),
-        this.IsBlocking(this.X + a + this.Width, this.Y + b, a, b) && (c = !0));
+            this.IsBlocking(this.X + a + this.Width, this.Y + b - ((this.Height / 2) | 0), a, b) && (c = !0),
+            this.IsBlocking(this.X + a + this.Width, this.Y + b, a, b) && (c = !0));
     a < 0 &&
         (this.IsBlocking(this.X + a - this.Width, this.Y + b - this.Height, a, b) && (c = !0),
-        this.IsBlocking(this.X + a - this.Width, this.Y + b - ((this.Height / 2) | 0), a, b) && (c = !0),
-        this.IsBlocking(this.X + a - this.Width, this.Y + b, a, b) && (c = !0));
+            this.IsBlocking(this.X + a - this.Width, this.Y + b - ((this.Height / 2) | 0), a, b) && (c = !0),
+            this.IsBlocking(this.X + a - this.Width, this.Y + b, a, b) && (c = !0));
     if (c) {
         if (a < 0) (this.X = (((this.X - this.Width) / 16) | 0) * 16 + this.Width), (this.Xa = 0);
         if (a > 0) (this.X = (((this.X + this.Width) / 16 + 1) | 0) * 16 - this.Width - 1), (this.Xa = 0);
@@ -1363,19 +1373,19 @@ Mario.Mushroom.prototype.Move = function () {
     }
 };
 Mario.Mushroom.prototype.SubMove = function (a, b) {
-    for (var c = !1; a > 8; ) {
+    for (var c = !1; a > 8;) {
         if (!this.SubMove(8, 0)) return !1;
         a -= 8;
     }
-    for (; a < -8; ) {
+    for (; a < -8;) {
         if (!this.SubMove(-8, 0)) return !1;
         a += 8;
     }
-    for (; b > 8; ) {
+    for (; b > 8;) {
         if (!this.SubMove(0, 8)) return !1;
         b -= 8;
     }
-    for (; b < -8; ) {
+    for (; b < -8;) {
         if (!this.SubMove(0, -8)) return !1;
         b += 8;
     }
@@ -1383,22 +1393,22 @@ Mario.Mushroom.prototype.SubMove = function (a, b) {
         (this.IsBlocking(this.X + a - this.Width, this.Y + b, a, 0)
             ? (c = !0)
             : this.IsBlocking(this.X + a + this.Width, this.Y + b, a, 0)
-            ? (c = !0)
-            : this.IsBlocking(this.X + a - this.Width, this.Y + b + 1, a, b)
-            ? (c = !0)
-            : this.IsBlocking(this.X + a + this.Width, this.Y + b + 1, a, b) && (c = !0));
+                ? (c = !0)
+                : this.IsBlocking(this.X + a - this.Width, this.Y + b + 1, a, b)
+                    ? (c = !0)
+                    : this.IsBlocking(this.X + a + this.Width, this.Y + b + 1, a, b) && (c = !0));
     if (b < 0)
         if (this.IsBlocking(this.X + a, this.Y + b - this.Height, a, b)) c = !0;
         else if (c || this.IsBlocking(this.X + a - this.Width, this.Y + b - this.Height, a, b)) c = !0;
         else if (c || this.IsBlocking(this.X + a + this.Width, this.Y + b - this.Height, a, b)) c = !0;
     a > 0 &&
         (this.IsBlocking(this.X + a + this.Width, this.Y + b - this.Height, a, b) && (c = !0),
-        this.IsBlocking(this.X + a + this.Width, this.Y + b - ((this.Height / 2) | 0), a, b) && (c = !0),
-        this.IsBlocking(this.X + a + this.Width, this.Y + b, a, b) && (c = !0));
+            this.IsBlocking(this.X + a + this.Width, this.Y + b - ((this.Height / 2) | 0), a, b) && (c = !0),
+            this.IsBlocking(this.X + a + this.Width, this.Y + b, a, b) && (c = !0));
     a < 0 &&
         (this.IsBlocking(this.X + a - this.Width, this.Y + b - this.Height, a, b) && (c = !0),
-        this.IsBlocking(this.X + a - this.Width, this.Y + b - ((this.Height / 2) | 0), a, b) && (c = !0),
-        this.IsBlocking(this.X + a - this.Width, this.Y + b, a, b) && (c = !0));
+            this.IsBlocking(this.X + a - this.Width, this.Y + b - ((this.Height / 2) | 0), a, b) && (c = !0),
+            this.IsBlocking(this.X + a - this.Width, this.Y + b, a, b) && (c = !0));
     if (c) {
         if (a < 0) (this.X = (((this.X - this.Width) / 16) | 0) * 16 + this.Width), (this.Xa = 0);
         if (a > 0) (this.X = (((this.X + this.Width) / 16 + 1) | 0) * 16 - this.Width - 1), (this.Xa = 0);
@@ -1626,8 +1636,8 @@ Mario.Shell.prototype.CollideCheck = function () {
             Mario.MarioCharacter.Ya > 0 && b <= 0 && (!Mario.MarioCharacter.OnGround || !Mario.MarioCharacter.WasOnGround)
                 ? (Mario.MarioCharacter.Stomp(this), (this.Facing = this.Facing !== 0 ? (this.Xa = 0) : Mario.MarioCharacter.Facing))
                 : this.Facing !== 0
-                ? Mario.MarioCharacter.GetHurt()
-                : (Mario.MarioCharacter.Kick(this), (this.Facing = Mario.MarioCharacter.Facing));
+                    ? Mario.MarioCharacter.GetHurt()
+                    : (Mario.MarioCharacter.Kick(this), (this.Facing = Mario.MarioCharacter.Facing));
     }
 };
 Mario.Shell.prototype.Move = function () {
@@ -1661,19 +1671,19 @@ Mario.Shell.prototype.Move = function () {
     }
 };
 Mario.Shell.prototype.SubMove = function (a, b) {
-    for (var c = !1; a > 8; ) {
+    for (var c = !1; a > 8;) {
         if (!this.SubMove(8, 0)) return !1;
         a -= 8;
     }
-    for (; a < -8; ) {
+    for (; a < -8;) {
         if (!this.SubMove(-8, 0)) return !1;
         a += 8;
     }
-    for (; b > 8; ) {
+    for (; b > 8;) {
         if (!this.SubMove(0, 8)) return !1;
         b -= 8;
     }
-    for (; b < -8; ) {
+    for (; b < -8;) {
         if (!this.SubMove(0, -8)) return !1;
         b += 8;
     }
@@ -1681,22 +1691,22 @@ Mario.Shell.prototype.SubMove = function (a, b) {
         (this.IsBlocking(this.X + a - this.Width, this.Y + b, a, 0)
             ? (c = !0)
             : this.IsBlocking(this.X + a + this.Width, this.Y + b, a, 0)
-            ? (c = !0)
-            : this.IsBlocking(this.X + a - this.Width, this.Y + b + 1, a, b)
-            ? (c = !0)
-            : this.IsBlocking(this.X + a + this.Width, this.Y + b + 1, a, b) && (c = !0));
+                ? (c = !0)
+                : this.IsBlocking(this.X + a - this.Width, this.Y + b + 1, a, b)
+                    ? (c = !0)
+                    : this.IsBlocking(this.X + a + this.Width, this.Y + b + 1, a, b) && (c = !0));
     if (b < 0)
         if (this.IsBlocking(this.X + a, this.Y + b - this.Height, a, b)) c = !0;
         else if (c || this.IsBlocking(this.X + a - this.Width, this.Y + b - this.Height, a, b)) c = !0;
         else if (c || this.IsBlocking(this.X + a + this.Width, this.Y + b - this.Height, a, b)) c = !0;
     a > 0 &&
         (this.IsBlocking(this.X + a + this.Width, this.Y + b - this.Height, a, b) && (c = !0),
-        this.IsBlocking(this.X + a + this.Width, this.Y + b - ((this.Height / 2) | 0), a, b) && (c = !0),
-        this.IsBlocking(this.X + a + this.Width, this.Y + b, a, b) && (c = !0));
+            this.IsBlocking(this.X + a + this.Width, this.Y + b - ((this.Height / 2) | 0), a, b) && (c = !0),
+            this.IsBlocking(this.X + a + this.Width, this.Y + b, a, b) && (c = !0));
     a < 0 &&
         (this.IsBlocking(this.X + a - this.Width, this.Y + b - this.Height, a, b) && (c = !0),
-        this.IsBlocking(this.X + a - this.Width, this.Y + b - ((this.Height / 2) | 0), a, b) && (c = !0),
-        this.IsBlocking(this.X + a - this.Width, this.Y + b, a, b) && (c = !0));
+            this.IsBlocking(this.X + a - this.Width, this.Y + b - ((this.Height / 2) | 0), a, b) && (c = !0),
+            this.IsBlocking(this.X + a - this.Width, this.Y + b, a, b) && (c = !0));
     if (c) {
         if (a < 0) (this.X = (((this.X - this.Width) / 16) | 0) * 16 + this.Width), (this.Xa = 0);
         if (a > 0) (this.X = (((this.X + this.Width) / 16 + 1) | 0) * 16 - this.Width - 1), (this.Xa = 0);
@@ -1840,38 +1850,38 @@ Mario.LoadingState.prototype.Enter = function () {
     Engine.Resources.AddImages(this.Images);
     new Audio().canPlayType("audio/mp3")
         ? Engine.Resources.AddSound("1up", "sounds/1-up.mp3", 1)
-              .AddSound("breakblock", "sounds/breakblock.mp3")
-              .AddSound("bump", "sounds/bump.mp3", 4)
-              .AddSound("cannon", "sounds/cannon.mp3")
-              .AddSound("coin", "sounds/coin.mp3", 5)
-              .AddSound("death", "sounds/death.mp3", 1)
-              .AddSound("exit", "sounds/exit.mp3", 1)
-              .AddSound("fireball", "sounds/fireball.mp3", 1)
-              .AddSound("jump", "sounds/jump.mp3")
-              .AddSound("kick", "sounds/kick.mp3")
-              .AddSound("pipe", "sounds/pipe.mp3", 1)
-              .AddSound("powerdown", "sounds/powerdown.mp3", 1)
-              .AddSound("powerup", "sounds/powerup.mp3", 1)
-              .AddSound("sprout", "sounds/sprout.mp3", 1)
-              .AddSound("stagestart", "sounds/stagestart.mp3", 1)
-              .AddSound("stomp", "sounds/stomp.mp3", 2)
+            .AddSound("breakblock", "sounds/breakblock.mp3")
+            .AddSound("bump", "sounds/bump.mp3", 4)
+            .AddSound("cannon", "sounds/cannon.mp3")
+            .AddSound("coin", "sounds/coin.mp3", 5)
+            .AddSound("death", "sounds/death.mp3", 1)
+            .AddSound("exit", "sounds/exit.mp3", 1)
+            .AddSound("fireball", "sounds/fireball.mp3", 1)
+            .AddSound("jump", "sounds/jump.mp3")
+            .AddSound("kick", "sounds/kick.mp3")
+            .AddSound("pipe", "sounds/pipe.mp3", 1)
+            .AddSound("powerdown", "sounds/powerdown.mp3", 1)
+            .AddSound("powerup", "sounds/powerup.mp3", 1)
+            .AddSound("sprout", "sounds/sprout.mp3", 1)
+            .AddSound("stagestart", "sounds/stagestart.mp3", 1)
+            .AddSound("stomp", "sounds/stomp.mp3", 2)
         : Engine.Resources.AddSound("1up", "sounds/1-up.wav", 1)
-              .AddSound("breakblock", "sounds/breakblock.wav")
-              .AddSound("bump", "sounds/bump.wav", 2)
-              .AddSound("cannon", "sounds/cannon.wav")
-              .AddSound("coin", "sounds/coin.wav", 5)
-              .AddSound("death", "sounds/death.wav", 1)
-              .AddSound("exit", "sounds/exit.wav", 1)
-              .AddSound("fireball", "sounds/fireball.wav", 1)
-              .AddSound("jump", "sounds/jump.wav", 1)
-              .AddSound("kick", "sounds/kick.wav", 1)
-              .AddSound("message", "sounds/message.wav", 1)
-              .AddSound("pipe", "sounds/pipe.wav", 1)
-              .AddSound("powerdown", "sounds/powerdown.wav", 1)
-              .AddSound("powerup", "sounds/powerup.wav", 1)
-              .AddSound("sprout", "sounds/sprout.wav", 1)
-              .AddSound("stagestart", "sounds/stagestart.wav", 1)
-              .AddSound("stomp", "sounds/stomp.wav", 1);
+            .AddSound("breakblock", "sounds/breakblock.wav")
+            .AddSound("bump", "sounds/bump.wav", 2)
+            .AddSound("cannon", "sounds/cannon.wav")
+            .AddSound("coin", "sounds/coin.wav", 5)
+            .AddSound("death", "sounds/death.wav", 1)
+            .AddSound("exit", "sounds/exit.wav", 1)
+            .AddSound("fireball", "sounds/fireball.wav", 1)
+            .AddSound("jump", "sounds/jump.wav", 1)
+            .AddSound("kick", "sounds/kick.wav", 1)
+            .AddSound("message", "sounds/message.wav", 1)
+            .AddSound("pipe", "sounds/pipe.wav", 1)
+            .AddSound("powerdown", "sounds/powerdown.wav", 1)
+            .AddSound("powerup", "sounds/powerup.wav", 1)
+            .AddSound("sprout", "sounds/sprout.wav", 1)
+            .AddSound("stagestart", "sounds/stagestart.wav", 1)
+            .AddSound("stomp", "sounds/stomp.wav", 1);
     Mario.Tile.LoadBehaviors();
 };
 Mario.LoadingState.prototype.Exit = function () {
@@ -2075,7 +2085,7 @@ Mario.MapState.prototype.NextWorld = function () {
     var a = !1;
     this.WorldNumber++;
     if (this.WorldNumber !== 8) {
-        for (this.YFarthestCap = this.XFarthestCap = this.Farthest = this.LevelId = this.MoveTime = 0; !a; ) a = this.GenerateLevel();
+        for (this.YFarthestCap = this.XFarthestCap = this.Farthest = this.LevelId = this.MoveTime = 0; !a;) a = this.GenerateLevel();
         this.RenderStatic();
     }
 };
@@ -2100,7 +2110,7 @@ Mario.MapState.prototype.GenerateLevel = function () {
         if (((a = ((Math.random() * ((20 / 3) | 0)) | 0) * 3 + 2), (b = ((Math.random() * 5) | 0) * 3 + 1), this.Level[a][b] === Mario.MapTile.Grass))
             a < d && ((d = a), (f = b)), (this.Level[a][b] = Mario.MapTile.Level), (this.Data[a][b] = -1), c++;
     this.Data[d][f] = -2;
-    for (a = !0; a; ) a = this.FindConnection(21, 16);
+    for (a = !0; a;) a = this.FindConnection(21, 16);
     this.FindCaps(21, 16);
     if (this.XFarthestCap === 0) return !1;
     this.Data[this.XFarthestCap][this.YFarthestCap] = -2;
@@ -2125,14 +2135,14 @@ Mario.MapState.prototype.DrawRoad = function (a, b, c, e) {
     var d = !1;
     Math.random() > 0.5 && (d = !0);
     if (d) {
-        for (; a > c; ) (this.Data[a][b] = 0), (this.Level[a--][b] = Mario.MapTile.Road);
-        for (; a < c; ) (this.Data[a][b] = 0), (this.Level[a++][b] = Mario.MapTile.Road);
+        for (; a > c;) (this.Data[a][b] = 0), (this.Level[a--][b] = Mario.MapTile.Road);
+        for (; a < c;) (this.Data[a][b] = 0), (this.Level[a++][b] = Mario.MapTile.Road);
     }
-    for (; b > e; ) (this.Data[a][b] = 0), (this.Level[a][b--] = Mario.MapTile.Road);
-    for (; b < e; ) (this.Data[a][b] = 0), (this.Level[a][b++] = Mario.MapTile.Road);
+    for (; b > e;) (this.Data[a][b] = 0), (this.Level[a][b--] = Mario.MapTile.Road);
+    for (; b < e;) (this.Data[a][b] = 0), (this.Level[a][b++] = Mario.MapTile.Road);
     if (!d) {
-        for (; a > c; ) (this.Data[a][b] = 0), (this.Level[a--][b] = Mario.MapTile.Road);
-        for (; a < c; ) (this.Data[a][b] = 0), (this.Level[a++][b] = Mario.MapTile.Road);
+        for (; a > c;) (this.Data[a][b] = 0), (this.Level[a--][b] = Mario.MapTile.Road);
+        for (; a < c;) (this.Data[a][b] = 0), (this.Level[a++][b] = Mario.MapTile.Road);
     }
 };
 Mario.MapState.prototype.FindCaps = function (a, b) {
@@ -2169,16 +2179,16 @@ Mario.MapState.prototype.RenderStatic = function () {
                     g === 0
                         ? this.MapContext.drawImage(i, 0, 112, 16, 16, a * 16, b * 16, 16, 16)
                         : g === -1
-                        ? this.MapContext.drawImage(i, 48, 128, 16, 16, a * 16, b * 16, 16, 16)
-                        : g === -3
-                        ? this.MapContext.drawImage(i, 0, 128, 16, 16, a * 16, b * 16, 16, 16)
-                        : g === -10
-                        ? this.MapContext.drawImage(i, 16, 128, 16, 16, a * 16, b * 16, 16, 16)
-                        : g === -11
-                        ? this.MapContext.drawImage(i, 16, 112, 16, 16, a * 16, b * 16, 16, 16)
-                        : g === -2
-                        ? (this.MapContext.drawImage(i, 32, 112, 16, 16, a * 16, (b - 1) * 16, 16, 16), this.MapContext.drawImage(i, 32, 128, 16, 16, a * 16, b * 16, 16, 16))
-                        : this.MapContext.drawImage(i, (g - 1) * 16, 96, 16, 16, a * 16, b * 16, 16, 16);
+                            ? this.MapContext.drawImage(i, 48, 128, 16, 16, a * 16, b * 16, 16, 16)
+                            : g === -3
+                                ? this.MapContext.drawImage(i, 0, 128, 16, 16, a * 16, b * 16, 16, 16)
+                                : g === -10
+                                    ? this.MapContext.drawImage(i, 16, 128, 16, 16, a * 16, b * 16, 16, 16)
+                                    : g === -11
+                                        ? this.MapContext.drawImage(i, 16, 112, 16, 16, a * 16, b * 16, 16, 16)
+                                        : g === -2
+                                            ? (this.MapContext.drawImage(i, 32, 112, 16, 16, a * 16, (b - 1) * 16, 16, 16), this.MapContext.drawImage(i, 32, 128, 16, 16, a * 16, b * 16, 16, 16))
+                                            : this.MapContext.drawImage(i, (g - 1) * 16, 96, 16, 16, a * 16, b * 16, 16, 16);
             else if (this.Level[a][b] === Mario.MapTile.Road)
                 (c = this.IsRoad(a - 1, b) ? 1 : 0),
                     (e = this.IsRoad(a, b - 1) ? 1 : 0),
@@ -2240,7 +2250,7 @@ Mario.MapState.prototype.Update = function (a) {
                 if (this.Data[b][c] > 1 && ((Math.random() * 3) | 0) === 0) d = Mario.LevelType.Underground;
                 this.Data[b][c] < 0
                     ? (this.Data[b][c] === -2 ? ((Mario.MarioCharacter.LevelString += "X"), (e += 2)) : this.Data[b][c] === -1 ? (Mario.MarioCharacter.LevelString += "?") : ((Mario.MarioCharacter.LevelString += "#"), (e += 1)),
-                      (d = Mario.LevelType.Castle))
+                        (d = Mario.LevelType.Castle))
                     : (Mario.MarioCharacter.LevelString += this.Data[b][c]);
                 this.EnterLevel = !0;
                 this.LevelDifficulty = e;
@@ -2269,7 +2279,7 @@ Mario.MapState.prototype.TryWalking = function (a, b) {
         (this.XMarioA = a * 8), (this.YMarioA = b * 8), (this.MoveTime = this.CalcDistance(c, e, a, b) * 2 + 1);
 };
 Mario.MapState.prototype.CalcDistance = function (a, b, c, e) {
-    for (var d = 0; ; ) {
+    for (var d = 0; ;) {
         a += c;
         b += e;
         if (this.Level[a][b] !== Mario.MapTile.Road) return d;
@@ -2533,11 +2543,11 @@ Mario.LevelState.prototype.Bump = function (a, b, c) {
         f = 0;
     (Mario.Tile.Behaviors[e & 255] & Mario.Tile.Bumpable) > 0 &&
         (this.BumpInto(a, b - 1),
-        this.Level.SetBlock(a, b, 4),
-        this.Level.SetBlockData(a, b, 4),
-        (Mario.Tile.Behaviors[e & 255] & Mario.Tile.Special) > 0
-            ? (Engine.Resources.PlaySound("sprout"), Mario.MarioCharacter.Large ? this.AddSprite(new Mario.FireFlower(this, a * 16 + 8, b * 16 + 8)) : this.AddSprite(new Mario.Mushroom(this, a * 16 + 8, b * 16 + 8)))
-            : (Mario.MarioCharacter.GetCoin(), Engine.Resources.PlaySound("coin"), this.AddSprite(new Mario.CoinAnim(this, a, b))));
+            this.Level.SetBlock(a, b, 4),
+            this.Level.SetBlockData(a, b, 4),
+            (Mario.Tile.Behaviors[e & 255] & Mario.Tile.Special) > 0
+                ? (Engine.Resources.PlaySound("sprout"), Mario.MarioCharacter.Large ? this.AddSprite(new Mario.FireFlower(this, a * 16 + 8, b * 16 + 8)) : this.AddSprite(new Mario.Mushroom(this, a * 16 + 8, b * 16 + 8)))
+                : (Mario.MarioCharacter.GetCoin(), Engine.Resources.PlaySound("coin"), this.AddSprite(new Mario.CoinAnim(this, a, b))));
     if ((Mario.Tile.Behaviors[e & 255] & Mario.Tile.Breakable) > 0 && (this.BumpInto(a, b - 1), c)) {
         Engine.Resources.PlaySound("breakblock");
         this.Level.SetBlock(a, b, 0);
@@ -3011,10 +3021,24 @@ Mario.PredefinedLevelState.prototype.BumpInto = function (x, y) {
 };
 
 Mario.PredefinedLevelState.prototype.CheckForChange = function (context) {
-    if (this.GotoLoseState) {
-        context.ChangeState(new Mario.PredefinedLevelState(1, 0)); // TODO Count Number os Losses 
-    }
+    if (this.GotoLoseState || this.NextLevel) {
+        console.log(Mario.MarioCharacter.gameplayMetrics.noJumps);
+        context.ChangeState(new Mario.PredefinedLevelState(1, 0)); // TODO Count Number os Losses
+    /*}
     else if (this.NextLevel) {
         context.ChangeState(new Mario.PredefinedLevelState(1, 0)); // TODO Next Predefined Level (Store state elsewhere) 
+    }*/
+    }
+};
+
+/** Gameplay Metrics **/
+
+class GameplayMetrics {
+    constructor() {
+        this.noJumps = 0;
+    }
+
+    registerJump() {
+        this.noJumps++;
     }
 };

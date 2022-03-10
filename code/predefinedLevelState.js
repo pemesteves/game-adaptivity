@@ -458,10 +458,12 @@ Mario.PredefinedLevelState.prototype.BumpInto = function (x, y) {
 };
 
 Mario.PredefinedLevelState.prototype.CheckForChange = function (context) {
-    if (this.GotoLoseState) {
-        context.ChangeState(new Mario.PredefinedLevelState(1, 0)); // TODO Count Number os Losses 
-    }
+    if (this.GotoLoseState || this.NextLevel) {
+        console.log(Mario.MarioCharacter.gameplayMetrics.noJumps);
+        context.ChangeState(new Mario.PredefinedLevelState(1, 0)); // TODO Count Number os Losses
+    /*}
     else if (this.NextLevel) {
         context.ChangeState(new Mario.PredefinedLevelState(1, 0)); // TODO Next Predefined Level (Store state elsewhere) 
+    }*/
     }
 };
