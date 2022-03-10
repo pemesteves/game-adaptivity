@@ -1,4 +1,5 @@
 var Mario = {
+    /** SPRITE CUTS **/
     SpriteCuts: {
         CreateBlackFont: function () {
             return new Engine.SpriteFont([], Engine.Resources.Images.font, 8, 8, this.GetCharArray(0));
@@ -43,6 +44,9 @@ var Mario = {
             return a;
         },
     },
+
+    /** LEVEL **/
+
     Tile: {
         BlockUpper: 1,
         BlockAll: 2,
@@ -184,6 +188,9 @@ Mario.Level.prototype = {
         a < 0 || b < 0 || a >= this.Width || b >= this.Height || (this.SpriteTemplates[a][b] = c);
     },
 };
+
+/** BACKGROUND GENERATOR **/
+
 Mario.BackgroundGenerator = function (a, b, c, e) {
     this.Width = a;
     this.Height = b;
@@ -276,6 +283,9 @@ Mario.BackgroundGenerator.prototype = {
                         a.SetBlock(b, c, 1 + e + (d + 3) * 8);
     },
 };
+
+/** BACKGROUND RENDERER **/
+
 Mario.BackgroundRenderer = function (a, b, c, e) {
     this.Level = a;
     this.Width = b;
@@ -289,6 +299,9 @@ Mario.BackgroundRenderer.prototype.Draw = function (a, b) {
         for (d = 0; d < this.TilesY; d++)
             (f = this.Level.GetBlock(e, d) & 255), (f = this.Background[f % 8][(f / 8) | 0]), a.drawImage(Engine.Resources.Images.background, f.X, f.Y, f.Width, f.Height, ((e << 5) - c) | 0, (d << 5) | 0, f.Width, f.Height);
 };
+
+/** IMPROVED NOISE **/
+
 Mario.ImprovedNoise = function (a) {
     this.P = [];
     this.Shuffle(a);
@@ -337,6 +350,9 @@ Mario.ImprovedNoise.prototype = {
         return ((a & 1) === 0 ? d : -d) + ((a & 2) === 0 ? b : -b);
     },
 };
+
+/** NOTCH SPRITE **/
+
 Mario.NotchSprite = function (a) {
     this.YPicO = this.XPicO = this.YPic = this.XPic = this.Ya = this.Xa = this.Y = this.X = this.YOld = this.XOld = 0;
     this.PicHeight = this.PicWidth = 32;
@@ -390,6 +406,9 @@ Mario.NotchSprite.prototype.ShellCollideCheck = function () {
 Mario.NotchSprite.prototype.FireballCollideCheck = function () {
     return !1;
 };
+
+/** CHARACTER **/
+
 Mario.Character = function () {
     this.Fire = this.Large = !1;
     this.Coins = 0;
@@ -636,6 +655,9 @@ Mario.Character.prototype.GetCoin = function () {
     this.Coins++;
     if (this.Coins === 100) (this.Coins = 0), this.Get1Up();
 };
+
+/** LEVEL RENDERER **/
+
 Mario.LevelRenderer = function (a, b, c) {
     this.Width = b;
     this.Height = c;
@@ -690,6 +712,9 @@ Mario.LevelRenderer.prototype.DrawExit1 = function (a, b) {
     for (var c = 0, e = null, c = this.Level.ExitY - 8; c < this.Level.ExitY; c++)
         (e = this.Background[13][c === this.Level.ExitY - 8 ? 4 : 5]), a.drawImage(Engine.Resources.Images.map, e.X, e.Y, e.Width, e.Height, (this.Level.ExitX << 4) - b.X + 16, (c << 4) - b.Y, e.Width, e.Height);
 };
+
+/** LEVEL GENERATOR **/
+
 Mario.LevelGenerator = function (a, b) {
     this.Width = a;
     this.Height = b;
@@ -907,6 +932,9 @@ Mario.LevelGenerator.prototype = {
             }
     },
 };
+
+/** SPRITE TEMPLATE **/
+
 Mario.SpriteTemplate = function (a, b) {
     this.Type = a;
     this.Winged = b;
@@ -922,6 +950,9 @@ Mario.SpriteTemplate.prototype = {
                 a.AddSprite(this.Sprite);
     },
 };
+
+/** ENEMY **/
+
 Mario.Enemy = function (a, b, c, e, d, f) {
     this.AirInertia = this.GroundInertia = 0.89;
     this.RunTime = 0;
@@ -1132,6 +1163,9 @@ Mario.Enemy.RedKoopa = 0;
 Mario.Enemy.GreenKoopa = 1;
 Mario.Enemy.Goomba = 2;
 Mario.Enemy.Spiky = 3;
+
+/** FIREBALL **/
+
 Mario.Enemy.Flower = 4;
 Mario.Fireball = function (a, b, c, e) {
     this.AirInertia = this.GroundInertia = 0.89;
@@ -1232,6 +1266,9 @@ Mario.Fireball.prototype.Die = function () {
     this.Ya = -5;
     this.DeadTime = 100;
 };
+
+/** SPARKLE **/
+
 Mario.Sparkle = function (a, b, c, e, d) {
     this.World = a;
     this.X = b;
@@ -1253,6 +1290,9 @@ Mario.Sparkle.prototype.Move = function () {
     this.X += this.Xa;
     this.Y += this.Ya;
 };
+
+/** COIN ANIM **/
+
 Mario.CoinAnim = function (a, b, c) {
     this.World = a;
     this.Life = 10;
@@ -1278,6 +1318,9 @@ Mario.CoinAnim.prototype.Move = function () {
     this.Y += this.Ya;
     this.Ya += 1;
 };
+
+/** MUSHROOM **/
+
 Mario.Mushroom = function (a, b, c) {
     this.RunTime = 0;
     this.AirInertia = this.GroundInertia = 0.89;
@@ -1373,6 +1416,9 @@ Mario.Mushroom.prototype.IsBlocking = function (a, b, c, e) {
 Mario.Mushroom.prototype.BumpCheck = function (a, b) {
     if (this.X + this.Width > a * 16 && this.X - this.Width < a * 16 - 16 && (b === (b - 1) / 16) | 0) (this.Facing = -Mario.MarioCharacter.Facing), (this.Ya = -10);
 };
+
+/** PARTICLE **/
+
 Mario.Particle = function (a, b, c, e, d) {
     this.World = a;
     this.X = b;
@@ -1395,6 +1441,9 @@ Mario.Particle.prototype.Move = function () {
     this.Ya *= 0.95;
     this.Ya += 3;
 };
+
+/** FIRE FLOWER **/
+
 Mario.FireFlower = function (a, b, c) {
     this.Width = 4;
     this.Height = 24;
@@ -1420,6 +1469,9 @@ Mario.FireFlower.prototype.CollideCheck = function () {
 Mario.FireFlower.prototype.Move = function () {
     if (this.Life < 9) (this.Layer = 0), this.Y--, this.Life++;
 };
+
+/** BULLET BILL **/
+
 Mario.BulletBill = function (a, b, c, e) {
     this.Image = Engine.Resources.Images.enemies;
     this.World = a;
@@ -1482,6 +1534,9 @@ Mario.BulletBill.prototype.ShellCollideCheck = function (a) {
     if (b > -16 && b < 16 && c > -this.Height && c < a.Height) return Engine.Resources.PlaySound("kick"), (this.Dead = !0), (this.Xa = 0), (this.Ya = 1), (this.DeadTime = 100), !0;
     return !1;
 };
+
+/** FLOWER ENEMY **/
+
 Mario.FlowerEnemy = function (a, b, c) {
     this.Image = Engine.Resources.Images.enemies;
     this.World = a;
@@ -1523,6 +1578,9 @@ Mario.FlowerEnemy.prototype.Move = function () {
             (this.Ya += 0.1),
             (this.XPic = (((this.Tick / 2) | 0) & 1) * 2 + (((this.Tick / 6) | 0) & 1));
 };
+
+/** SHELL **/
+
 Mario.Shell = function (a, b, c, e) {
     this.World = a;
     this.X = b;
@@ -1683,6 +1741,9 @@ Mario.Shell.prototype.Release = function () {
     this.Facing = Mario.MarioCharacter.Facing;
     this.X += this.Facing * 8;
 };
+
+/** TITLE STATE **/
+
 Mario.TitleState = function () {
     this.font = this.bounce = this.logoY = this.camera = this.drawManager = null;
 };
@@ -1733,6 +1794,9 @@ Mario.TitleState.prototype.Draw = function (a) {
 Mario.TitleState.prototype.CheckForChange = function (a) {
     Engine.KeyboardInput.IsKeyDown(Engine.Keys.S) && a.ChangeState(new Mario.PredefinedLevelState(0, 0)); //Mario.GlobalMapState);
 };
+
+/** LOADING STATE **/
+
 Mario.LoadingState = function () {
     this.Images = [];
     this.ImagesLoaded = !1;
@@ -1837,6 +1901,9 @@ Mario.LoadingState.prototype.Draw = function (a) {
 Mario.LoadingState.prototype.CheckForChange = function (a) {
     if (this.ImagesLoaded) (Mario.GlobalMapState = new Mario.MapState()), a.ChangeState(new Mario.TitleState());
 };
+
+/** LOSE STATE **/
+
 Mario.LoseState = function () {
     this.font = this.gameOver = this.camera = this.drawManager = null;
     this.wasKeyDown = !1;
@@ -1876,6 +1943,9 @@ Mario.LoseState.prototype.Draw = function (a) {
 Mario.LoseState.prototype.CheckForChange = function (a) {
     this.wasKeyDown && !Engine.KeyboardInput.IsKeyDown(Engine.Keys.S) && a.ChangeState(new Mario.TitleState());
 };
+
+/** WIN STATE **/
+
 Mario.WinState = function () {
     this.waitTime = 2;
     this.kissing = this.font = this.camera = this.drawManager = null;
@@ -1916,6 +1986,9 @@ Mario.WinState.prototype.Draw = function (a) {
 Mario.WinState.prototype.CheckForChange = function (a) {
     this.waitTime <= 0 && this.wasKeyDown && !Engine.KeyboardInput.IsKeyDown(Engine.Keys.S) && a.ChangeState(new Mario.TitleState());
 };
+
+/** MAP STATE **/
+
 Mario.MapTile = { Grass: 0, Water: 1, Level: 2, Road: 3, Decoration: 4 };
 Mario.MapState = function () {
     this.camera = new Engine.Camera();
@@ -2240,6 +2313,9 @@ Mario.MapState.prototype.CheckForChange = function (a) {
     this.WorldNumber === 8 && a.ChangeState(new Mario.WinState());
     this.EnterLevel && a.ChangeState(new Mario.LevelState(this.LevelDifficulty, this.LevelType));
 };
+
+/** LEVEL STATE **/
+
 Mario.LevelState = function (a, b) {
     this.LevelDifficulty = a;
     this.LevelType = b;
@@ -2479,10 +2555,6 @@ Mario.LevelState.prototype.CheckForChange = function (a) {
 };
 
 /** PREDEFINED LEVEL STATE **/
-/**
-    State for actually playing a pseudo-randomly generated level.
-    Code by Pedro Esteves
-*/
 
 Mario.PredefinedLevelState = function (difficulty, type) {
     this.LevelDifficulty = difficulty;
