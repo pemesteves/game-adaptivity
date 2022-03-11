@@ -1,7 +1,7 @@
 /**
     State for actually playing a pseudo-randomly generated level.
-    Code by Pedro Esteves
-*/
+    Code by Pedro Esteves, 2022.
+**/
 
 class PredefinedLevelState extends LevelState {
     constructor(difficulty, type) {

@@ -1,7 +1,8 @@
 /**
     State for actually playing a randomly generated level.
-    Code by Rob Kleffner, 2011
-*/
+    Adapted from Rob Kleffner, 2011.
+    Code by Pedro Esteves, 2022.
+**/
 
 class LevelState extends Engine.GameState {
     constructor(difficulty, type) {
@@ -35,7 +36,7 @@ class LevelState extends Engine.GameState {
     }
 
     Enter() {
-        let levelGenerator = new Mario.LevelGenerator(320, 15), i = 0, scrollSpeed = 0, w = 0, h = 0, bgLevelGenerator = null;
+        let levelGenerator = new LevelGenerator(320, 15), i = 0, scrollSpeed = 0, w = 0, h = 0, bgLevelGenerator = null;
         this.Level = levelGenerator.CreateLevel(this.LevelType, this.LevelDifficulty);
 
         //play music here
