@@ -1094,6 +1094,65 @@ class LevelGenerator {
     }
 };
 
+/** PREDEFINED LEVEL GENERATOR **/
+class PredefinedLevelGenerator extends LevelGenerator {
+    constructor(width, height) {
+        super(width, height);
+    }
+
+    CreateLevel(type, difficulty) {
+        let i = 0, length = 0, floor = 0, x = 0, y = 0, ceiling = 0, run = 0, level = null;
+
+        this.Type = type;
+        this.Difficulty = difficulty;
+        this.Odds[Mario.Odds.Straight] = 20;
+        this.Odds[Mario.Odds.HillStraight] = 10;
+        this.Odds[Mario.Odds.Tubes] = 2 + difficulty;
+        this.Odds[Mario.Odds.Jump] = 2 * difficulty;
+        this.Odds[Mario.Odds.Cannon] = -10 + 5 * difficulty;
+
+        if (this.Type !== Mario.LevelType.Overground) this.Odds[Mario.Odds.HillStraight] = 0;
+
+        for (i = 0; i < this.Odds.length; i++) {
+            if (this.Odds[i] < 0) this.Odds[i] = 0;
+
+            this.TotalOdds += this.Odds[i];
+            this.Odds[i] = this.TotalOdds - this.Odds[i];
+        }
+
+        level = new Mario.Level(this.Width, this.Height);
+        length += this.BuildStraight(level, 0, level.Width, true);
+
+        while (length < level.Width - 64) length += this.BuildZone(level, length, level.Width - length);
+
+        floor = this.Height - 1 - (Math.random() * 4) | 0;
+        level.ExitX = length + 8;
+        level.ExitY = floor;
+
+        for (x = length; x < level.Width; x++) {
+            for (y = 0; y < this.Height; y++) {
+                if (y >= floor) level.SetBlock(x, y, 1 + 9 * 16);
+            }
+        }
+
+        if (type === Mario.LevelType.Castle || type === Mario.LevelType.Underground) {
+            for (x = 0; x < level.Width; x++) {
+                if (run-- <= 0 && x > 4) {
+                    ceiling = (Math.random() * 4) | 0;
+                    run = ((Math.random() * 4) | 0) + 4;
+                }
+                for (y = 0; y < level.Height; y++) {
+                    if ((x > 4 && y <= ceiling) || x < 1) level.SetBlock(x, y, 1 + 9 * 16);
+                }
+            }
+        }
+
+        this.FixWalls(level);
+
+        return level;
+    }
+};
+
 /** SPRITE TEMPLATE **/
 
 Mario.SpriteTemplate = function (a, b) {
@@ -2725,7 +2784,7 @@ class LevelState extends Engine.GameState {
     }
 
     Draw(context) {
-        let i = 0, time = 0, t = 0;
+        let i = 0, t = 0;
 
         if (this.Camera.X < 0) {
             this.Camera.X = 0;
@@ -2767,18 +2826,7 @@ class LevelState extends Engine.GameState {
 
         this.Layer.DrawExit1(context, this.Camera);
 
-        this.DrawStringShadow(context, "MARIO " + Mario.MarioCharacter.Lives, 0, 0);
-        this.DrawStringShadow(context, "00000000", 0, 1);
-        this.DrawStringShadow(context, "COIN", 14, 0);
-        this.DrawStringShadow(context, " " + Mario.MarioCharacter.Coins, 14, 1);
-        this.DrawStringShadow(context, "WORLD", 24, 0);
-        this.DrawStringShadow(context, " " + Mario.MarioCharacter.LevelString, 24, 1);
-        this.DrawStringShadow(context, "TIME", 34, 0);
-        time = this.TimeLeft | 0;
-        if (time < 0) {
-            time = 0;
-        }
-        this.DrawStringShadow(context, " " + time, 34, 1);
+        this.DrawUI(context);
 
         if (this.StartTime > 0) {
             t = this.StartTime + this.Delta - 2;
@@ -2813,6 +2861,21 @@ class LevelState extends Engine.GameState {
             this.RenderBlackout(context, ((Mario.MarioCharacter.XDeathPos - this.Camera.X) | 0), ((Mario.MarioCharacter.YDeathPos - this.Camera.Y) | 0), (320 - t) | 0);
         }
     };
+
+    DrawUI(context) {
+        this.DrawStringShadow(context, "MARIO " + Mario.MarioCharacter.Lives, 0, 0);
+        this.DrawStringShadow(context, "00000000", 0, 1);
+        this.DrawStringShadow(context, "COIN", 14, 0);
+        this.DrawStringShadow(context, " " + Mario.MarioCharacter.Coins, 14, 1);
+        this.DrawStringShadow(context, "WORLD", 24, 0);
+        this.DrawStringShadow(context, " " + Mario.MarioCharacter.LevelString, 24, 1);
+        this.DrawStringShadow(context, "TIME", 34, 0);
+
+        let time = this.TimeLeft | 0;
+        if (time < 0) time = 0;
+        
+        this.DrawStringShadow(context, " " + time, 34, 1);
+    }
 
     DrawStringShadow(context, string, x, y) {
         this.Font.Strings[0] = { String: string, X: x * 8 + 4, Y: y * 8 + 4 };
@@ -2973,6 +3036,21 @@ class PredefinedLevelState extends LevelState {
     LevelWon() {
         Mario.GlobalMapState.LevelWon();
         this.NextLevel = true;
+    }
+
+    DrawUI(context) {
+        this.DrawStringShadow(context, "MARIO " + Mario.MarioCharacter.Lives, 0, 0);
+        this.DrawStringShadow(context, "00000000", 0, 1);
+        this.DrawStringShadow(context, "COIN", 14, 0);
+        this.DrawStringShadow(context, " " + Mario.MarioCharacter.Coins, 14, 1);
+        this.DrawStringShadow(context, "WORLD", 24, 0);
+        this.DrawStringShadow(context, " TBD", 24, 1);
+        this.DrawStringShadow(context, "TIME", 34, 0);
+
+        let time = this.TimeLeft | 0;
+        if (time < 0) time = 0;
+        
+        this.DrawStringShadow(context, " " + time, 34, 1);
     }
 };
 

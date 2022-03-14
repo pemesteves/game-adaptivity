@@ -252,7 +252,7 @@ class LevelState extends Engine.GameState {
     }
 
     Draw(context) {
-        let i = 0, time = 0, t = 0;
+        let i = 0, t = 0;
 
         if (this.Camera.X < 0) {
             this.Camera.X = 0;
@@ -294,18 +294,7 @@ class LevelState extends Engine.GameState {
 
         this.Layer.DrawExit1(context, this.Camera);
 
-        this.DrawStringShadow(context, "MARIO " + Mario.MarioCharacter.Lives, 0, 0);
-        this.DrawStringShadow(context, "00000000", 0, 1);
-        this.DrawStringShadow(context, "COIN", 14, 0);
-        this.DrawStringShadow(context, " " + Mario.MarioCharacter.Coins, 14, 1);
-        this.DrawStringShadow(context, "WORLD", 24, 0);
-        this.DrawStringShadow(context, " " + Mario.MarioCharacter.LevelString, 24, 1);
-        this.DrawStringShadow(context, "TIME", 34, 0);
-        time = this.TimeLeft | 0;
-        if (time < 0) {
-            time = 0;
-        }
-        this.DrawStringShadow(context, " " + time, 34, 1);
+        this.DrawUI(context);
 
         if (this.StartTime > 0) {
             t = this.StartTime + this.Delta - 2;
@@ -340,6 +329,21 @@ class LevelState extends Engine.GameState {
             this.RenderBlackout(context, ((Mario.MarioCharacter.XDeathPos - this.Camera.X) | 0), ((Mario.MarioCharacter.YDeathPos - this.Camera.Y) | 0), (320 - t) | 0);
         }
     };
+
+    DrawUI(context) {
+        this.DrawStringShadow(context, "MARIO " + Mario.MarioCharacter.Lives, 0, 0);
+        this.DrawStringShadow(context, "00000000", 0, 1);
+        this.DrawStringShadow(context, "COIN", 14, 0);
+        this.DrawStringShadow(context, " " + Mario.MarioCharacter.Coins, 14, 1);
+        this.DrawStringShadow(context, "WORLD", 24, 0);
+        this.DrawStringShadow(context, " " + Mario.MarioCharacter.LevelString, 24, 1);
+        this.DrawStringShadow(context, "TIME", 34, 0);
+
+        let time = this.TimeLeft | 0;
+        if (time < 0) time = 0;
+        
+        this.DrawStringShadow(context, " " + time, 34, 1);
+    }
 
     DrawStringShadow(context, string, x, y) {
         this.Font.Strings[0] = { String: string, X: x * 8 + 4, Y: y * 8 + 4 };
