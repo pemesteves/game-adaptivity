@@ -19,10 +19,10 @@ class TitleState extends Engine.GameState {
         this.drawManager = new Engine.DrawableManager();
         this.camera = new Engine.Camera();
     
-        var bgGenerator = new Mario.BackgroundGenerator(2048, 15, true, Mario.LevelType.Overground);
-        var bgLayer0 = new Mario.BackgroundRenderer(bgGenerator.CreateLevel(), 320, 240, 2);
+        let bgGenerator = new Mario.BackgroundGenerator(2048, 15, true, Mario.LevelType.Overground);
+        let bgLayer0 = new Mario.BackgroundRenderer(bgGenerator.CreateLevel(), 320, 240, 2);
         bgGenerator.SetValues(2048, 15, false, Mario.LevelType.Overground);
-        var bgLayer1 = new Mario.BackgroundRenderer(bgGenerator.CreateLevel(), 320, 240, 1);
+        let bgLayer1 = new Mario.BackgroundRenderer(bgGenerator.CreateLevel(), 320, 240, 1);
     
         this.title = new Engine.Sprite();
         this.title.Image = Engine.Resources.Images["title"];
@@ -44,7 +44,7 @@ class TitleState extends Engine.GameState {
     
         Mario.GlobalMapState = new Mario.MapState();
         //set up the global main character variable
-        Mario.MarioCharacter = new Mario.Character();
+        Mario.MarioCharacter = new Character();
         Mario.MarioCharacter.Image = Engine.Resources.Images["smallMario"];
     
         //Mario.PlayTitleMusic();
