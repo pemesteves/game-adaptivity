@@ -139,6 +139,6 @@ Mario.LoadingState.prototype.CheckForChange = function (context) {
         //set up the global map state variable
         Mario.GlobalMapState = new Mario.MapState();
 
-        context.ChangeState(new Mario.TitleState());
+        context.ChangeState(new TitleState());
     }
 };

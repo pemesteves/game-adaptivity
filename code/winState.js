@@ -62,7 +62,7 @@ Mario.WinState.prototype.Draw = function (context) {
 Mario.WinState.prototype.CheckForChange = function (context) {
     if (this.waitTime <= 0) {
         if (this.wasKeyDown && !Engine.KeyboardInput.IsKeyDown(Engine.Keys.S)) {
-            context.ChangeState(new Mario.TitleState());
+            context.ChangeState(new TitleState());
         }
     }
 };

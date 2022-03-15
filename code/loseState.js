@@ -55,6 +55,6 @@ Mario.LoseState.prototype.Draw = function (context) {
 
 Mario.LoseState.prototype.CheckForChange = function (context) {
     if (this.wasKeyDown && !Engine.KeyboardInput.IsKeyDown(Engine.Keys.S)) {
-        context.ChangeState(new Mario.TitleState());
+        context.ChangeState(new TitleState());
     }
 };
