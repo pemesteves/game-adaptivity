@@ -195,7 +195,7 @@ class LevelGenerator {
         for (x = x0; x < x1; x++) {
             if (((Math.random() * 35) | 0) < this.Difficulty + 1) {
                 type = (Math.random() * 4) | 0;
-                if (this.Difficulty < 1) type = Mario.Enemy.Goomba;
+                if (this.Difficulty < 1) type = Enemy.Goomba;
                 else if (this.Difficulty < 3) type = (Math.random() * 3) | 0;
 
                 level.SetSpriteTemplate(x, y, new Mario.SpriteTemplate(type, ((Math.random() * 35) | 0) < this.Difficulty));
@@ -218,7 +218,7 @@ class LevelGenerator {
             if (xTube >= xo + length - 2) xTube += 10;
 
             if (x === xTube && ((Math.random() * 11) | 0) < this.Difficulty + 1)
-                level.SetSpriteTemplate(x, tubeHeight, new Mario.SpriteTemplate(Mario.Enemy.Flower, false));
+                level.SetSpriteTemplate(x, tubeHeight, new Mario.SpriteTemplate(Enemy.Flower, false));
 
             for (y = 0; y < this.Height; y++) {
                 if (y >= floor) {

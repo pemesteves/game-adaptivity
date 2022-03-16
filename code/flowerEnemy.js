@@ -12,7 +12,7 @@ class FlowerEnemy extends Enemy {
         this.X = x;
         this.Y = y;
         this.Facing = 1;
-        this.Type = Mario.Enemy.Spiky;
+        this.Type = Enemy.Spiky;
         this.Winged = false;
         this.NoFireballDeath = false;
         this.XPic = 0;

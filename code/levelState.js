@@ -432,7 +432,7 @@ class LevelState extends Engine.GameState {
             } else {
                 Mario.MarioCharacter.GetCoin();
                 Engine.Resources.PlaySound("coin");
-                this.AddSprite(new Mario.CoinAnim(this, x, y));
+                this.AddSprite(new CoinAnim(this, x, y));
             }
         }
 
@@ -456,7 +456,7 @@ class LevelState extends Engine.GameState {
             Mario.MarioCharacter.GetCoin();
             Engine.Resources.PlaySound("coin");
             this.Level.SetBlock(x, y, 0);
-            this.AddSprite(new Mario.CoinAnim(x, y + 1));
+            this.AddSprite(new CoinAnim(x, y + 1));
         }
 
         for (i = 0; i < this.Sprites.Objects.length; i++) {

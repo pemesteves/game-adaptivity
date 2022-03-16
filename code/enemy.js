@@ -40,8 +40,8 @@ class Enemy extends Mario.NotchSprite {
 
         this.XPicO = 8;
         this.YPicO = 31;
-        this.AvoidCliffs = this.Type === Mario.Enemy.RedKoopa;
-        this.NoFireballDeath = this.Type === Mario.Enemy.Spiky;
+        this.AvoidCliffs = this.Type === Enemy.RedKoopa;
+        this.NoFireballDeath = this.Type === Enemy.Spiky;
 
         this.YPic = this.Type;
         if (this.YPic > 1) this.Height = 12;
@@ -59,7 +59,7 @@ class Enemy extends Mario.NotchSprite {
 
         if (xMarioD > -this.Width * 2 - 4 && xMarioD < this.Width * 2 + 4) {
             if (yMarioD > -this.Height && yMarioD < Mario.MarioCharacter.Height) {
-                if (this.Type !== Mario.Enemy.Spiky && Mario.MarioCharacter.Ya > 0 && yMarioD <= 0 && (!Mario.MarioCharacter.OnGround || !Mario.MarioCharacter.WasOnGround)) {
+                if (this.Type !== Enemy.Spiky && Mario.MarioCharacter.Ya > 0 && yMarioD <= 0 && (!Mario.MarioCharacter.OnGround || !Mario.MarioCharacter.WasOnGround)) {
                     Mario.MarioCharacter.Stomp(this);
                     if (this.Winged) {
                         this.Winged = false;
@@ -73,8 +73,8 @@ class Enemy extends Mario.NotchSprite {
                         this.DeadTime = 10;
                         this.Winged = false;
 
-                        if (this.Type === Mario.Enemy.RedKoopa) this.World.AddSprite(new Shell(this.World, this.X, this.Y, 0));
-                        else if (this.Type === Mario.Enemy.GreenKoopa) this.World.AddSprite(new Shell(this.World, this.X, this.Y, 1));
+                        if (this.Type === Enemy.RedKoopa) this.World.AddSprite(new Shell(this.World, this.X, this.Y, 0));
+                        else if (this.Type === Enemy.GreenKoopa) this.World.AddSprite(new Shell(this.World, this.X, this.Y, 1));
                     }
                 }
                 else Mario.MarioCharacter.GetHurt();
@@ -279,7 +279,7 @@ class Enemy extends Mario.NotchSprite {
             xPixel = ((this.XOld + (this.X - this.XOld) * this.Delta) | 0) - this.XPicO;
             yPixel = ((this.YOld + (this.Y - this.YOld) * this.Delta) | 0) - this.YPicO;
 
-            if (this.Type !== Mario.Enemy.RedKoopa && this.Type !== Mario.Enemy.GreenKoopa) {
+            if (this.Type !== Enemy.RedKoopa && this.Type !== Enemy.GreenKoopa) {
                 this.XFlip = !this.XFlip;
                 context.save();
                 context.scale(this.XFlip ? -1 : 1, this.YFlip ? -1 : 1);
@@ -297,7 +297,7 @@ class Enemy extends Mario.NotchSprite {
             xPixel = ((this.XOld + (this.X - this.XOld) * this.Delta) | 0) - this.XPicO;
             yPixel = ((this.YOld + (this.Y - this.YOld) * this.Delta) | 0) - this.YPicO;
 
-            if (this.Type === Mario.Enemy.RedKoopa && this.Type === Mario.Enemy.GreenKoopa) {
+            if (this.Type === Enemy.RedKoopa && this.Type === Enemy.GreenKoopa) {
                 context.save();
                 context.scale(this.XFlip ? -1 : 1, this.YFlip ? -1 : 1);
                 context.translate(this.XFlip ? -320 : 0, this.YFlip ? -240 : 0);

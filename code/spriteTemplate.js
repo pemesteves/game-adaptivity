@@ -17,10 +17,10 @@ Mario.SpriteTemplate.prototype = {
             return;
         }
 
-        if (this.Type === Mario.Enemy.Flower) {
+        if (this.Type === Enemy.Flower) {
             this.Sprite = new FlowerEnemy(world, x * 16 + 15, y * 16 + 24);
         } else {
-            this.Sprite = new Mario.Enemy(world, x * 16 + 8, y * 16 + 15, dir, this.Type, this.Winged);
+            this.Sprite = new Enemy(world, x * 16 + 8, y * 16 + 15, dir, this.Type, this.Winged);
         }
         this.Sprite.SpriteTemplate = this;
         world.AddSprite(this.Sprite);

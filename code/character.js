@@ -446,7 +446,7 @@ class Character extends Mario.NotchSprite {
         targetY = object.Y - object.Height / 2;
         this.SubMove(0, targetY - this.Y);
 
-        if (object instanceof Mario.Enemy || object instanceof Mario.BulletBill) {
+        if (object instanceof Enemy || object instanceof Mario.BulletBill) {
             Engine.Resources.PlaySound("kick");
             this.XJumpSpeed = 0;
             this.YJumpSpeed = -1.9;

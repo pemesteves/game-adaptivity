@@ -1947,30 +1947,37 @@ Mario.Sparkle.prototype.Move = function () {
 
 /** COIN ANIM **/
 
-Mario.CoinAnim = function (a, b, c) {
-    this.World = a;
-    this.Life = 10;
-    this.Image = Engine.Resources.Images.map;
-    this.PicWidth = this.PicHeight = 16;
-    this.X = b * 16;
-    this.Y = c * 16 - 16;
-    this.Xa = 0;
-    this.Ya = -6;
-    this.XPic = 0;
-    this.YPic = 2;
-};
-Mario.CoinAnim.prototype = new Mario.NotchSprite();
-Mario.CoinAnim.prototype.Move = function () {
-    var a = 0,
-        b = 0;
-    if (this.Life-- < 0) {
-        this.World.RemoveSprite(this);
-        for (a = 0; a < 2; a++) for (b = 0; b < 2; b++) this.World.AddSprite(new Mario.Sparkle(this.World, (this.X + a * 8 + Math.random() * 8) | 0, (this.Y + b * 8 + Math.random() * 8) | 0, 0, 0, 0, 2, 5));
+class CoinAnim extends Mario.NotchSprite {
+    constructor(world, x, y) {
+        super();
+        this.World = world;
+        this.Life = 10;
+        this.Image = Engine.Resources.Images["map"];
+        this.PicWidth = this.PicHeight = 16;
+        this.X = x * 16;
+        this.Y = y * 16 - 16;
+        this.Xa = 0;
+        this.Ya = -6;
+        this.XPic = 0;
+        this.YPic = 2;
     }
-    this.XPic = this.Life & 3;
-    this.X += this.Xa;
-    this.Y += this.Ya;
-    this.Ya += 1;
+
+    Move() {
+        let x = 0, y = 0;
+        if (this.Life-- < 0) {
+            this.World.RemoveSprite(this);
+            for (x = 0; x < 2; x++) {
+                for (y = 0; y < 2; y++) {
+                    this.World.AddSprite(new Mario.Sparkle(this.World, (this.X + x * 8 + Math.random() * 8) | 0, (this.Y + y * 8 + Math.random() * 8) | 0, 0, 0, 0, 2, 5));
+                }
+            }
+        }
+    
+        this.XPic = this.Life & 3;
+        this.X += this.Xa;
+        this.Y += this.Ya;
+        this.Ya += 1;
+    }
 };
 
 /** MUSHROOM **/
@@ -2199,7 +2206,7 @@ class FlowerEnemy extends Enemy {
         this.X = x;
         this.Y = y;
         this.Facing = 1;
-        this.Type = Mario.Enemy.Spiky;
+        this.Type = Enemy.Spiky;
         this.Winged = false;
         this.NoFireballDeath = false;
         this.XPic = 0;
@@ -3769,7 +3776,7 @@ class LevelState extends Engine.GameState {
             } else {
                 Mario.MarioCharacter.GetCoin();
                 Engine.Resources.PlaySound("coin");
-                this.AddSprite(new Mario.CoinAnim(this, x, y));
+                this.AddSprite(new CoinAnim(this, x, y));
             }
         }
 
@@ -3793,7 +3800,7 @@ class LevelState extends Engine.GameState {
             Mario.MarioCharacter.GetCoin();
             Engine.Resources.PlaySound("coin");
             this.Level.SetBlock(x, y, 0);
-            this.AddSprite(new Mario.CoinAnim(x, y + 1));
+            this.AddSprite(new CoinAnim(x, y + 1));
         }
 
         for (i = 0; i < this.Sprites.Objects.length; i++) {
