@@ -6,6 +6,7 @@
 
 class BulletBill extends Mario.NotchSprite {
     constructor(world, x, y, dir) {
+        super();
         this.Image = Engine.Resources.Images["enemies"];
         this.World = world;
         this.X = x;

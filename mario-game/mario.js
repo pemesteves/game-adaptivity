@@ -2105,30 +2105,43 @@ Mario.Particle.prototype.Move = function () {
 
 /** FIRE FLOWER **/
 
-Mario.FireFlower = function (a, b, c) {
-    this.Width = 4;
-    this.Height = 24;
-    this.World = a;
-    this.X = b;
-    this.Y = c;
-    this.Image = Engine.Resources.Images.items;
-    this.XPicO = 8;
-    this.YPicO = 15;
-    this.XPic = 1;
-    this.YPic = 0;
-    this.Height = 12;
-    this.Facing = 1;
-    this.PicWidth = this.PicHeight = 16;
-    this.Life = 0;
-};
-Mario.FireFlower.prototype = new Mario.NotchSprite();
-Mario.FireFlower.prototype.CollideCheck = function () {
-    var a = Mario.MarioCharacter.X - this.X,
-        b = Mario.MarioCharacter.Y - this.Y;
-    a > -16 && a < 16 && b > -this.Height && b < Mario.MarioCharacter.Height && (Mario.MarioCharacter.GetFlower(), this.World.RemoveSprite(this));
-};
-Mario.FireFlower.prototype.Move = function () {
-    if (this.Life < 9) (this.Layer = 0), this.Y--, this.Life++;
+class FireFlower extends Mario.NotchSprite {
+	constructor(world, x, y) {
+		super();
+		this.Width = 4;
+		this.Height = 24;
+
+		this.World = world;
+		this.X = x;
+		this.Y = y;
+		this.Image = Engine.Resources.Images["items"];
+
+		this.XPicO = 8;
+		this.YPicO = 15;
+		this.XPic = 1;
+		this.YPic = 0;
+		this.Height = 12;
+		this.Facing = 1;
+		this.PicWidth = this.PicHeight = 16;
+
+		this.Life = 0;
+	}
+
+	CollideCheck() {
+		let xMarioD = Mario.MarioCharacter.X - this.X, yMarioD = Mario.MarioCharacter.Y - this.Y;
+		if (xMarioD > -16 && xMarioD < 16 && yMarioD > -this.Height && yMarioD < Mario.MarioCharacter.Height) {
+			Mario.MarioCharacter.GetFlower();
+			this.World.RemoveSprite(this);
+		}
+	}
+
+	Move() {
+		if (this.Life >= 9) return;
+
+		this.Layer = 0;
+		this.Y--;
+		this.Life++;
+	}
 };
 
 /** BULLET BILL **/
@@ -2607,7 +2620,7 @@ class TitleState extends Engine.GameState {
     }
 
     CheckForChange(context) {
-        if (Engine.KeyboardInput.IsKeyDown(Engine.Keys.S)) context.ChangeState(new PredefinedLevelState(1, 1));// Mario.GlobalMapState);
+        if (Engine.KeyboardInput.IsKeyDown(Engine.Keys.S)) context.ChangeState(new PredefinedLevelState(1, 0));// Mario.GlobalMapState);
     }
 };
 
@@ -3533,7 +3546,7 @@ class LevelState extends Engine.GameState {
                     st = this.Level.GetSpriteTemplate(x, y);
 
                     if (st !== null) {
-                        if (st.LastVisibleTick !== this.Tick - 1 && st.Sprite === null || !this.Sprites.Contains(st.Sprite)) {
+                        if (st.LastVisibleTick !== this.Tick - 1 && (st.Sprite === null || !this.Sprites.Contains(st.Sprite))) {
                             st.Spawn(this, x, y, dir);
                         }
 
@@ -3752,7 +3765,7 @@ class LevelState extends Engine.GameState {
                 if (!Mario.MarioCharacter.Large) {
                     this.AddSprite(new Mario.Mushroom(this, x * 16 + 8, y * 16 + 8));
                 } else {
-                    this.AddSprite(new Mario.FireFlower(this, x * 16 + 8, y * 16 + 8));
+                    this.AddSprite(new FireFlower(this, x * 16 + 8, y * 16 + 8));
                 }
             } else {
                 Mario.MarioCharacter.GetCoin();

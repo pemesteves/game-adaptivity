@@ -155,9 +155,8 @@ class LevelState extends Engine.GameState {
                     st = this.Level.GetSpriteTemplate(x, y);
 
                     if (st !== null) {
-                        if (st.LastVisibleTick !== this.Tick - 1 && st.Sprite === null || !this.Sprites.Contains(st.Sprite)) {
+                        if (st.LastVisibleTick !== this.Tick - 1 && (st.Sprite === null || !this.Sprites.Contains(st.Sprite))) 
                             st.Spawn(this, x, y, dir);
-                        }
 
                         st.LastVisibleTick = this.Tick;
                     }
@@ -374,7 +373,7 @@ class LevelState extends Engine.GameState {
                 if (!Mario.MarioCharacter.Large) {
                     this.AddSprite(new Mario.Mushroom(this, x * 16 + 8, y * 16 + 8));
                 } else {
-                    this.AddSprite(new Mario.FireFlower(this, x * 16 + 8, y * 16 + 8));
+                    this.AddSprite(new FireFlower(this, x * 16 + 8, y * 16 + 8));
                 }
             } else {
                 Mario.MarioCharacter.GetCoin();
