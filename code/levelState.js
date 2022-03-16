@@ -371,7 +371,7 @@ class LevelState extends Engine.GameState {
             if ((Mario.Tile.Behaviors[block & 0xff] & Mario.Tile.Special) > 0) {
                 Engine.Resources.PlaySound("sprout");
                 if (!Mario.MarioCharacter.Large) {
-                    this.AddSprite(new Mario.Mushroom(this, x * 16 + 8, y * 16 + 8));
+                    this.AddSprite(new Mushroom(this, x * 16 + 8, y * 16 + 8));
                 } else {
                     this.AddSprite(new FireFlower(this, x * 16 + 8, y * 16 + 8));
                 }
@@ -389,7 +389,7 @@ class LevelState extends Engine.GameState {
                 this.Level.SetBlock(x, y, 0);
                 for (xx = 0; xx < 2; xx++) {
                     for (yy = 0; yy < 2; yy++) {
-                        this.AddSprite(new Mario.Particle(this, x * 16 + xx * 8 + 4, y * 16 + yy * 8 + 4, (xx * 2 - 1) * 4, (yy * 2 - 1) * 4 - 8));
+                        this.AddSprite(new Particle(this, x * 16 + xx * 8 + 4, y * 16 + yy * 8 + 4, (xx * 2 - 1) * 4, (yy * 2 - 1) * 4 - 8));
                     }
                 }
             }

@@ -1982,125 +1982,179 @@ class CoinAnim extends Mario.NotchSprite {
 
 /** MUSHROOM **/
 
-Mario.Mushroom = function (a, b, c) {
-    this.RunTime = 0;
-    this.AirInertia = this.GroundInertia = 0.89;
-    this.OnGround = !1;
-    this.Width = 4;
-    this.Height = 24;
-    this.World = a;
-    this.X = b;
-    this.Y = c;
-    this.Image = Engine.Resources.Images.items;
-    this.XPicO = 8;
-    this.YPicO = 15;
-    this.YPic = 0;
-    this.Height = 12;
-    this.Facing = 1;
-    this.PicWidth = this.PicHeight = 16;
-    this.Life = 0;
-};
-Mario.Mushroom.prototype = new Mario.NotchSprite();
-Mario.Mushroom.prototype.CollideCheck = function () {
-    var a = Mario.MarioCharacter.X - this.X,
-        b = Mario.MarioCharacter.Y - this.Y;
-    a > -16 && a < 16 && b > -this.Height && b < Mario.MarioCharacter.Height && (Mario.MarioCharacter.GetMushroom(), this.World.RemoveSprite(this));
-};
-Mario.Mushroom.prototype.Move = function () {
-    if (this.Life < 9) (this.Layer = 0), this.Y--, this.Life++;
-    else {
+class Mushroom extends Mario.NotchSprite {
+    constructor(world, x, y) {
+        super();
+        this.RunTime = 0;
+        this.GroundInertia = 0.89;
+        this.AirInertia = 0.89;
+        this.OnGround = false;
+        this.Width = 4;
+        this.Height = 24;
+        this.World = world;
+        this.X = x;
+        this.Y = y;
+        this.Image = Engine.Resources.Images["items"];
+        this.XPicO = 8;
+        this.YPicO = 15;
+        this.YPic = 0;
+        this.Height = 12;
+        this.Facing = 1;
+        this.PicWidth = this.PicHeight = 16;
+        this.Life = 0;
+    }
+
+    CollideCheck() {
+        let xMarioD = Mario.MarioCharacter.X - this.X, yMarioD = Mario.MarioCharacter.Y - this.Y;
+        if (xMarioD > -16 && xMarioD < 16 && yMarioD > -this.Height && yMarioD < Mario.MarioCharacter.Height) {
+            Mario.MarioCharacter.GetMushroom();
+            this.World.RemoveSprite(this);
+        }
+    }
+
+    Move() {
+        if (this.Life < 9) {
+            this.Layer = 0;
+            this.Y--;
+            this.Life++;
+            return;
+        }
+
+        let sideWaysSpeed = 1.75;
         this.Layer = 1;
+
         if (this.Xa > 2) this.Facing = 1;
         if (this.Xa < -2) this.Facing = -1;
-        this.Xa = this.Facing * 1.75;
+
+        this.Xa = this.Facing * sideWaysSpeed;
+
         this.XFlip = this.Facing === -1;
         this.RunTime += Math.abs(this.Xa) + 5;
-        if (!this.SubMove(this.Xa, 0)) this.Facing = -this.Facing;
-        this.OnGround = !1;
-        this.SubMove(0, this.Ya);
-        this.Ya *= 0.85;
-        this.Xa *= this.OnGround ? this.GroundInertia : this.AirInertia;
-        this.OnGround || (this.Ya += 2);
-    }
-};
-Mario.Mushroom.prototype.SubMove = function (a, b) {
-    for (var c = !1; a > 8;) {
-        if (!this.SubMove(8, 0)) return !1;
-        a -= 8;
-    }
-    for (; a < -8;) {
-        if (!this.SubMove(-8, 0)) return !1;
-        a += 8;
-    }
-    for (; b > 8;) {
-        if (!this.SubMove(0, 8)) return !1;
-        b -= 8;
-    }
-    for (; b < -8;) {
-        if (!this.SubMove(0, -8)) return !1;
-        b += 8;
-    }
-    b > 0 &&
-        (this.IsBlocking(this.X + a - this.Width, this.Y + b, a, 0)
-            ? (c = !0)
-            : this.IsBlocking(this.X + a + this.Width, this.Y + b, a, 0)
-                ? (c = !0)
-                : this.IsBlocking(this.X + a - this.Width, this.Y + b + 1, a, b)
-                    ? (c = !0)
-                    : this.IsBlocking(this.X + a + this.Width, this.Y + b + 1, a, b) && (c = !0));
-    if (b < 0)
-        if (this.IsBlocking(this.X + a, this.Y + b - this.Height, a, b)) c = !0;
-        else if (c || this.IsBlocking(this.X + a - this.Width, this.Y + b - this.Height, a, b)) c = !0;
-        else if (c || this.IsBlocking(this.X + a + this.Width, this.Y + b - this.Height, a, b)) c = !0;
-    a > 0 &&
-        (this.IsBlocking(this.X + a + this.Width, this.Y + b - this.Height, a, b) && (c = !0),
-            this.IsBlocking(this.X + a + this.Width, this.Y + b - ((this.Height / 2) | 0), a, b) && (c = !0),
-            this.IsBlocking(this.X + a + this.Width, this.Y + b, a, b) && (c = !0));
-    a < 0 &&
-        (this.IsBlocking(this.X + a - this.Width, this.Y + b - this.Height, a, b) && (c = !0),
-            this.IsBlocking(this.X + a - this.Width, this.Y + b - ((this.Height / 2) | 0), a, b) && (c = !0),
-            this.IsBlocking(this.X + a - this.Width, this.Y + b, a, b) && (c = !0));
-    if (c) {
-        if (a < 0) (this.X = (((this.X - this.Width) / 16) | 0) * 16 + this.Width), (this.Xa = 0);
-        if (a > 0) (this.X = (((this.X + this.Width) / 16 + 1) | 0) * 16 - this.Width - 1), (this.Xa = 0);
-        if (b < 0) (this.Y = (((this.Y - this.Height) / 16) | 0) * 16 + this.Height), (this.Ya = this.JumpTime = 0);
-        if (b > 0) (this.Y = (((this.Y - 1) / 16 + 1) | 0) * 16 - 1), (this.OnGround = !0);
-        return !1;
-    } else return (this.X += a), (this.Y += b), !0;
-};
-Mario.Mushroom.prototype.IsBlocking = function (a, b, c, e) {
-    a = (a / 16) | 0;
-    b = (b / 16) | 0;
-    if ((a === this.X / 16) | 0 && (b === this.Y / 16) | 0) return !1;
-    return this.World.Level.IsBlocking(a, b, c, e);
-};
-Mario.Mushroom.prototype.BumpCheck = function (a, b) {
-    if (this.X + this.Width > a * 16 && this.X - this.Width < a * 16 - 16 && (b === (b - 1) / 16) | 0) (this.Facing = -Mario.MarioCharacter.Facing), (this.Ya = -10);
-};
 
+        if (!this.SubMove(this.Xa, 0)) this.Facing = -this.Facing;
+        this.OnGround = false;
+        this.SubMove(0, this.Ya);
+
+        this.Ya *= 0.85;
+        if (this.OnGround) this.Xa *= this.GroundInertia;
+        else this.Xa *= this.AirInertia;
+
+        if (!this.OnGround) this.Ya += 2;
+    }
+
+    SubMove(xa, ya) {
+        let collide = false;
+
+        while (xa > 8) {
+            if (!this.SubMove(8, 0)) return false;
+            xa -= 8;
+        }
+        while (xa < -8) {
+            if (!this.SubMove(-8, 0)) return false;
+            xa += 8;
+        }
+        while (ya > 8) {
+            if (!this.SubMove(0, 8)) return false;
+            ya -= 8;
+        }
+        while (ya < -8) {
+            if (!this.SubMove(0, -8)) return false;
+            ya += 8;
+        }
+
+        if ((ya > 0 && (this.IsBlocking(this.X + xa - this.Width, this.Y + ya, xa, 0)
+            || this.IsBlocking(this.X + xa + this.Width, this.Y + ya, xa, 0)
+            || this.IsBlocking(this.X + xa - this.Width, this.Y + ya + 1, xa, ya)
+            || this.IsBlocking(this.X + xa + this.Width, this.Y + ya + 1, xa, ya)))
+            || (ya < 0 && (this.IsBlocking(this.X + xa, this.Y + ya - this.Height, xa, ya)
+                || this.IsBlocking(this.X + xa - this.Width, this.Y + ya - this.Height, xa, ya)
+                || this.IsBlocking(this.X + xa + this.Width, this.Y + ya - this.Height, xa, ya)))) {
+            collide = true;
+        }
+
+        if ((xa > 0 && (this.IsBlocking(this.X + xa + this.Width, this.Y + ya - this.Height, xa, ya)
+            || this.IsBlocking(this.X + xa + this.Width, this.Y + ya - ((this.Height / 2) | 0), xa, ya)
+            || this.IsBlocking(this.X + xa + this.Width, this.Y + ya, xa, ya)))
+            || (xa < 0 && (this.IsBlocking(this.X + xa - this.Width, this.Y + ya - this.Height, xa, ya)
+                || this.IsBlocking(this.X + xa - this.Width, this.Y + ya - ((this.Height / 2) | 0), xa, ya)
+                || this.IsBlocking(this.X + xa - this.Width, this.Y + ya, xa, ya)))) {
+            collide = true;
+        }
+
+        if (collide) {
+            if (xa < 0) {
+                this.X = (((this.X - this.Width) / 16) | 0) * 16 + this.Width;
+                this.Xa = 0;
+            }
+            if (xa > 0) {
+                this.X = (((this.X + this.Width) / 16 + 1) | 0) * 16 - this.Width - 1;
+                this.Xa = 0;
+            }
+            if (ya < 0) {
+                this.Y = (((this.Y - this.Height) / 16) | 0) * 16 + this.Height;
+                this.JumpTime = 0;
+                this.Ya = 0;
+            }
+            if (ya > 0) {
+                this.Y = (((this.Y - 1) / 16 + 1) | 0) * 16 - 1;
+                this.OnGround = true;
+            }
+
+            return false;
+        }
+        this.X += xa;
+        this.Y += ya;
+        return true;
+    }
+
+    IsBlocking(x, y, xa, ya) {
+        x = (x / 16) | 0;
+        y = (y / 16) | 0;
+
+        if (x === (this.X / 16) | 0 && y === (this.Y / 16) | 0) return false;
+
+        return this.World.Level.IsBlocking(x, y, xa, ya);
+    }
+
+    BumpCheck(x, y) {
+        if (this.X + this.Width > x * 16 && this.X - this.Width < x * 16 - 16 && y === ((y - 1) / 16) | 0) {
+            this.Facing = -Mario.MarioCharacter.Facing;
+            this.Ya = -10;
+        }
+    }
+};
 /** PARTICLE **/
 
-Mario.Particle = function (a, b, c, e, d) {
-    this.World = a;
-    this.X = b;
-    this.Y = c;
-    this.Xa = e;
-    this.Ya = d;
-    this.XPic = (Math.random() * 2) | 0;
-    this.YPic = 0;
-    this.YPicO = this.XPicO = 4;
-    this.PicHeight = this.PicWidth = 8;
-    this.Life = 10;
-    this.Image = Engine.Resources.Images.particles;
-};
-Mario.Particle.prototype = new Mario.NotchSprite();
-Mario.Particle.prototype.Move = function () {
-    this.Life - this.Delta < 0 && this.World.RemoveSprite(this);
-    this.Life -= this.Delta;
-    this.X += this.Xa;
-    this.Y += this.Ya;
-    this.Ya *= 0.95;
-    this.Ya += 3;
+class Particle extends Mario.NotchSprite {
+	constructor(world, x, y, xa, ya, xPic, yPic) {
+		super();
+		this.World = world;
+		this.X = x;
+		this.Y = y;
+		this.Xa = xa;
+		this.Ya = ya;
+		this.XPic = (Math.random() * 2) | 0;
+		this.YPic = 0;
+		this.XPicO = 4;
+		this.YPicO = 4;
+
+		this.PicWidth = 8;
+		this.PicHeight = 8;
+		this.Life = 10;
+
+		this.Image = Engine.Resources.Images["particles"];
+	}
+
+	Move() {
+		if (this.Life - this.Delta < 0) this.World.RemoveSprite(this);
+
+		this.Life -= this.Delta;
+
+		this.X += this.Xa;
+		this.Y += this.Ya;
+		this.Ya *= 0.95;
+		this.Ya += 3;
+	}
 };
 
 /** FIRE FLOWER **/
@@ -3763,7 +3817,7 @@ class LevelState extends Engine.GameState {
             if ((Mario.Tile.Behaviors[block & 0xff] & Mario.Tile.Special) > 0) {
                 Engine.Resources.PlaySound("sprout");
                 if (!Mario.MarioCharacter.Large) {
-                    this.AddSprite(new Mario.Mushroom(this, x * 16 + 8, y * 16 + 8));
+                    this.AddSprite(new Mushroom(this, x * 16 + 8, y * 16 + 8));
                 } else {
                     this.AddSprite(new FireFlower(this, x * 16 + 8, y * 16 + 8));
                 }
@@ -3781,7 +3835,7 @@ class LevelState extends Engine.GameState {
                 this.Level.SetBlock(x, y, 0);
                 for (xx = 0; xx < 2; xx++) {
                     for (yy = 0; yy < 2; yy++) {
-                        this.AddSprite(new Mario.Particle(this, x * 16 + xx * 8 + 4, y * 16 + yy * 8 + 4, (xx * 2 - 1) * 4, (yy * 2 - 1) * 4 - 8));
+                        this.AddSprite(new Particle(this, x * 16 + xx * 8 + 4, y * 16 + yy * 8 + 4, (xx * 2 - 1) * 4, (yy * 2 - 1) * 4 - 8));
                     }
                 }
             }
