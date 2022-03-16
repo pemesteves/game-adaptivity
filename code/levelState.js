@@ -108,21 +108,14 @@ class LevelState extends Engine.GameState {
         this.Delta = delta;
 
         this.TimeLeft -= delta;
-        if ((this.TimeLeft | 0) === 0) {
-            Mario.MarioCharacter.Die();
-        }
+        if ((this.TimeLeft | 0) === 0) Mario.MarioCharacter.Die();
 
-        if (this.StartTime > 0) {
-            this.StartTime++;
-        }
+        if (this.StartTime > 0) this.StartTime++;
 
         this.Camera.X = Mario.MarioCharacter.X - 160;
-        if (this.Camera.X < 0) {
-            this.Camera.X = 0;
-        }
-        if (this.Camera.X > this.Level.Width * 16 - 320) {
-            this.Camera.X = this.Level.Width * 16 - 320;
-        }
+        if (this.Camera.X < 0) this.Camera.X = 0;
+
+        if (this.Camera.X > this.Level.Width * 16 - 320) this.Camera.X = this.Level.Width * 16 - 320;
 
         this.FireballsOnScreen = 0;
 
@@ -131,13 +124,8 @@ class LevelState extends Engine.GameState {
             if (sprite !== Mario.MarioCharacter) {
                 xd = sprite.X - this.Camera.X;
                 yd = sprite.Y - this.Camera.Y;
-                if (xd < -64 || xd > 320 + 64 || yd < -64 || yd > 240 + 64) {
-                    this.Sprites.RemoveAt(i);
-                } else {
-                    if (sprite instanceof Mario.Fireball) {
-                        this.FireballsOnScreen++;
-                    }
-                }
+                if (xd < -64 || xd > 320 + 64 || yd < -64 || yd > 240 + 64) this.Sprites.RemoveAt(i);
+                else if (sprite instanceof Mario.Fireball) this.FireballsOnScreen++;
             }
         }
 
@@ -161,20 +149,14 @@ class LevelState extends Engine.GameState {
                 for (y = ((this.Camera.Y / 16) | 0) - 1; y <= (((this.Camera.Y + this.Layer.Height) / 16) | 0) + 1; y++) {
                     dir = 0;
 
-                    if (x * 16 + 8 > Mario.MarioCharacter.X + 16) {
-                        dir = -1;
-                    }
-                    if (x * 16 + 8 < Mario.MarioCharacter.X - 16) {
-                        dir = 1;
-                    }
+                    if (x * 16 + 8 > Mario.MarioCharacter.X + 16) dir = -1;
+                    if (x * 16 + 8 < Mario.MarioCharacter.X - 16) dir = 1;
 
                     st = this.Level.GetSpriteTemplate(x, y);
 
                     if (st !== null) {
-                        if (st.LastVisibleTick !== this.Tick - 1) {
-                            if (st.Sprite === null || !this.Sprites.Contains(st.Sprite)) {
-                                st.Spawn(this, x, y, dir);
-                            }
+                        if (st.LastVisibleTick !== this.Tick - 1 && st.Sprite === null || !this.Sprites.Contains(st.Sprite)) {
+                            st.Spawn(this, x, y, dir);
                         }
 
                         st.LastVisibleTick = this.Tick;
@@ -182,43 +164,31 @@ class LevelState extends Engine.GameState {
 
                     if (dir !== 0) {
                         b = this.Level.GetBlock(x, y);
-                        if (((Mario.Tile.Behaviors[b & 0xff]) & Mario.Tile.Animated) > 0) {
-                            if ((((b % 16) / 4) | 0) === 3 && ((b / 16) | 0) === 0) {
-                                if ((this.Tick - x * 2) % 100 === 0) {
-                                    xCannon = x;
-                                    for (i = 0; i < 8; i++) {
-                                        this.AddSprite(new Mario.Sparkle(this, x * 16 + 8, y * 16 + ((Math.random() * 16) | 0), Math.random() * dir, 0, 0, 1, 5));
-                                    }
-                                    this.AddSprite(new Mario.BulletBill(this, x * 16 + 8 + dir * 8, y * 16 + 15, dir));
-                                    hasShotCannon = true;
-                                }
+                        if (((Mario.Tile.Behaviors[b & 0xff]) & Mario.Tile.Animated) > 0 && (((b % 16) / 4) | 0) === 3 && ((b / 16) | 0) === 0 && (this.Tick - x * 2) % 100 === 0) {
+                            xCannon = x;
+                            for (i = 0; i < 8; i++) {
+                                this.AddSprite(new Mario.Sparkle(this, x * 16 + 8, y * 16 + ((Math.random() * 16) | 0), Math.random() * dir, 0, 0, 1, 5));
                             }
+                            this.AddSprite(new BulletBill(this, x * 16 + 8 + dir * 8, y * 16 + 15, dir));
+                            hasShotCannon = true;
                         }
                     }
                 }
             }
 
-            if (hasShotCannon) {
-                Engine.Resources.PlaySound("cannon");
-            }
+            if (hasShotCannon) Engine.Resources.PlaySound("cannon");
 
-            for (i = 0; i < this.Sprites.Objects.length; i++) {
-                this.Sprites.Objects[i].Update(delta);
-            }
+            for (i = 0; i < this.Sprites.Objects.length; i++) this.Sprites.Objects[i].Update(delta);
 
-            for (i = 0; i < this.Sprites.Objects.length; i++) {
-                this.Sprites.Objects[i].CollideCheck();
-            }
+            for (i = 0; i < this.Sprites.Objects.length; i++) this.Sprites.Objects[i].CollideCheck();
 
             for (i = 0; i < this.ShellsToCheck.length; i++) {
                 for (j = 0; j < this.Sprites.Objects.length; j++) {
-                    if (this.Sprites.Objects[j] !== this.ShellsToCheck[i] && !this.ShellsToCheck[i].Dead) {
-                        if (this.Sprites.Objects[j].ShellCollideCheck(this.ShellsToCheck[i])) {
-                            if (Mario.MarioCharacter.Carried === this.ShellsToCheck[i] && !this.ShellsToCheck[i].Dead) {
-                                Mario.MarioCharacter.Carried = null;
-                                this.ShellsToCheck[i].Die();
-                            }
-                        }
+                    if (this.Sprites.Objects[j] !== this.ShellsToCheck[i] && !this.ShellsToCheck[i].Dead 
+                            && this.Sprites.Objects[j].ShellCollideCheck(this.ShellsToCheck[i])
+                            && Mario.MarioCharacter.Carried === this.ShellsToCheck[i] && !this.ShellsToCheck[i].Dead) {
+                        Mario.MarioCharacter.Carried = null;
+                        this.ShellsToCheck[i].Die();
                     }
                 }
             }
@@ -226,10 +196,8 @@ class LevelState extends Engine.GameState {
 
             for (i = 0; i < this.FireballsToCheck.length; i++) {
                 for (j = 0; j < this.Sprites.Objects.length; j++) {
-                    if (this.Sprites.Objects[j] !== this.FireballsToCheck[i] && !this.FireballsToCheck[i].Dead) {
-                        if (this.Sprites.Objects[j].FireballCollideCheck(this.FireballsToCheck[i])) {
-                            this.FireballsToCheck[i].Die();
-                        }
+                    if (this.Sprites.Objects[j] !== this.FireballsToCheck[i] && !this.FireballsToCheck[i].Dead && this.Sprites.Objects[j].FireballCollideCheck(this.FireballsToCheck[i])) {
+                        this.FireballsToCheck[i].Die();
                     }
                 }
             }
@@ -254,29 +222,18 @@ class LevelState extends Engine.GameState {
     Draw(context) {
         let i = 0, t = 0;
 
-        if (this.Camera.X < 0) {
-            this.Camera.X = 0;
-        }
-        if (this.Camera.Y < 0) {
-            this.Camera.Y = 0;
-        }
-        if (this.Camera.X > this.Level.Width * 16 - 320) {
-            this.Camera.X = this.Level.Width * 16 - 320;
-        }
-        if (this.Camera.Y > this.Level.Height * 16 - 240) {
-            this.Camera.Y = this.Level.Height * 16 - 240;
-        }
+        if (this.Camera.X < 0) this.Camera.X = 0;
+        else if (this.Camera.Y < 0) this.Camera.Y = 0;
+        
+        if (this.Camera.X > this.Level.Width * 16 - 320) this.Camera.X = this.Level.Width * 16 - 320;
+        if (this.Camera.Y > this.Level.Height * 16 - 240) this.Camera.Y = this.Level.Height * 16 - 240;
 
-        for (i = 0; i < 2; i++) {
-            this.BgLayer[i].Draw(context, this.Camera);
-        }
+        for (i = 0; i < 2; i++) this.BgLayer[i].Draw(context, this.Camera);
 
         context.save();
         context.translate(-this.Camera.X, -this.Camera.Y);
         for (i = 0; i < this.Sprites.Objects.length; i++) {
-            if (this.Sprites.Objects[i].Layer === 0) {
-                this.Sprites.Objects[i].Draw(context, this.Camera);
-            }
+            if (this.Sprites.Objects[i].Layer === 0) this.Sprites.Objects[i].Draw(context, this.Camera);
         }
         context.restore();
 
@@ -286,9 +243,7 @@ class LevelState extends Engine.GameState {
         context.save();
         context.translate(-this.Camera.X, -this.Camera.Y);
         for (i = 0; i < this.Sprites.Objects.length; i++) {
-            if (this.Sprites.Objects[i].Layer === 1) {
-                this.Sprites.Objects[i].Draw(context, this.Camera);
-            }
+            if (this.Sprites.Objects[i].Layer === 1) this.Sprites.Objects[i].Draw(context, this.Camera);
         }
         context.restore();
 
@@ -321,9 +276,7 @@ class LevelState extends Engine.GameState {
                 //TODO: goto map with level lost
                 Mario.MarioCharacter.Lives--;
                 this.GotoMapState = true;
-                if (Mario.MarioCharacter.Lives <= 0) {
-                    this.GotoLoseState = true;
-                }
+                if (Mario.MarioCharacter.Lives <= 0) this.GotoLoseState = true;
             }
 
             this.RenderBlackout(context, ((Mario.MarioCharacter.XDeathPos - this.Camera.X) | 0), ((Mario.MarioCharacter.YDeathPos - this.Camera.Y) | 0), (320 - t) | 0);
@@ -353,9 +306,7 @@ class LevelState extends Engine.GameState {
     };
 
     RenderBlackout(context, x, y, radius) {
-        if (radius > 320) {
-            return;
-        }
+        if (radius > 320) return;
 
         let xp = [], yp = [], i = 0;
         for (i = 0; i < 16; i++) {
@@ -374,9 +325,7 @@ class LevelState extends Engine.GameState {
         context.fillStyle = "#000";
         context.beginPath();
         context.moveTo(xp[19], yp[19]);
-        for (i = 18; i >= 0; i--) {
-            context.lineTo(xp[i], yp[i]);
-        }
+        for (i = 18; i >= 0; i--) context.lineTo(xp[i], yp[i]);
         context.closePath();
         context.fill();
 
@@ -399,9 +348,7 @@ class LevelState extends Engine.GameState {
         context.fillStyle = "#000";
         context.beginPath();
         context.moveTo(xp[0], yp[0]);
-        for (i = 0; i <= xp.length - 1; i++) {
-            context.lineTo(xp[i], yp[i]);
-        }
+        for (i = 0; i <= xp.length - 1; i++) context.lineTo(xp[i], yp[i]);
         context.closePath();
         context.fill();
     };
@@ -465,13 +412,7 @@ class LevelState extends Engine.GameState {
     };
 
     CheckForChange(context) {
-        if (this.GotoLoseState) {
-            context.ChangeState(new LoseState());
-        }
-        else {
-            if (this.GotoMapState) {
-                context.ChangeState(Mario.GlobalMapState);
-            }
-        }
+        if (this.GotoLoseState) context.ChangeState(new LoseState());
+        else if (this.GotoMapState) context.ChangeState(Mario.GlobalMapState);
     };
 };
