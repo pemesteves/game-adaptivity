@@ -49,7 +49,7 @@ class LevelState extends Engine.GameState {
         //}
 
         this.Paused = false;
-        this.Layer = new Mario.LevelRenderer(this.Level, 320, 240);
+        this.Layer = new LevelRenderer(this.Level, 320, 240);
         this.Sprites = new Engine.DrawableManager();
         this.Camera = new Engine.Camera();
         this.Tick = 0;
