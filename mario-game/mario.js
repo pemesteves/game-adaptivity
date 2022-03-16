@@ -2657,45 +2657,62 @@ class LoseState extends Engine.GameState {
 
 /** WIN STATE **/
 
-Mario.WinState = function () {
-    this.waitTime = 2;
-    this.kissing = this.font = this.camera = this.drawManager = null;
-    this.wasKeyDown = !1;
-};
-Mario.WinState.prototype = new Engine.GameState();
-Mario.WinState.prototype.Enter = function () {
-    this.drawManager = new Engine.DrawableManager();
-    this.camera = new Engine.Camera();
-    this.font = Mario.SpriteCuts.CreateBlackFont();
-    this.font.Strings[0] = { String: "Thank you for saving me, Mario!", X: 36, Y: 160 };
-    this.kissing = new Engine.AnimatedSprite();
-    this.kissing.Image = Engine.Resources.Images.endScene;
-    this.kissing.X = 112;
-    this.kissing.Y = 52;
-    this.kissing.SetColumnCount(2);
-    this.kissing.SetRowCount(1);
-    this.kissing.AddNewSequence("loop", 0, 0, 0, 1);
-    this.kissing.PlaySequence("loop", !0);
-    this.kissing.FramesPerSecond = 0.5;
-    this.waitTime = 2;
-    this.drawManager.Add(this.font);
-    this.drawManager.Add(this.kissing);
-};
-Mario.WinState.prototype.Exit = function () {
-    this.drawManager.Clear();
-    delete this.drawManager;
-    delete this.camera;
-};
-Mario.WinState.prototype.Update = function (a) {
-    this.drawManager.Update(a);
-    if (this.waitTime > 0) this.waitTime -= a;
-    else if (Engine.KeyboardInput.IsKeyDown(Engine.Keys.S)) this.wasKeyDown = !0;
-};
-Mario.WinState.prototype.Draw = function (a) {
-    this.drawManager.Draw(a, this.camera);
-};
-Mario.WinState.prototype.CheckForChange = function (a) {
-    this.waitTime <= 0 && this.wasKeyDown && !Engine.KeyboardInput.IsKeyDown(Engine.Keys.S) && a.ChangeState(new TitleState());
+class WinState extends Engine.GameState {
+    constructor() {
+        super();
+        this.waitTime = 2;
+        this.drawManager = null;
+        this.camera = null;
+        this.font = null;
+        this.kissing = null;
+        this.wasKeyDown = false;
+    }
+
+    Enter() {
+        this.drawManager = new Engine.DrawableManager();
+        this.camera = new Engine.Camera();
+
+        this.font = Mario.SpriteCuts.CreateBlackFont();
+        this.font.Strings[0] = { String: "Thank you for saving me, Mario!", X: 36, Y: 160 };
+
+        this.kissing = new Engine.AnimatedSprite();
+        this.kissing.Image = Engine.Resources.Images["endScene"];
+        this.kissing.X = 112;
+        this.kissing.Y = 52;
+        this.kissing.SetColumnCount(2);
+        this.kissing.SetRowCount(1);
+        this.kissing.AddNewSequence("loop", 0, 0, 0, 1);
+        this.kissing.PlaySequence("loop", true);
+        this.kissing.FramesPerSecond = 1 / 2;
+
+        this.waitTime = 2;
+
+        this.drawManager.Add(this.font);
+        this.drawManager.Add(this.kissing);
+    }
+
+    Exit() {
+        this.drawManager.Clear();
+        delete this.drawManager;
+        delete this.camera;
+    }
+
+    Update(delta) {
+        this.drawManager.Update(delta);
+    
+        if (this.waitTime > 0) this.waitTime -= delta;
+        else if (Engine.KeyboardInput.IsKeyDown(Engine.Keys.S)) this.wasKeyDown = true;
+    }
+
+    Draw(context) {
+        this.drawManager.Draw(context, this.camera);
+    }
+
+    CheckForChange = function (context) {
+        if (this.waitTime <= 0 &&  this.wasKeyDown && !Engine.KeyboardInput.IsKeyDown(Engine.Keys.S)) {
+            context.ChangeState(new TitleState());
+        }
+    }
 };
 
 /** MAP STATE **/
@@ -3021,7 +3038,7 @@ Mario.MapState.prototype.GetY = function () {
     return 120;
 };
 Mario.MapState.prototype.CheckForChange = function (a) {
-    this.WorldNumber === 8 && a.ChangeState(new Mario.WinState());
+    this.WorldNumber === 8 && a.ChangeState(new WinState());
     this.EnterLevel && a.ChangeState(new LevelState(this.LevelDifficulty, this.LevelType));
 };
 
