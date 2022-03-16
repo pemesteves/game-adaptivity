@@ -119,7 +119,7 @@ class LoadingState extends Engine.GameState {
     CheckForChange(context) {
         if (this.ImagesLoaded) {
             //set up the global map state variable
-            Mario.GlobalMapState = new Mario.MapState();
+            Mario.GlobalMapState = new MapState();
     
             context.ChangeState(new TitleState());
         }

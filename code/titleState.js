@@ -42,7 +42,7 @@ class TitleState extends Engine.GameState {
     
         this.bounce = 0;
     
-        Mario.GlobalMapState = new Mario.MapState();
+        Mario.GlobalMapState = new MapState();
         //set up the global main character variable
         Mario.MarioCharacter = new Character();
         Mario.MarioCharacter.Image = Engine.Resources.Images["smallMario"];
