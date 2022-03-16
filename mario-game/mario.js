@@ -191,113 +191,210 @@ Mario.Level.prototype = {
 
 /** BACKGROUND GENERATOR **/
 
-Mario.BackgroundGenerator = function (a, b, c, e) {
-    this.Width = a;
-    this.Height = b;
-    this.Distant = c;
-    this.Type = e;
-};
-Mario.BackgroundGenerator.prototype = {
-    SetValues: function (a, b, c, e) {
-        this.Width = a;
-        this.Height = b;
-        this.Distant = c;
-        this.Type = e;
-    },
-    CreateLevel: function () {
-        var a = new Mario.Level(this.Width, this.Height);
+class BackgroundGenerator {
+    constructor(width, height, distant, type) {
+        this.Width = width;
+        this.Height = height;
+        this.Distant = distant;
+        this.Type = type;
+    }
+
+    SetValues(width, height, distant, type) {
+        this.Width = width;
+        this.Height = height;
+        this.Distant = distant;
+        this.Type = type;
+    }
+
+    CreateLevel() {
+        let level = new Mario.Level(this.Width, this.Height);
         switch (this.Type) {
             case Mario.LevelType.Overground:
-                this.GenerateOverground(a);
+                this.GenerateOverground(level);
                 break;
             case Mario.LevelType.Underground:
-                this.GenerateUnderground(a);
+                this.GenerateUnderground(level);
                 break;
             case Mario.LevelType.Castle:
-                this.GenerateCastle(a);
+                this.GenerateCastle(level);
+                break;
         }
-        return a;
-    },
-    GenerateOverground: function (a) {
-        for (var b = this.Distant ? 4 : 6, c = this.Distant ? 2 : 1, e = Math.floor(Math.random() * b) + c, d = Math.floor(Math.random() * b) + c, f = 0, g = 0, h = 0, i = 0, i = 2, f = 0; f < this.Width; f++) {
-            for (e = d; e === d;) d = Math.floor(Math.random() * b) + c;
-            for (g = 0; g < this.Height; g++)
-                (h = e < d ? e : d),
-                    (i = e < d ? d : e),
-                    g < h
-                        ? this.Distant
-                            ? ((i = 2), g < 2 && (i = g), a.SetBlock(f, g, 4 + i * 8))
-                            : a.SetBlock(f, g, 5)
-                        : g === h
-                            ? ((i = h === d ? 0 : 1), (i += this.Distant ? 2 : 0), a.SetBlock(f, g, i))
-                            : g === i
-                                ? ((i = h === d ? 0 : 1), (i += this.Distant ? 2 : 0), a.SetBlock(f, g, i + 16))
-                                : ((i = g > i ? 1 : 0), h === e && (i = 1 - i), (i += this.Distant ? 2 : 0), a.SetBlock(f, g, i + 8));
-        }
-    },
-    GenerateUnderground: function (a) {
-        var b = 0,
-            c = 0,
-            e = 0,
-            d = 0;
-        if (this.Distant)
-            for (var f = 0, b = 0; b < this.Width; b++) {
-                Math.random() < 0.75 && (f = 1 - f);
-                for (c = 0; c < this.Height; c++) {
-                    e = f;
-                    d = c - 2;
-                    if (d < 0 || d > 4) (d = 2), (e = 0);
-                    a.SetBlock(b, c, 4 + e + (3 + d) * 8);
+        return level;
+    }
+
+    GenerateOverground(level) {
+        const range = this.Distant ? 4 : 6;
+        const offs = this.Distant ? 2 : 1;
+        let oh = Math.floor(Math.random() * range) + offs;
+        let h = Math.floor(Math.random() * range) + offs;
+
+        let x = 0, y = 0, h0 = 0, h1 = 0, s = 2;
+        for (x = 0; x < this.Width; x++) {
+            oh = h;
+            while (oh === h) h = Math.floor(Math.random() * range) + offs;
+
+            for (y = 0; y < this.Height; y++) {
+                h0 = (oh < h) ? oh : h;
+                h1 = (oh < h) ? h : oh;
+                s = 2;
+                if (y < h0 && this.Distant) {
+                    s = 2;
+                    if (y < 2) { s = y; }
+                    level.SetBlock(x, y, 4 + s * 8);
+                } else if (y < h0) {
+                    level.SetBlock(x, y, 5);
+                } else if (y === h0) {
+                    s = h0 === h ? 0 : 1;
+                    s += this.Distant ? 2 : 0;
+                    level.SetBlock(x, y, s);
+                } else if (y === h1) {
+                    s = h0 === h ? 0 : 1;
+                    s += this.Distant ? 2 : 0;
+                    level.SetBlock(x, y, s + 16);
+                } else {
+                    s = (y > h1) ? 1 : 0;
+                    if (h0 === oh) { s = 1 - s; }
+                    s += this.Distant ? 2 : 0;
+                    level.SetBlock(x, y, s + 8);
                 }
             }
-        else
-            for (b = 0; b < this.Width; b++)
-                for (c = 0; c < this.Height; c++) {
-                    e = b % 2;
-                    d = c - 1;
-                    if (d < 0 || d > 7) (d = 7), (e = 0);
-                    e === 0 && d > 1 && d < 5 && ((e = -1), (d = 0));
-                    a.SetBlock(b, c, 6 + e + d * 8);
+        }
+    }
+
+    GenerateUnderground(level) {
+        let x = 0, y = 0, t = 0, yy = 0;
+        if (this.Distant) {
+            let tt = 0;
+            for (x = 0; x < this.Width; x++) {
+                if (Math.random() < 0.75) { tt = 1 - tt; }
+
+                for (y = 0; y < this.Height; y++) {
+                    t = tt;
+                    yy = y - 2;
+
+                    if (yy < 0 || yy > 4) {
+                        yy = 2;
+                        t = 0;
+                    }
+                    level.SetBlock(x, y, (4 + t + (3 + yy) * 8));
                 }
-    },
-    GenerateCastle: function (a) {
-        var b = 0,
-            c = 0,
-            e = 0,
-            d = 0;
-        if (this.Distant)
-            for (b = 0; b < this.Width; b++)
-                for (c = 0; c < this.Height; c++)
-                    (e = b % 2),
-                        (d = c - 1),
-                        d > 2 && d < 5 ? (d = 2) : d >= 5 && (d -= 2),
-                        d < 0 ? ((e = 0), (d = 5)) : d > 4 ? ((e = 1), (d = 5)) : e < 1 && d === 3 ? ((e = 0), (d = 3)) : e < 1 && d > 0 && d < 3 && ((e = 0), (d = 2)),
-                        a.SetBlock(b, c, 1 + e + (d + 4) * 8);
-        else
-            for (b = 0; b < this.Width; b++)
-                for (c = 0; c < this.Height; c++)
-                    (e = b % 3),
-                        (d = c - 1),
-                        d > 2 && d < 5 ? (d = 2) : d >= 5 && (d -= 2),
-                        d < 0 ? ((e = 1), (d = 5)) : d > 4 ? ((e = 2), (d = 5)) : e < 2 && d === 4 ? ((e = 2), (d = 4)) : e < 2 && d > 0 && d < 4 && ((e = 4), (d = -3)),
-                        a.SetBlock(b, c, 1 + e + (d + 3) * 8);
-    },
+            }
+        } else {
+            for (x = 0; x < this.Width; x++) {
+                for (y = 0; y < this.Height; y++) {
+                    t = x % 2;
+                    yy = y - 1;
+                    if (yy < 0 || yy > 7) {
+                        yy = 7;
+                        t = 0;
+                    }
+                    if (t === 0 && yy > 1 && yy < 5) {
+                        t = -1;
+                        yy = 0;
+                    }
+
+                    level.SetBlock(x, y, (6 + t + yy * 8));
+                }
+            }
+        }
+    }
+
+    GenerateCastle(level) {
+        let x = 0, y = 0, t = 0, yy = 0;
+        if (this.Distant) {
+            for (x = 0; x < this.Width; x++) {
+                for (y = 0; y < this.Height; y++) {
+                    t = x % 2;
+                    yy = y - 1;
+
+                    if (yy > 2 && yy < 5) {
+                        yy = 2;
+                    } else if (yy >= 5) {
+                        yy -= 2;
+                    }
+
+                    if (yy < 0) {
+                        t = 0;
+                        yy = 5;
+                    } else if (yy > 4) {
+                        t = 1;
+                        yy = 5;
+                    } else if (t < 1 && yy === 3) {
+                        t = 0;
+                        yy = 3;
+                    } else if (t < 1 && yy > 0 && yy < 3) {
+                        t = 0;
+                        yy = 2;
+                    }
+
+                    level.SetBlock(x, y, (1 + t + (yy + 4) * 8));
+                }
+            }
+        } else {
+            for (x = 0; x < this.Width; x++) {
+                for (y = 0; y < this.Height; y++) {
+                    t = x % 3;
+                    yy = y - 1;
+
+                    if (yy > 2 && yy < 5) {
+                        yy = 2;
+                    } else if (yy >= 5) {
+                        yy -= 2;
+                    }
+
+                    if (yy < 0) {
+                        t = 1;
+                        yy = 5;
+                    } else if (yy > 4) {
+                        t = 2;
+                        yy = 5;
+                    } else if (t < 2 && yy === 4) {
+                        t = 2;
+                        yy = 4;
+                    } else if (t < 2 && yy > 0 && yy < 4) {
+                        t = 4;
+                        yy = -3;
+                    }
+
+                    level.SetBlock(x, y, (1 + t + (yy + 3) * 8));
+                }
+            }
+        }
+    }
 };
 
 /** BACKGROUND RENDERER **/
 
-Mario.BackgroundRenderer = function (a, b, c, e) {
-    this.Level = a;
-    this.Width = b;
-    this.Distance = e;
-    this.TilesY = ((c / 32) | 0) + 1;
-    this.Background = Mario.SpriteCuts.GetBackgroundSheet();
-};
-Mario.BackgroundRenderer.prototype = new Engine.Drawable();
-Mario.BackgroundRenderer.prototype.Draw = function (a, b) {
-    for (var c = b.X / this.Distance, e = 0, d = 0, f = null, f = null, g = ((c + this.Width) / 32) | 0, e = (c / 32) | 0; e <= g; e++)
-        for (d = 0; d < this.TilesY; d++)
-            (f = this.Level.GetBlock(e, d) & 255), (f = this.Background[f % 8][(f / 8) | 0]), a.drawImage(Engine.Resources.Images.background, f.X, f.Y, f.Width, f.Height, ((e << 5) - c) | 0, (d << 5) | 0, f.Width, f.Height);
+class BackgroundRenderer extends Engine.Drawable {
+    constructor(level, width, height, distance) {
+        super();
+        this.Level = level;
+        this.Width = width;
+        this.Distance = distance;
+        this.TilesY = ((height / 32) | 0) + 1;
+
+        this.Background = Mario.SpriteCuts.GetBackgroundSheet();
+    }
+
+    Draw = function (context, camera) {
+        let xCam = camera.X / this.Distance;
+        let x = 0, y = 0, b = null, frame = null;
+
+        //the OR truncates the decimal, quicker than Math.floor
+        let xTileStart = (xCam / 32) | 0;
+        //the +1 makes sure the right edge tiles get drawn
+        let xTileEnd = (((xCam + this.Width) / 32) | 0);
+
+        for (x = xTileStart; x <= xTileEnd; x++) {
+            for (y = 0; y < this.TilesY; y++) {
+                b = this.Level.GetBlock(x, y) & 0xff;
+                frame = this.Background[b % 8][(b / 8) | 0];
+
+                //bitshifting by five is the same as multiplying by 32
+                context.drawImage(Engine.Resources.Images["background"], frame.X, frame.Y, frame.Width, frame.Height, ((x << 5) - xCam) | 0, (y << 5) | 0, frame.Width, frame.Height);
+            }
+        }
+    }
 };
 
 /** IMPROVED NOISE **/
@@ -2706,10 +2803,10 @@ class TitleState extends Engine.GameState {
         this.drawManager = new Engine.DrawableManager();
         this.camera = new Engine.Camera();
     
-        let bgGenerator = new Mario.BackgroundGenerator(2048, 15, true, Mario.LevelType.Overground);
-        let bgLayer0 = new Mario.BackgroundRenderer(bgGenerator.CreateLevel(), 320, 240, 2);
+        let bgGenerator = new BackgroundGenerator(2048, 15, true, Mario.LevelType.Overground);
+        let bgLayer0 = new BackgroundRenderer(bgGenerator.CreateLevel(), 320, 240, 2);
         bgGenerator.SetValues(2048, 15, false, Mario.LevelType.Overground);
-        let bgLayer1 = new Mario.BackgroundRenderer(bgGenerator.CreateLevel(), 320, 240, 1);
+        let bgLayer1 = new BackgroundRenderer(bgGenerator.CreateLevel(), 320, 240, 1);
     
         this.title = new Engine.Sprite();
         this.title.Image = Engine.Resources.Images["title"];
@@ -3602,8 +3699,8 @@ class LevelState extends Engine.GameState {
             scrollSpeed = 4 >> i;
             w = ((((this.Level.Width * 16) - 320) / scrollSpeed) | 0) + 320;
             h = ((((this.Level.Height * 16) - 240) / scrollSpeed) | 0) + 240;
-            bgLevelGenerator = new Mario.BackgroundGenerator(w / 32 + 1, h / 32 + 1, i === 0, this.LevelType);
-            this.BgLayer[i] = new Mario.BackgroundRenderer(bgLevelGenerator.CreateLevel(), 320, 240, scrollSpeed);
+            bgLevelGenerator = new BackgroundGenerator(w / 32 + 1, h / 32 + 1, i === 0, this.LevelType);
+            this.BgLayer[i] = new BackgroundRenderer(bgLevelGenerator.CreateLevel(), 320, 240, scrollSpeed);
         }
 
         Mario.MarioCharacter.Initialize(this);

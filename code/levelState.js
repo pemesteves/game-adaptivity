@@ -66,8 +66,8 @@ class LevelState extends Engine.GameState {
             scrollSpeed = 4 >> i;
             w = ((((this.Level.Width * 16) - 320) / scrollSpeed) | 0) + 320;
             h = ((((this.Level.Height * 16) - 240) / scrollSpeed) | 0) + 240;
-            bgLevelGenerator = new Mario.BackgroundGenerator(w / 32 + 1, h / 32 + 1, i === 0, this.LevelType);
-            this.BgLayer[i] = new Mario.BackgroundRenderer(bgLevelGenerator.CreateLevel(), 320, 240, scrollSpeed);
+            bgLevelGenerator = new BackgroundGenerator(w / 32 + 1, h / 32 + 1, i === 0, this.LevelType);
+            this.BgLayer[i] = new BackgroundRenderer(bgLevelGenerator.CreateLevel(), 320, 240, scrollSpeed);
         }
 
         Mario.MarioCharacter.Initialize(this);
