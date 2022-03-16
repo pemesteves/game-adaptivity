@@ -2602,44 +2602,57 @@ class LoadingState extends Engine.GameState {
 
 /** LOSE STATE **/
 
-Mario.LoseState = function () {
-    this.font = this.gameOver = this.camera = this.drawManager = null;
-    this.wasKeyDown = !1;
-};
-Mario.LoseState.prototype = new Engine.GameState();
-Mario.LoseState.prototype.Enter = function () {
-    this.drawManager = new Engine.DrawableManager();
-    this.camera = new Engine.Camera();
-    this.gameOver = new Engine.AnimatedSprite();
-    this.gameOver.Image = Engine.Resources.Images.gameOverGhost;
-    this.gameOver.SetColumnCount(9);
-    this.gameOver.SetRowCount(1);
-    this.gameOver.AddNewSequence("turnLoop", 0, 0, 0, 8);
-    this.gameOver.PlaySequence("turnLoop", !0);
-    this.gameOver.FramesPerSecond = 1 / 15;
-    this.gameOver.X = 112;
-    this.gameOver.Y = 68;
-    this.font = Mario.SpriteCuts.CreateBlackFont();
-    this.font.Strings[0] = { String: "Game over!", X: 116, Y: 160 };
-    this.drawManager.Add(this.font);
-    this.drawManager.Add(this.gameOver);
-};
-Mario.LoseState.prototype.Exit = function () {
-    this.drawManager.Clear();
-    delete this.drawManager;
-    delete this.camera;
-    delete this.gameOver;
-    delete this.font;
-};
-Mario.LoseState.prototype.Update = function (a) {
-    this.drawManager.Update(a);
-    if (Engine.KeyboardInput.IsKeyDown(Engine.Keys.S)) this.wasKeyDown = !0;
-};
-Mario.LoseState.prototype.Draw = function (a) {
-    this.drawManager.Draw(a, this.camera);
-};
-Mario.LoseState.prototype.CheckForChange = function (a) {
-    this.wasKeyDown && !Engine.KeyboardInput.IsKeyDown(Engine.Keys.S) && a.ChangeState(new TitleState());
+class LoseState extends Engine.GameState {
+    constructor() {
+        super();
+        this.drawManager = null;
+        this.camera = null;
+        this.gameOver = null;
+        this.font = null;
+        this.wasKeyDown = false;
+    }
+
+    Enter() {
+        this.drawManager = new Engine.DrawableManager();
+        this.camera = new Engine.Camera();
+    
+        this.gameOver = new Engine.AnimatedSprite();
+        this.gameOver.Image = Engine.Resources.Images["gameOverGhost"];
+        this.gameOver.SetColumnCount(9);
+        this.gameOver.SetRowCount(1);
+        this.gameOver.AddNewSequence("turnLoop", 0, 0, 0, 8);
+        this.gameOver.PlaySequence("turnLoop", true);
+        this.gameOver.FramesPerSecond = 1 / 15;
+        this.gameOver.X = 112;
+        this.gameOver.Y = 68;
+    
+        this.font = Mario.SpriteCuts.CreateBlackFont();
+        this.font.Strings[0] = { String: "Game over!", X: 116, Y: 160 };
+    
+        this.drawManager.Add(this.font);
+        this.drawManager.Add(this.gameOver);
+    }
+
+    Exit() {
+        this.drawManager.Clear();
+        delete this.drawManager;
+        delete this.camera;
+        delete this.gameOver;
+        delete this.font;
+    }
+
+    Update(delta) {
+        this.drawManager.Update(delta);
+        if (Engine.KeyboardInput.IsKeyDown(Engine.Keys.S)) this.wasKeyDown = true;
+    }
+
+    Draw(context) {
+        this.drawManager.Draw(context, this.camera);
+    }
+
+    CheckForChange(context) {
+        if (this.wasKeyDown && !Engine.KeyboardInput.IsKeyDown(Engine.Keys.S)) context.ChangeState(new TitleState());
+    }
 };
 
 /** WIN STATE **/
@@ -3476,7 +3489,7 @@ class LevelState extends Engine.GameState {
 
     CheckForChange(context) {
         if (this.GotoLoseState) {
-            context.ChangeState(new Mario.LoseState());
+            context.ChangeState(new LoseState());
         }
         else {
             if (this.GotoMapState) {

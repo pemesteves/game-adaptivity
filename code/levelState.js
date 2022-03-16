@@ -466,7 +466,7 @@ class LevelState extends Engine.GameState {
 
     CheckForChange(context) {
         if (this.GotoLoseState) {
-            context.ChangeState(new Mario.LoseState());
+            context.ChangeState(new LoseState());
         }
         else {
             if (this.GotoMapState) {
