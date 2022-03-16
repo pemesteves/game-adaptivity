@@ -302,53 +302,69 @@ Mario.BackgroundRenderer.prototype.Draw = function (a, b) {
 
 /** IMPROVED NOISE **/
 
-Mario.ImprovedNoise = function (a) {
-    this.P = [];
-    this.Shuffle(a);
-};
-Mario.ImprovedNoise.prototype = {
-    Shuffle: function () {
-        for (var a = [], b = 0, c = 0, e = 0, b = 0; b < 256; b++) a[b] = b;
-        for (b = 0; b < 256; b++) (c = ((Math.random() * 255) | 0) + b), (e = a[b]), (a[b] = a[c]), (a[c] = e), (this.P[b + 256] = this.P[b] = a[b]);
-    },
-    PerlinNoise: function (a, b) {
-        for (var c = 0, e = 0, d = 0, c = 0; c < 8; c++) (d = 64 / (1 << c)), (e += this.Noise(a / d, b / d, 128) / (1 << c));
-        return e;
-    },
-    Noise: function (a, b, c) {
-        var e = (a | 0) & 255,
-            d = (b | 0) & 255,
-            f = (c | 0) & 255;
-        a -= a | 0;
-        b -= b | 0;
-        c -= c | 0;
-        var g = this.Fade(a),
-            h = this.Fade(b),
-            i = this.Fade(c),
-            j = this.P[e] + d,
-            k = this.P[j] + f,
-            j = this.P[j + 1] + f,
-            d = this.P[e + 1] + d,
-            e = this.P[d] + f,
-            f = this.P[d + 1] + f;
-        return this.Lerp(
-            i,
-            this.Lerp(h, this.Lerp(g, this.Grad(this.P[k], a, b, c), this.Grad(this.P[e], a - 1, b, c)), this.Lerp(g, this.Grad(this.P[j], a, b - 1, c), this.Grad(this.P[f], a - 1, b - 1, c))),
-            this.Lerp(h, this.Lerp(g, this.Grad(this.P[k + 1], a, b, c - 1), this.Grad(this.P[e + 1], a - 1, b, c - 1)), this.Lerp(g, this.Grad(this.P[j + 1], a, b - 1, c - 1), this.Grad(this.P[f + 1], a - 1, b - 1, c - 1)))
-        );
-    },
-    Fade: function (a) {
-        return a * a * a * (a * (a * 6 - 15) + 10);
-    },
-    Lerp: function (a, b, c) {
-        return b + a * (c - b);
-    },
-    Grad: function (a, b, c, e) {
-        a &= 15;
-        var d = a < 8 ? b : c,
-            b = a < 4 ? c : a === 12 || a === 14 ? b : e;
-        return ((a & 1) === 0 ? d : -d) + ((a & 2) === 0 ? b : -b);
-    },
+class ImprovedNoise {
+    constructor(seed) {
+        this.P = [];
+        this.Shuffle(seed);
+    }
+
+    Shuffle(seed) {
+        let permutation = [];
+        let i = 0, j = 0, tmp = 0;
+
+        for (i = 0; i < 256; i++) permutation[i] = i;
+
+        for (i = 0; i < 256; i++) {
+            j = ((Math.random() * (256 - 1)) | 0) + i;
+            tmp = permutation[i];
+            permutation[i] = permutation[j];
+            permutation[j] = tmp;
+            this.P[i + 256] = this.P[i] = permutation[i];
+        }
+    }
+
+    PerlinNoise(x, y) {
+        let i = 0, n = 0, stepSize = 0;
+
+        for (i = 0; i < 8; i++) {
+            stepSize = 64 / (1 << i);
+            n += this.Noise(x / stepSize, y / stepSize, 128) / (1 << i);
+        }
+
+        return n;
+    }
+
+    Noise(x, y, z) {
+        let nx = (x | 0) & 255, ny = (y | 0) & 255, nz = (z | 0) & 255;
+        x -= (x | 0);
+        y -= (y | 0);
+        z -= (z | 0);
+
+        let u = this.Fade(x), v = this.Fade(y), w = this.Fade(z);
+        let A = this.P[nx] + ny, AA = this.P[A] + nz, AB = this.P[A + 1] + nz,
+            B = this.P[nx + 1] + ny, BA = this.P[B] + nz, BB = this.P[B + 1] + nz;
+
+        return this.Lerp(w, this.Lerp(v, this.Lerp(u, this.Grad(this.P[AA], x, y, z),
+            this.Grad(this.P[BA], x - 1, y, z)),
+            this.Lerp(u, this.Grad(this.P[AB], x, y - 1, z),
+                this.Grad(this.P[BB], x - 1, y - 1, z))),
+            this.Lerp(v, this.Lerp(u, this.Grad(this.P[AA + 1], x, y, z - 1),
+                this.Grad(this.P[BA + 1], x - 1, y, z - 1)),
+                this.Lerp(u, this.Grad(this.P[AB + 1], x, y - 1, z - 1), this.Grad(this.P[BB + 1], x - 1, y - 1, z - 1))));
+    }
+
+    Fade(t) {
+        return t * t * t * (t * (t * 6 - 15) + 10);
+    }
+
+    Lerp(t, x, y) {
+        return x + t * (y - x);
+    }
+
+    Grad(hash, x, y, z) {
+        let h = hash & 15, u = h < 8 ? x : y, v = h < 4 ? y : (h === 12 || h === 14) ? x : z;
+        return ((h & 1) === 0 ? u : -u) + ((h & 2) === 0 ? v : -v);
+    }
 };
 
 /** NOTCH SPRITE **/
@@ -1253,7 +1269,7 @@ class LevelGenerator {
                 if (this.Difficulty < 1) type = Enemy.Goomba;
                 else if (this.Difficulty < 3) type = (Math.random() * 3) | 0;
 
-                level.SetSpriteTemplate(x, y, new Mario.SpriteTemplate(type, ((Math.random() * 35) | 0) < this.Difficulty));
+                level.SetSpriteTemplate(x, y, new SpriteTemplate(type, ((Math.random() * 35) | 0) < this.Difficulty));
             }
         }
     }
@@ -1273,7 +1289,7 @@ class LevelGenerator {
             if (xTube >= xo + length - 2) xTube += 10;
 
             if (x === xTube && ((Math.random() * 11) | 0) < this.Difficulty + 1)
-                level.SetSpriteTemplate(x, tubeHeight, new Mario.SpriteTemplate(Enemy.Flower, false));
+                level.SetSpriteTemplate(x, tubeHeight, new SpriteTemplate(Enemy.Flower, false));
 
             for (y = 0; y < this.Height; y++) {
                 if (y >= floor) {
@@ -1489,20 +1505,24 @@ class PredefinedLevelGenerator extends LevelGenerator {
 
 /** SPRITE TEMPLATE **/
 
-Mario.SpriteTemplate = function (a, b) {
-    this.Type = a;
-    this.Winged = b;
-    this.LastVisibleTick = -1;
-    this.IsDead = !1;
-    this.Sprite = null;
-};
-Mario.SpriteTemplate.prototype = {
-    Spawn: function (a, b, c, e) {
-        if (!this.IsDead)
-            (this.Sprite = this.Type === Enemy.Flower ? new FlowerEnemy(a, b * 16 + 15, c * 16 + 24) : new Enemy(a, b * 16 + 8, c * 16 + 15, e, this.Type, this.Winged)),
-                (this.Sprite.SpriteTemplate = this),
-                a.AddSprite(this.Sprite);
-    },
+class SpriteTemplate {
+    constructor(type, winged) {
+        this.Type = type;
+        this.Winged = winged;
+        this.LastVisibleTick = -1;
+        this.IsDead = false;
+        this.Sprite = null;
+    }
+
+    Spawn(world, x, y, dir) {
+        if (this.IsDead) return;
+
+        if (this.Type === Enemy.Flower) this.Sprite = new FlowerEnemy(world, x * 16 + 15, y * 16 + 24);
+        else this.Sprite = new Enemy(world, x * 16 + 8, y * 16 + 15, dir, this.Type, this.Winged);
+
+        this.Sprite.SpriteTemplate = this;
+        world.AddSprite(this.Sprite);
+    }
 };
 
 /** ENEMY **/
@@ -3081,9 +3101,9 @@ class MapState extends Engine.GameState {
     GenerateLevel() {
         let x = 0, y = 0, t0 = 0, t1 = 0, td = 0, t = 0;
 
-        let n0 = new Mario.ImprovedNoise((Math.random() * 9223372036854775807) | 0);
-        let n1 = new Mario.ImprovedNoise((Math.random() * 9223372036854775807) | 0);
-        let dec = new Mario.ImprovedNoise((Math.random() * 9223372036854775807) | 0);
+        let n0 = new ImprovedNoise((Math.random() * 9223372036854775807) | 0);
+        let n1 = new ImprovedNoise((Math.random() * 9223372036854775807) | 0);
+        let dec = new ImprovedNoise((Math.random() * 9223372036854775807) | 0);
 
         let width = 320 / 16 + 1, height = 240 / 16 + 1;
         this.Level = [];

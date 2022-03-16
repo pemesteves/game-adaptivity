@@ -117,9 +117,9 @@ class MapState extends Engine.GameState {
     GenerateLevel() {
         let x = 0, y = 0, t0 = 0, t1 = 0, td = 0, t = 0;
 
-        let n0 = new Mario.ImprovedNoise((Math.random() * 9223372036854775807) | 0);
-        let n1 = new Mario.ImprovedNoise((Math.random() * 9223372036854775807) | 0);
-        let dec = new Mario.ImprovedNoise((Math.random() * 9223372036854775807) | 0);
+        let n0 = new ImprovedNoise((Math.random() * 9223372036854775807) | 0);
+        let n1 = new ImprovedNoise((Math.random() * 9223372036854775807) | 0);
+        let dec = new ImprovedNoise((Math.random() * 9223372036854775807) | 0);
 
         let width = 320 / 16 + 1, height = 240 / 16 + 1;
         this.Level = [];
