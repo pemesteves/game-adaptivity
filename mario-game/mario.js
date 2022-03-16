@@ -633,7 +633,7 @@ class Character extends Mario.NotchSprite {
 
         if (Engine.KeyboardInput.IsKeyDown(Engine.Keys.A) && this.CanShoot && this.Fire && this.World.FireballsOnScreen < 2) {
             Engine.Resources.PlaySound("fireball");
-            this.World.AddSprite(new Mario.Fireball(this.World, this.X + this.Facing * 6, this.Y - 20, this.Facing));
+            this.World.AddSprite(new Fireball(this.World, this.X + this.Facing * 6, this.Y - 20, this.Facing));
         }
 
         this.CanShoot = !Engine.KeyboardInput.IsKeyDown(Engine.Keys.A);
@@ -649,7 +649,7 @@ class Character extends Mario.NotchSprite {
         this.CalcPic();
 
         if (this.Sliding) {
-            this.World.AddSprite(new Mario.Sparkle(this.World, ((this.X + Math.random() * 4 - 2) | 0) + this.Facing * 8,
+            this.World.AddSprite(new Sparkle(this.World, ((this.X + Math.random() * 4 - 2) | 0) + this.Facing * 8,
                 ((this.Y + Math.random() * 4) | 0) - 24, Math.random() * 2 - 1, Math.random(), 0, 1, 5));
             this.Ya *= 0.5;
         }
@@ -721,7 +721,7 @@ class Character extends Mario.NotchSprite {
 
             if (this.Xa > 3 || this.Xa < -3) {
                 for (i = 0; i < 3; i++) {
-                    this.World.AddSprite(new Mario.Sparkle(this.World, (this.X + Math.random() * 8 - 4) | 0, (this.Y + Math.random() * 4) | 0, Math.random() * 2 - 1, Math.random() * -1, 0, 1, 5));
+                    this.World.AddSprite(new Sparkle(this.World, (this.X + Math.random() * 8 - 4) | 0, (this.Y + Math.random() * 4) | 0, Math.random() * 2 - 1, Math.random() * -1, 0, 1, 5));
                 }
             }
         }
@@ -832,7 +832,7 @@ class Character extends Mario.NotchSprite {
             this.World.Level.SetBlock(x, y, 0);
             for (xx = 0; xx < 2; xx++) {
                 for (yy = 0; yy < 2; yy++) {
-                    this.World.AddSprite(new Mario.Sparkle(this.World, x * 16 + xx * 8 + ((Math.random() * 8) | 0), y * 16 + yy * 8 + ((Math.random() * 8) | 0), 0, 0, 0, 2, 5));
+                    this.World.AddSprite(new Sparkle(this.World, x * 16 + xx * 8 + ((Math.random() * 8) | 0), y * 16 + yy * 8 + ((Math.random() * 8) | 0), 0, 0, 0, 2, 5));
                 }
             }
         }
@@ -1595,7 +1595,7 @@ class Enemy extends Mario.NotchSprite {
             if (this.DeadTime === 0) {
                 this.DeadTime = 1;
                 for (i = 0; i < 8; i++) {
-                    this.World.AddSprite(new Mario.Sparkle(this.World, ((this.X + Math.random() * 16 - 8) | 0) + 4, ((this.Y - Math.random() * 8) | 0) + 4, Math.random() * 2 - 1, Math.random() * -1, 0, 1, 5));
+                    this.World.AddSprite(new Sparkle(this.World, ((this.X + Math.random() * 16 - 8) | 0) + 4, ((this.Y - Math.random() * 8) | 0) + 4, Math.random() * 2 - 1, Math.random() * -1, 0, 1, 5));
                 }
                 this.World.RemoveSprite(this);
             }
@@ -1821,128 +1821,182 @@ class Enemy extends Mario.NotchSprite {
 
 /** FIREBALL **/
 
-Mario.Fireball = function (a, b, c, e) {
-    this.AirInertia = this.GroundInertia = 0.89;
-    this.Image = Engine.Resources.Images.particles;
-    this.World = a;
-    this.X = b;
-    this.Y = c;
-    this.Facing = e;
-    this.YPicO = this.XPicO = 4;
-    this.YPic = 3;
-    this.XPic = 4;
-    this.Height = 8;
-    this.Width = 4;
-    this.PicWidth = this.PicHeight = 8;
-    this.Ya = 4;
-    this.Dead = !1;
-    this.Anim = this.DeadTime = 0;
-    this.OnGround = !1;
-};
-Mario.Fireball.prototype = new Mario.NotchSprite();
-Mario.Fireball.prototype.Move = function () {
-    var a = 0;
-    if (this.DeadTime > 0) {
-        for (a = 0; a < 8; a++)
-            this.World.AddSprite(new Mario.Sparkle(this.World, ((this.X + Math.random() * 8 - 4) | 0) + 4, ((this.Y + Math.random() * 8 - 4) | 0) + 2, Math.random() * 2 - 1 * this.Facing, Math.random() * 2 - 1, 0, 1, 5));
-        this.World.RemoveSprite(this);
-    } else {
-        this.Facing != 0 && this.Anim++;
+class Fireball extends Mario.NotchSprite {
+    constructor(world, x, y, facing) {
+        super();
+        this.GroundInertia = 0.89;
+        this.AirInertia = 0.89;
+
+        this.Image = Engine.Resources.Images["particles"];
+
+        this.World = world;
+        this.X = x;
+        this.Y = y;
+        this.Facing = facing;
+
+        this.XPicO = 4;
+        this.YPicO = 4;
+        this.YPic = 3;
+        this.XPic = 4;
+        this.Height = 8;
+        this.Width = 4;
+        this.PicWidth = this.PicHeight = 8;
+        this.Ya = 4;
+        this.Dead = false;
+        this.DeadTime = 0;
+        this.Anim = 0;
+        this.OnGround = false;
+    }
+
+    Move() {
+        let i = 0, sideWaysSpeed = 8;
+
+        if (this.DeadTime > 0) {
+            for (i = 0; i < 8; i++) {
+                this.World.AddSprite(new Sparkle(this.World, ((this.X + Math.random() * 8 - 4) | 0) + 4, ((this.Y + Math.random() * 8 - 4) | 0) + 2, Math.random() * 2 - 1 * this.Facing, Math.random() * 2 - 1, 0, 1, 5));
+            }
+            this.World.RemoveSprite(this);
+            return;
+        }
+
+        if (this.Facing != 0) this.Anim++;
+
         if (this.Xa > 2) this.Facing = 1;
         if (this.Xa < -2) this.Facing = -1;
-        this.Xa = this.Facing * 8;
+
+        this.Xa = this.Facing * sideWaysSpeed;
+
         this.World.CheckFireballCollide(this);
+
         this.FlipX = this.Facing === -1;
+
         this.XPic = this.Anim % 4;
-        this.SubMove(this.Xa, 0) || this.Die();
-        this.OnGround = !1;
+
+        if (!this.SubMove(this.Xa, 0)) this.Die();
+
+        this.OnGround = false;
         this.SubMove(0, this.Ya);
         if (this.OnGround) this.Ya = -10;
+
         this.Ya *= 0.95;
-        this.Xa *= this.OnGround ? this.GroundInertia : this.AirInertia;
-        this.OnGround || (this.Ya += 1.5);
+        if (this.OnGround) this.Xa *= this.GroundInertia;
+        else this.Xa *= this.AirInertia;
+
+        if (!this.OnGround) this.Ya += 1.5;
     }
-};
-Mario.Fireball.prototype.SubMove = function (a, b) {
-    for (var c = !1; a > 8;) {
-        if (!this.SubMove(8, 0)) return !1;
-        a -= 8;
+
+    SubMove(xa, ya) {
+        let collide = false;
+
+        while (xa > 8) {
+            if (!this.SubMove(8, 0)) return false;
+            xa -= 8;
+        }
+        while (xa < -8) {
+            if (!this.SubMove(-8, 0)) return false;
+            xa += 8;
+        }
+        while (ya > 8) {
+            if (!this.SubMove(0, 8)) return false;
+            ya -= 8;
+        }
+        while (ya < -8) {
+            if (!this.SubMove(0, -8)) return false;
+            ya += 8;
+        }
+
+        if ((ya > 0 && (this.IsBlocking(this.X + xa - this.Width, this.Y + ya, xa, 0)
+            || this.IsBlocking(this.X + xa + this.Width, this.Y + ya, xa, 0)
+            || this.IsBlocking(this.X + xa - this.Width, this.Y + ya + 1, xa, ya)
+            || this.IsBlocking(this.X + xa + this.Width, this.Y + ya + 1, xa, ya)))
+            || (ya < 0 && (this.IsBlocking(this.X + xa, this.Y + ya - this.Height, xa, ya)
+                || this.IsBlocking(this.X + xa - this.Width, this.Y + ya - this.Height, xa, ya)
+                || this.IsBlocking(this.X + xa + this.Width, this.Y + ya - this.Height, xa, ya))))
+            collide = true;
+
+        if ((xa > 0 && (this.IsBlocking(this.X + xa + this.Width, this.Y + ya - this.Height, xa, ya)
+            || this.IsBlocking(this.X + xa + this.Width, this.Y + ya - ((this.Height / 2) | 0), xa, ya)
+            || this.IsBlocking(this.X + xa + this.Width, this.Y + ya, xa, ya)))
+            || (xa < 0 && (this.IsBlocking(this.X + xa - this.Width, this.Y + ya - this.Height, xa, ya)
+                || this.IsBlocking(this.X + xa - this.Width, this.Y + ya - ((this.Height / 2) | 0), xa, ya)
+                || this.IsBlocking(this.X + xa - this.Width, this.Y + ya, xa, ya))))
+            collide = true;
+
+        if (collide) {
+            if (xa < 0) {
+                this.X = (((this.X - this.Width) / 16) | 0) * 16 + this.Width;
+                this.Xa = 0;
+            }
+            if (xa > 0) {
+                this.X = (((this.X + this.Width) / 16 + 1) | 0) * 16 - this.Width - 1;
+                this.Xa = 0;
+            }
+            if (ya < 0) {
+                this.Y = (((this.Y - this.Height) / 16) | 0) * 16 + this.Height;
+                this.Ya = 0;
+            }
+            if (ya > 0) {
+                this.Y = (((this.Y - 1) / 16 + 1) | 0) * 16 - 1;
+                this.OnGround = true;
+            }
+
+            return false;
+        }
+
+        this.X += xa;
+        this.Y += ya;
+        return true;
     }
-    for (; a < -8;) {
-        if (!this.SubMove(-8, 0)) return !1;
-        a += 8;
+
+    IsBlocking(x, y, xa, ya) {
+        x = (x / 16) | 0;
+        y = (y / 16) | 0;
+
+        if (x === (this.X / 16) | 0 && y === (this.Y / 16) | 0) return false;
+
+        return this.World.Level.IsBlocking(x, y, xa, ya);
     }
-    for (; b > 8;) {
-        if (!this.SubMove(0, 8)) return !1;
-        b -= 8;
+
+    Die() {
+        this.Dead = true;
+        this.Xa = -this.Facing * 2;
+        this.Ya = -5;
+        this.DeadTime = 100;
     }
-    for (; b < -8;) {
-        if (!this.SubMove(0, -8)) return !1;
-        b += 8;
-    }
-    b > 0 &&
-        (this.IsBlocking(this.X + a - this.Width, this.Y + b, a, 0)
-            ? (c = !0)
-            : this.IsBlocking(this.X + a + this.Width, this.Y + b, a, 0)
-                ? (c = !0)
-                : this.IsBlocking(this.X + a - this.Width, this.Y + b + 1, a, b)
-                    ? (c = !0)
-                    : this.IsBlocking(this.X + a + this.Width, this.Y + b + 1, a, b) && (c = !0));
-    if (b < 0)
-        if (this.IsBlocking(this.X + a, this.Y + b - this.Height, a, b)) c = !0;
-        else if (c || this.IsBlocking(this.X + a - this.Width, this.Y + b - this.Height, a, b)) c = !0;
-        else if (c || this.IsBlocking(this.X + a + this.Width, this.Y + b - this.Height, a, b)) c = !0;
-    a > 0 &&
-        (this.IsBlocking(this.X + a + this.Width, this.Y + b - this.Height, a, b) && (c = !0),
-            this.IsBlocking(this.X + a + this.Width, this.Y + b - ((this.Height / 2) | 0), a, b) && (c = !0),
-            this.IsBlocking(this.X + a + this.Width, this.Y + b, a, b) && (c = !0));
-    a < 0 &&
-        (this.IsBlocking(this.X + a - this.Width, this.Y + b - this.Height, a, b) && (c = !0),
-            this.IsBlocking(this.X + a - this.Width, this.Y + b - ((this.Height / 2) | 0), a, b) && (c = !0),
-            this.IsBlocking(this.X + a - this.Width, this.Y + b, a, b) && (c = !0));
-    if (c) {
-        if (a < 0) (this.X = (((this.X - this.Width) / 16) | 0) * 16 + this.Width), (this.Xa = 0);
-        if (a > 0) (this.X = (((this.X + this.Width) / 16 + 1) | 0) * 16 - this.Width - 1), (this.Xa = 0);
-        if (b < 0) (this.Y = (((this.Y - this.Height) / 16) | 0) * 16 + this.Height), (this.Ya = 0);
-        if (b > 0) (this.Y = (((this.Y - 1) / 16 + 1) | 0) * 16 - 1), (this.OnGround = !0);
-        return !1;
-    } else return (this.X += a), (this.Y += b), !0;
-};
-Mario.Fireball.prototype.IsBlocking = function (a, b, c, e) {
-    a = (a / 16) | 0;
-    b = (b / 16) | 0;
-    if ((a === this.X / 16) | 0 && (b === this.Y / 16) | 0) return !1;
-    return this.World.Level.IsBlocking(a, b, c, e);
-};
-Mario.Fireball.prototype.Die = function () {
-    this.Dead = !0;
-    this.Xa = -this.Facing * 2;
-    this.Ya = -5;
-    this.DeadTime = 100;
 };
 
 /** SPARKLE **/
 
-Mario.Sparkle = function (a, b, c, e, d) {
-    this.World = a;
-    this.X = b;
-    this.Y = c;
-    this.Xa = e;
-    this.Ya = d;
-    this.XPic = (Math.random() * 2) | 0;
-    this.YPic = 0;
-    this.Life = 10 + ((Math.random() * 5) | 0);
-    this.XPicStart = this.XPic;
-    this.YPicO = this.XPicO = 4;
-    this.PicHeight = this.PicWidth = 8;
-    this.Image = Engine.Resources.Images.particles;
-};
-Mario.Sparkle.prototype = new Mario.NotchSprite();
-Mario.Sparkle.prototype.Move = function () {
-    this.XPic = this.Life > 10 ? 7 : (this.XPicStart + (10 - this.Life) * 0.4) | 0;
-    this.Life-- < 0 && this.World.RemoveSprite(this);
-    this.X += this.Xa;
-    this.Y += this.Ya;
+class Sparkle extends Mario.NotchSprite {
+    constructor(world, x, y, xa, ya) {
+        super();
+        this.World = world;
+        this.X = x;
+        this.Y = y;
+        this.Xa = xa;
+        this.Ya = ya;
+        this.XPic = (Math.random() * 2) | 0;
+        this.YPic = 0;
+
+        this.Life = 10 + ((Math.random() * 5) | 0);
+        this.XPicStart = this.XPic;
+        this.XPicO = 4;
+        this.YPicO = 4;
+
+        this.PicWidth = 8;
+        this.PicHeight = 8;
+        this.Image = Engine.Resources.Images["particles"];
+    }
+
+    Move() {
+        if (this.Life > 10) this.XPic = 7;
+        else this.XPic = (this.XPicStart + (10 - this.Life) * 0.4) | 0;
+
+        if (this.Life-- < 0) this.World.RemoveSprite(this);
+
+        this.X += this.Xa;
+        this.Y += this.Ya;
+    }
 };
 
 /** COIN ANIM **/
@@ -1968,7 +2022,7 @@ class CoinAnim extends Mario.NotchSprite {
             this.World.RemoveSprite(this);
             for (x = 0; x < 2; x++) {
                 for (y = 0; y < 2; y++) {
-                    this.World.AddSprite(new Mario.Sparkle(this.World, (this.X + x * 8 + Math.random() * 8) | 0, (this.Y + y * 8 + Math.random() * 8) | 0, 0, 0, 0, 2, 5));
+                    this.World.AddSprite(new Sparkle(this.World, (this.X + x * 8 + Math.random() * 8) | 0, (this.Y + y * 8 + Math.random() * 8) | 0, 0, 0, 0, 2, 5));
                 }
             }
         }
@@ -2249,7 +2303,7 @@ class BulletBill extends Mario.NotchSprite {
             if (this.DeadTime === 0) {
                 this.DeadTime = 1;
                 for (i = 0; i < 8; i++) {
-                    this.World.AddSprite(new Mario.Sparkle(((this.X + Math.random() * 16 - 8) | 0) + 4, ((this.Y + Math.random() * 8) | 0) + 4, Math.random() * 2 - 1, Math.random() * -1, 0, 1, 5));
+                    this.World.AddSprite(new Sparkle(((this.X + Math.random() * 16 - 8) | 0) + 4, ((this.Y + Math.random() * 8) | 0) + 4, Math.random() * 2 - 1, Math.random() * -1, 0, 1, 5));
                 }
                 this.World.RemoveSprite(this);
             }
@@ -2333,7 +2387,7 @@ class FlowerEnemy extends Enemy {
             if (this.DeadTime === 0) {
                 this.DeadTime = 1;
                 for (i = 0; i < 8; i++)
-                    this.World.AddSprite(new Mario.Sparkle(((this.X + Math.random() * 16 - 8) | 0) + 4, ((this.Y + Math.random() * 8) | 0) + 4, Math.random() * 2 - 1, Math.random() * -1, 0, 1, 5));
+                    this.World.AddSprite(new Sparkle(((this.X + Math.random() * 16 - 8) | 0) + 4, ((this.Y + Math.random() * 8) | 0) + 4, Math.random() * 2 - 1, Math.random() * -1, 0, 1, 5));
 
                 this.World.RemoveSprite(this);
             }
@@ -2450,7 +2504,7 @@ class Shell extends Mario.NotchSprite {
 
             if (this.DeadTime === 0) {
                 this.DeadTime = 1;
-                for (i = 0; i < 8; i++) this.World.AddSprite(new Mario.Sparkle(((this.X + Math.random() * 16 - 8) | 0) + 4, ((this.Y + Math.random() * 8) | 0) + 4, Math.random() * 2 - 1, Math.random() * -1, 0, 1, 5));
+                for (i = 0; i < 8; i++) this.World.AddSprite(new Sparkle(((this.X + Math.random() * 16 - 8) | 0) + 4, ((this.Y + Math.random() * 8) | 0) + 4, Math.random() * 2 - 1, Math.random() * -1, 0, 1, 5));
 
                 this.World.RemoveSprite(this);
             }
@@ -3526,7 +3580,6 @@ class LevelState extends Engine.GameState {
     };
 
     Exit() {
-
         delete this.Level;
         delete this.Layer;
         delete this.BgLayer;
@@ -3570,7 +3623,7 @@ class LevelState extends Engine.GameState {
                 xd = sprite.X - this.Camera.X;
                 yd = sprite.Y - this.Camera.Y;
                 if (xd < -64 || xd > 320 + 64 || yd < -64 || yd > 240 + 64) this.Sprites.RemoveAt(i);
-                else if (sprite instanceof Mario.Fireball) this.FireballsOnScreen++;
+                else if (sprite instanceof Fireball) this.FireballsOnScreen++;
             }
         }
 
@@ -3612,7 +3665,7 @@ class LevelState extends Engine.GameState {
                         if (((Mario.Tile.Behaviors[b & 0xff]) & Mario.Tile.Animated) > 0 && (((b % 16) / 4) | 0) === 3 && ((b / 16) | 0) === 0 && (this.Tick - x * 2) % 100 === 0) {
                             xCannon = x;
                             for (i = 0; i < 8; i++) {
-                                this.AddSprite(new Mario.Sparkle(this, x * 16 + 8, y * 16 + ((Math.random() * 16) | 0), Math.random() * dir, 0, 0, 1, 5));
+                                this.AddSprite(new Sparkle(this, x * 16 + 8, y * 16 + ((Math.random() * 16) | 0), Math.random() * dir, 0, 0, 1, 5));
                             }
                             this.AddSprite(new BulletBill(this, x * 16 + 8 + dir * 8, y * 16 + 15, dir));
                             hasShotCannon = true;

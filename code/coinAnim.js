@@ -25,7 +25,7 @@ class CoinAnim extends Mario.NotchSprite {
             this.World.RemoveSprite(this);
             for (x = 0; x < 2; x++) {
                 for (y = 0; y < 2; y++) {
-                    this.World.AddSprite(new Mario.Sparkle(this.World, (this.X + x * 8 + Math.random() * 8) | 0, (this.Y + y * 8 + Math.random() * 8) | 0, 0, 0, 0, 2, 5));
+                    this.World.AddSprite(new Sparkle(this.World, (this.X + x * 8 + Math.random() * 8) | 0, (this.Y + y * 8 + Math.random() * 8) | 0, 0, 0, 0, 2, 5));
                 }
             }
         }

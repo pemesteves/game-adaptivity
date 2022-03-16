@@ -81,7 +81,6 @@ class LevelState extends Engine.GameState {
     };
 
     Exit() {
-
         delete this.Level;
         delete this.Layer;
         delete this.BgLayer;
@@ -125,7 +124,7 @@ class LevelState extends Engine.GameState {
                 xd = sprite.X - this.Camera.X;
                 yd = sprite.Y - this.Camera.Y;
                 if (xd < -64 || xd > 320 + 64 || yd < -64 || yd > 240 + 64) this.Sprites.RemoveAt(i);
-                else if (sprite instanceof Mario.Fireball) this.FireballsOnScreen++;
+                else if (sprite instanceof Fireball) this.FireballsOnScreen++;
             }
         }
 
@@ -166,7 +165,7 @@ class LevelState extends Engine.GameState {
                         if (((Mario.Tile.Behaviors[b & 0xff]) & Mario.Tile.Animated) > 0 && (((b % 16) / 4) | 0) === 3 && ((b / 16) | 0) === 0 && (this.Tick - x * 2) % 100 === 0) {
                             xCannon = x;
                             for (i = 0; i < 8; i++) {
-                                this.AddSprite(new Mario.Sparkle(this, x * 16 + 8, y * 16 + ((Math.random() * 16) | 0), Math.random() * dir, 0, 0, 1, 5));
+                                this.AddSprite(new Sparkle(this, x * 16 + 8, y * 16 + ((Math.random() * 16) | 0), Math.random() * dir, 0, 0, 1, 5));
                             }
                             this.AddSprite(new BulletBill(this, x * 16 + 8 + dir * 8, y * 16 + 15, dir));
                             hasShotCannon = true;

@@ -38,7 +38,7 @@ class FlowerEnemy extends Enemy {
             if (this.DeadTime === 0) {
                 this.DeadTime = 1;
                 for (i = 0; i < 8; i++)
-                    this.World.AddSprite(new Mario.Sparkle(((this.X + Math.random() * 16 - 8) | 0) + 4, ((this.Y + Math.random() * 8) | 0) + 4, Math.random() * 2 - 1, Math.random() * -1, 0, 1, 5));
+                    this.World.AddSprite(new Sparkle(((this.X + Math.random() * 16 - 8) | 0) + 4, ((this.Y + Math.random() * 8) | 0) + 4, Math.random() * 2 - 1, Math.random() * -1, 0, 1, 5));
 
                 this.World.RemoveSprite(this);
             }
