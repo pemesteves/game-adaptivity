@@ -4,7 +4,7 @@
     Code by Pedro Esteves, 2022.
 **/
 
-class Fireball extends Mario.NotchSprite {
+class Fireball extends NotchSprite {
     constructor(world, x, y, facing) {
         super();
         this.GroundInertia = 0.89;

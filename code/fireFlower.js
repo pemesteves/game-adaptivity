@@ -2,9 +2,9 @@
 	Represents a fire powerup.
 	Adapted from Rob Kleffner, 2011.
 	Code by Pedro Esteves, 2022.
-*/
+**/
 
-class FireFlower extends Mario.NotchSprite {
+class FireFlower extends NotchSprite {
 	constructor(world, x, y) {
 		super();
 		this.Width = 4;

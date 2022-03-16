@@ -2,9 +2,9 @@
     A generic template for an enemy in the game.
     Adapted from Rob Kleffner, 2011.
     Code by Pedro Esteves, 2022.
-*/
+**/
 
-class Enemy extends Mario.NotchSprite {
+class Enemy extends NotchSprite {
     //Static variables
     static RedKoopa = 0;
     static GreenKoopa = 1;

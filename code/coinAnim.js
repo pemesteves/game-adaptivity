@@ -4,7 +4,7 @@
     Code by Pedro Esteves, 2022.
 **/
 
-class CoinAnim extends Mario.NotchSprite {
+class CoinAnim extends NotchSprite {
     constructor(world, x, y) {
         super();
         this.World = world;

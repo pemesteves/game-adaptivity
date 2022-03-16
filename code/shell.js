@@ -4,7 +4,7 @@
     Code by Pedro Esteves, 2022.
 **/
 
-class Shell extends Mario.NotchSprite {
+class Shell extends NotchSprite {
     constructor(world, x, y, type) {
         super();
         this.World = world;

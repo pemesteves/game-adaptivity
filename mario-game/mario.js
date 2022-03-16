@@ -369,63 +369,80 @@ class ImprovedNoise {
 
 /** NOTCH SPRITE **/
 
-Mario.NotchSprite = function (a) {
-    this.YPicO = this.XPicO = this.YPic = this.XPic = this.Ya = this.Xa = this.Y = this.X = this.YOld = this.XOld = 0;
-    this.PicHeight = this.PicWidth = 32;
-    this.YFlip = this.XFlip = !1;
-    this.Visible = !0;
-    this.Image = a;
-    this.Delta = 0;
-    this.SpriteTemplate = null;
-    this.Layer = 1;
-};
-Mario.NotchSprite.prototype = new Engine.Drawable();
-Mario.NotchSprite.prototype.Draw = function (a) {
-    var b = 0,
-        c = 0;
-    this.Visible &&
-        ((b = ((this.XOld + (this.X - this.XOld) * this.Delta) | 0) - this.XPicO),
-            (c = ((this.YOld + (this.Y - this.YOld) * this.Delta) | 0) - this.YPicO),
-            a.save(),
-            a.scale(this.XFlip ? -1 : 1, this.YFlip ? -1 : 1),
-            a.translate(this.XFlip ? -320 : 0, this.YFlip ? -240 : 0),
-            a.drawImage(this.Image, this.XPic * this.PicWidth, this.YPic * this.PicHeight, this.PicWidth, this.PicHeight, this.XFlip ? 320 - b - this.PicWidth : b, this.YFlip ? 240 - c - this.PicHeight : c, this.PicWidth, this.PicHeight),
-            a.restore());
-};
-Mario.NotchSprite.prototype.Update = function (a) {
-    this.XOld = this.X;
-    this.YOld = this.Y;
-    this.Move();
-    this.Delta = a;
-};
-Mario.NotchSprite.prototype.UpdateNoMove = function () {
-    this.XOld = this.X;
-    this.YOld = this.Y;
-    this.Delta = 0;
-};
-Mario.NotchSprite.prototype.Move = function () {
-    this.X += this.Xa;
-    this.Y += this.Ya;
-};
-Mario.NotchSprite.prototype.GetX = function (a) {
-    return ((this.XOld + (this.X - this.XOld) * a) | 0) - this.XPicO;
-};
-Mario.NotchSprite.prototype.GetY = function (a) {
-    return ((this.YOld + (this.Y - this.YOld) * a) | 0) - this.YPicO;
-};
-Mario.NotchSprite.prototype.CollideCheck = function () { };
-Mario.NotchSprite.prototype.BumpCheck = function () { };
-Mario.NotchSprite.prototype.Release = function () { };
-Mario.NotchSprite.prototype.ShellCollideCheck = function () {
-    return !1;
-};
-Mario.NotchSprite.prototype.FireballCollideCheck = function () {
-    return !1;
+class NotchSprite extends Engine.Drawable {
+    constructor(image) {
+        super();
+        this.XOld = 0; this.YOld = 0;
+        this.X = 0; this.Y = 0;
+        this.Xa = 0; this.Ya = 0;
+        this.XPic = 0; this.YPic = 0;
+        this.XPicO = 0; this.YPicO = 0;
+        this.PicWidth = 32; this.PicHeight = 32;
+        this.XFlip = false; this.YFlip = false;
+        this.Visible = true;
+        this.Image = image;
+        this.Delta = 0;
+        this.SpriteTemplate = null;
+        this.Layer = 1;
+    }
+
+    Draw(context, camera) {
+        let xPixel = 0, yPixel = 0;
+        if (!this.Visible) return;
+    
+        xPixel = ((this.XOld + (this.X - this.XOld) * this.Delta) | 0) - this.XPicO;
+        yPixel = ((this.YOld + (this.Y - this.YOld) * this.Delta) | 0) - this.YPicO;
+    
+        context.save();
+        context.scale(this.XFlip ? -1 : 1, this.YFlip ? -1 : 1);
+        context.translate(this.XFlip ? -320 : 0, this.YFlip ? -240 : 0);
+        context.drawImage(this.Image, this.XPic * this.PicWidth, this.YPic * this.PicHeight, this.PicWidth, this.PicHeight,
+            this.XFlip ? (320 - xPixel - this.PicWidth) : xPixel, this.YFlip ? (240 - yPixel - this.PicHeight) : yPixel, this.PicWidth, this.PicHeight);
+        context.restore();
+    }
+
+    Update(delta) {
+        this.XOld = this.X;
+        this.YOld = this.Y;
+        this.Move();
+        this.Delta = delta;
+    }
+
+    UpdateNoMove(delta) {
+        this.XOld = this.X;
+        this.YOld = this.Y;
+        this.Delta = 0;
+    }
+
+    Move() {
+        this.X += this.Xa;
+        this.Y += this.Ya;
+    }
+
+    GetX(delta) {
+        return ((this.XOld + (this.X - this.XOld) * delta) | 0) - this.XPicO;
+    }
+
+    GetY(delta) {
+        return ((this.YOld + (this.Y - this.YOld) * delta) | 0) - this.YPicO;
+    }
+
+    CollideCheck() { }
+    BumpCheck(xTile, yTile) { };
+    Release(mario) { };
+    
+    ShellCollideCheck(shell) {
+        return false;
+    }
+    
+    FireballCollideCheck(fireball) {
+        return false;
+    }
 };
 
 /** CHARACTER **/
 
-class Character extends Mario.NotchSprite {
+class Character extends NotchSprite {
     constructor() {
         super(null);
         //these are static in Notch's code... here it doesn't seem necessary
@@ -1527,7 +1544,7 @@ class SpriteTemplate {
 
 /** ENEMY **/
 
-class Enemy extends Mario.NotchSprite {
+class Enemy extends NotchSprite {
     //Static variables
     static RedKoopa = 0;
     static GreenKoopa = 1;
@@ -1841,7 +1858,7 @@ class Enemy extends Mario.NotchSprite {
 
 /** FIREBALL **/
 
-class Fireball extends Mario.NotchSprite {
+class Fireball extends NotchSprite {
     constructor(world, x, y, facing) {
         super();
         this.GroundInertia = 0.89;
@@ -1987,7 +2004,7 @@ class Fireball extends Mario.NotchSprite {
 
 /** SPARKLE **/
 
-class Sparkle extends Mario.NotchSprite {
+class Sparkle extends NotchSprite {
     constructor(world, x, y, xa, ya) {
         super();
         this.World = world;
@@ -2021,7 +2038,7 @@ class Sparkle extends Mario.NotchSprite {
 
 /** COIN ANIM **/
 
-class CoinAnim extends Mario.NotchSprite {
+class CoinAnim extends NotchSprite {
     constructor(world, x, y) {
         super();
         this.World = world;
@@ -2056,7 +2073,7 @@ class CoinAnim extends Mario.NotchSprite {
 
 /** MUSHROOM **/
 
-class Mushroom extends Mario.NotchSprite {
+class Mushroom extends NotchSprite {
     constructor(world, x, y) {
         super();
         this.RunTime = 0;
@@ -2199,7 +2216,7 @@ class Mushroom extends Mario.NotchSprite {
 };
 /** PARTICLE **/
 
-class Particle extends Mario.NotchSprite {
+class Particle extends NotchSprite {
 	constructor(world, x, y, xa, ya, xPic, yPic) {
 		super();
 		this.World = world;
@@ -2233,7 +2250,7 @@ class Particle extends Mario.NotchSprite {
 
 /** FIRE FLOWER **/
 
-class FireFlower extends Mario.NotchSprite {
+class FireFlower extends NotchSprite {
 	constructor(world, x, y) {
 		super();
 		this.Width = 4;
@@ -2274,7 +2291,7 @@ class FireFlower extends Mario.NotchSprite {
 
 /** BULLET BILL **/
 
-class BulletBill extends Mario.NotchSprite {
+class BulletBill extends NotchSprite {
     constructor(world, x, y, dir) {
         this.Image = Engine.Resources.Images["enemies"];
         this.World = world;
@@ -2441,7 +2458,7 @@ class FlowerEnemy extends Enemy {
 
 /** SHELL **/
 
-class Shell extends Mario.NotchSprite {
+class Shell extends NotchSprite {
     constructor(world, x, y, type) {
         super();
         this.World = world;

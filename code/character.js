@@ -4,7 +4,7 @@
     Code by Pedro Esteves, 2022.
 */
 
-class Character extends Mario.NotchSprite {
+class Character extends NotchSprite {
     constructor() {
         super(null);
         //these are static in Notch's code... here it doesn't seem necessary

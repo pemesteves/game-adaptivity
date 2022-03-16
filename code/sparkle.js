@@ -4,7 +4,7 @@
     Code by Pedro Esteves, 2022.
 **/
 
-class Sparkle extends Mario.NotchSprite {
+class Sparkle extends NotchSprite {
     constructor(world, x, y, xa, ya) {
         super();
         this.World = world;

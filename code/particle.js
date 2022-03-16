@@ -4,7 +4,7 @@
 	Code by Pedro Esteves, 2022.
 */
 
-class Particle extends Mario.NotchSprite {
+class Particle extends NotchSprite {
 	constructor(world, x, y, xa, ya, xPic, yPic) {
 		super();
 		this.World = world;

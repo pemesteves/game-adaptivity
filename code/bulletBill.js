@@ -4,7 +4,7 @@
     Code by Pedro Esteves, 2022.
 **/
 
-class BulletBill extends Mario.NotchSprite {
+class BulletBill extends NotchSprite {
     constructor(world, x, y, dir) {
         super();
         this.Image = Engine.Resources.Images["enemies"];

@@ -4,7 +4,7 @@
     Code by Pedro Esteves, 2022.
 **/
 
-class Mushroom extends Mario.NotchSprite {
+class Mushroom extends NotchSprite {
     constructor(world, x, y) {
         super();
         this.RunTime = 0;
