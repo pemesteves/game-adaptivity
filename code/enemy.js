@@ -73,8 +73,8 @@ class Enemy extends Mario.NotchSprite {
                         this.DeadTime = 10;
                         this.Winged = false;
 
-                        if (this.Type === Mario.Enemy.RedKoopa) this.World.AddSprite(new Mario.Shell(this.World, this.X, this.Y, 0));
-                        else if (this.Type === Mario.Enemy.GreenKoopa) this.World.AddSprite(new Mario.Shell(this.World, this.X, this.Y, 1));
+                        if (this.Type === Mario.Enemy.RedKoopa) this.World.AddSprite(new Shell(this.World, this.X, this.Y, 0));
+                        else if (this.Type === Mario.Enemy.GreenKoopa) this.World.AddSprite(new Shell(this.World, this.X, this.Y, 1));
                     }
                 }
                 else Mario.MarioCharacter.GetHurt();

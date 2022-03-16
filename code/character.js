@@ -455,7 +455,7 @@ class Character extends Mario.NotchSprite {
             this.OnGround = false;
             this.Sliding = false;
             this.InvulnerableTime = 1;
-        } else if (object instanceof Mario.Shell) {
+        } else if (object instanceof Shell) {
             if (Engine.KeyboardInput.IsKeyDown(Engine.Keys.A) && object.Facing === 0) {
                 this.Carried = object;
                 object.Carried = true;
