@@ -28,7 +28,7 @@ class PredefinedLevelGenerator extends LevelGenerator {
             this.Odds[i] = this.TotalOdds - this.Odds[i];
         }
 
-        level = new Mario.Level(this.Width, this.Height);
+        level = new Level(this.Width, this.Height);
         length += this.BuildStraight(level, 0, level.Width, true);
 
         while (length < level.Width - 64) length += this.BuildZone(level, length, level.Width - length);

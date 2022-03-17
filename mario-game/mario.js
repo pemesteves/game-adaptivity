@@ -131,62 +131,89 @@ var Mario = {
     },
     LevelType: { Overground: 0, Underground: 1, Castle: 2 },
     Odds: { Straight: 0, HillStraight: 1, Tubes: 2, Jump: 3, Cannons: 4 },
-    Level: function (a, b) {
-        this.Width = a;
-        this.Height = b;
-        this.ExitY = this.ExitX = 10;
+};
+
+class Level {
+    constructor(width, height) {
+        this.Width = width;
+        this.Height = height;
+        this.ExitX = 10;
+        this.ExitY = 10;
+
         this.Map = [];
         this.Data = [];
         this.SpriteTemplates = [];
-        for (var c = 0, e = 0, c = 0; c < this.Width; c++) {
-            this.Map[c] = [];
-            this.Data[c] = [];
-            this.SpriteTemplates[c] = [];
-            for (e = 0; e < this.Height; e++) (this.Map[c][e] = 0), (this.Data[c][e] = 0), (this.SpriteTemplates[c][e] = null);
+
+        for (let x = 0; x < this.Width; x++) {
+            this.Map[x] = [];
+            this.Data[x] = [];
+            this.SpriteTemplates[x] = [];
+
+            for (let y = 0; y < this.Height; y++) {
+                this.Map[x][y] = 0;
+                this.Data[x][y] = 0;
+                this.SpriteTemplates[x][y] = null;
+            }
         }
-    },
-};
-Mario.Level.prototype = {
-    Update: function () {
-        for (var a = 0, b = 0, a = 0; a < this.Width; a++) for (b = 0; b < this.Height; b++) this.Data[a][b] > 0 && this.Data[a][b]--;
-    },
-    GetBlockCapped: function (a, b) {
-        a < 0 && (a = 0);
-        b < 0 && (b = 0);
-        a >= this.Width && (a = this.Width - 1);
-        b >= this.Height && (b = this.Height - 1);
-        return this.Map[a][b];
-    },
-    GetBlock: function (a, b) {
-        a < 0 && (a = 0);
-        if (b < 0) return 0;
-        a >= this.Width && (a = this.Width - 1);
-        b >= this.Height && (b = this.Height - 1);
-        return this.Map[a][b];
-    },
-    SetBlock: function (a, b, c) {
-        a < 0 || b < 0 || a >= this.Width || b >= this.Height || (this.Map[a][b] = c);
-    },
-    SetBlockData: function (a, b, c) {
-        a < 0 || b < 0 || a >= this.Width || b >= this.Height || (this.Data[a][b] = c);
-    },
-    IsBlocking: function (a, b, c, e) {
-        a = this.GetBlock(a, b);
-        b = (Mario.Tile.Behaviors[a & 255] & Mario.Tile.BlockAll) > 0;
-        b |= e > 0 && (Mario.Tile.Behaviors[a & 255] & Mario.Tile.BlockUpper) > 0;
-        b |= e < 0 && (Mario.Tile.Behaviors[a & 255] & Mario.Tile.BlockLower) > 0;
-        return b;
-    },
-    GetSpriteTemplate: function (a, b) {
-        if (a < 0) return null;
-        if (b < 0) return null;
-        if (a >= this.Width) return null;
-        if (b >= this.Height) return null;
-        return this.SpriteTemplates[a][b];
-    },
-    SetSpriteTemplate: function (a, b, c) {
-        a < 0 || b < 0 || a >= this.Width || b >= this.Height || (this.SpriteTemplates[a][b] = c);
-    },
+    }
+
+    Update() {
+        for (let x = 0; x < this.Width; x++) {
+            for (let y = 0; y < this.Height; y++) {
+                if (this.Data[x][y] > 0) this.Data[x][y]--;
+            }
+        }
+    }
+
+    GetBlockCapped(x, y) {
+        if (x < 0) x = 0;
+        if (y < 0) y = 0;
+        if (x >= this.Width) x = this.Width - 1;
+        if (y >= this.Height) y = this.Height - 1;
+        return this.Map[x][y];
+    }
+
+    GetBlock(x, y) {
+        if (x < 0) x = 0;
+        if (y < 0) return 0;
+
+        if (x >= this.Width) x = this.Width - 1;
+        if (y >= this.Height) y = this.Height - 1;
+        return this.Map[x][y];
+    }
+
+    SetBlock(x, y, block) {
+        if (this.IsOutsideBoundaries(x, y)) return;
+        this.Map[x][y] = block;
+    }
+
+    SetBlockData(x, y, data) {
+        if (this.IsOutsideBoundaries(x, y)) return;
+        this.Data[x][y] = data;
+    }
+
+    IsBlocking(x, y, xa, ya) {
+        let block = this.GetBlock(x, y);
+        let blocking = ((Mario.Tile.Behaviors[block & 0xff]) & Mario.Tile.BlockAll) > 0;
+        blocking |= (ya > 0) && ((Mario.Tile.Behaviors[block & 0xff]) & Mario.Tile.BlockUpper) > 0;
+        blocking |= (ya < 0) && ((Mario.Tile.Behaviors[block & 0xff]) & Mario.Tile.BlockLower) > 0;
+
+        return blocking;
+    }
+
+    GetSpriteTemplate(x, y) {
+        if (this.IsOutsideBoundaries(x, y)) return null;
+        return this.SpriteTemplates[x][y];
+    }
+
+    SetSpriteTemplate(x, y, template) {
+        if (this.IsOutsideBoundaries(x, y)) return;
+        this.SpriteTemplates[x][y] = template;
+    }
+
+    IsOutsideBoundaries(x, y) {
+        return x < 0 || y < 0 || x >= this.Width || y >= this.Height;
+    }
 };
 
 /** BACKGROUND GENERATOR **/
@@ -207,7 +234,7 @@ class BackgroundGenerator {
     }
 
     CreateLevel() {
-        let level = new Mario.Level(this.Width, this.Height);
+        let level = new Level(this.Width, this.Height);
         switch (this.Type) {
             case Mario.LevelType.Overground:
                 this.GenerateOverground(level);
@@ -1219,7 +1246,7 @@ class LevelGenerator {
             this.Odds[i] = this.TotalOdds - this.Odds[i];
         }
 
-        level = new Mario.Level(this.Width, this.Height);
+        level = new Level(this.Width, this.Height);
         length += this.BuildStraight(level, 0, level.Width, true);
 
         while (length < level.Width - 64) length += this.BuildZone(level, length, level.Width - length);
@@ -1584,7 +1611,7 @@ class PredefinedLevelGenerator extends LevelGenerator {
             this.Odds[i] = this.TotalOdds - this.Odds[i];
         }
 
-        level = new Mario.Level(this.Width, this.Height);
+        level = new Level(this.Width, this.Height);
         length += this.BuildStraight(level, 0, level.Width, true);
 
         while (length < level.Width - 64) length += this.BuildZone(level, length, level.Width - length);

@@ -166,96 +166,85 @@ Mario.Odds = {
     Cannons: 4
 };
 
-Mario.Level = function (width, height) {
-    this.Width = width;
-    this.Height = height;
-    this.ExitX = 10;
-    this.ExitY = 10;
+class Level {
+    constructor(width, height) {
+        this.Width = width;
+        this.Height = height;
+        this.ExitX = 10;
+        this.ExitY = 10;
 
-    this.Map = [];
-    this.Data = [];
-    this.SpriteTemplates = [];
+        this.Map = [];
+        this.Data = [];
+        this.SpriteTemplates = [];
 
-    var x = 0, y = 0;
-    for (x = 0; x < this.Width; x++) {
-        this.Map[x] = [];
-        this.Data[x] = [];
-        this.SpriteTemplates[x] = [];
+        for (let x = 0; x < this.Width; x++) {
+            this.Map[x] = [];
+            this.Data[x] = [];
+            this.SpriteTemplates[x] = [];
 
-        for (y = 0; y < this.Height; y++) {
-            this.Map[x][y] = 0;
-            this.Data[x][y] = 0;
-            this.SpriteTemplates[x][y] = null;
-        }
-    }
-};
-
-Mario.Level.prototype = {
-    Update: function () {
-        var x = 0, y = 0;
-        for (x = 0; x < this.Width; x++) {
-            for (y = 0; y < this.Height; y++) {
-                if (this.Data[x][y] > 0) {
-                    this.Data[x][y]--;
-                }
+            for (let y = 0; y < this.Height; y++) {
+                this.Map[x][y] = 0;
+                this.Data[x][y] = 0;
+                this.SpriteTemplates[x][y] = null;
             }
         }
-    },
+    }
 
-    GetBlockCapped: function (x, y) {
-        if (x < 0) { x = 0; }
-        if (y < 0) { y = 0; }
-        if (x >= this.Width) { x = this.Width - 1; }
-        if (y >= this.Height) { y = this.Height - 1; }
+    Update() {
+        for (let x = 0; x < this.Width; x++) {
+            for (let y = 0; y < this.Height; y++) {
+                if (this.Data[x][y] > 0) this.Data[x][y]--;
+            }
+        }
+    }
+
+    GetBlockCapped(x, y) {
+        if (x < 0) x = 0;
+        if (y < 0) y = 0;
+        if (x >= this.Width) x = this.Width - 1;
+        if (y >= this.Height) y = this.Height - 1;
         return this.Map[x][y];
-    },
+    }
 
-    GetBlock: function (x, y) {
-        if (x < 0) { x = 0; }
-        if (y < 0) { return 0; }
-        if (x >= this.Width) { x = this.Width - 1; }
-        if (y >= this.Height) { y = this.Height - 1; }
+    GetBlock(x, y) {
+        if (x < 0) x = 0;
+        if (y < 0) return 0;
+
+        if (x >= this.Width) x = this.Width - 1;
+        if (y >= this.Height) y = this.Height - 1;
         return this.Map[x][y];
-    },
+    }
 
-    SetBlock: function (x, y, block) {
-        if (x < 0) { return; }
-        if (y < 0) { return; }
-        if (x >= this.Width) { return; }
-        if (y >= this.Height) { return; }
+    SetBlock(x, y, block) {
+        if (this.IsOutsideBoundaries(x, y)) return;
         this.Map[x][y] = block;
-    },
+    }
 
-    SetBlockData: function (x, y, data) {
-        if (x < 0) { return; }
-        if (y < 0) { return; }
-        if (x >= this.Width) { return; }
-        if (y >= this.Height) { return; }
+    SetBlockData(x, y, data) {
+        if (this.IsOutsideBoundaries(x, y)) return;
         this.Data[x][y] = data;
-    },
+    }
 
-    IsBlocking: function (x, y, xa, ya) {
-        var block = this.GetBlock(x, y);
-        var blocking = ((Mario.Tile.Behaviors[block & 0xff]) & Mario.Tile.BlockAll) > 0;
+    IsBlocking(x, y, xa, ya) {
+        let block = this.GetBlock(x, y);
+        let blocking = ((Mario.Tile.Behaviors[block & 0xff]) & Mario.Tile.BlockAll) > 0;
         blocking |= (ya > 0) && ((Mario.Tile.Behaviors[block & 0xff]) & Mario.Tile.BlockUpper) > 0;
         blocking |= (ya < 0) && ((Mario.Tile.Behaviors[block & 0xff]) & Mario.Tile.BlockLower) > 0;
 
         return blocking;
-    },
+    }
 
-    GetSpriteTemplate: function (x, y) {
-        if (x < 0) { return null; }
-        if (y < 0) { return null; }
-        if (x >= this.Width) { return null; }
-        if (y >= this.Height) { return null; }
+    GetSpriteTemplate(x, y) {
+        if (this.IsOutsideBoundaries(x, y)) return null;
         return this.SpriteTemplates[x][y];
-    },
+    }
 
-    SetSpriteTemplate: function (x, y, template) {
-        if (x < 0) { return; }
-        if (y < 0) { return; }
-        if (x >= this.Width) { return; }
-        if (y >= this.Height) { return; }
+    SetSpriteTemplate(x, y, template) {
+        if (this.IsOutsideBoundaries(x, y)) return;
         this.SpriteTemplates[x][y] = template;
+    }
+
+    IsOutsideBoundaries(x, y) {
+        return x < 0 || y < 0 || x >= this.Width || y >= this.Height;
     }
 };

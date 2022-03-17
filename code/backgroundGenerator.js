@@ -20,7 +20,7 @@ class BackgroundGenerator {
     }
 
     CreateLevel() {
-        let level = new Mario.Level(this.Width, this.Height);
+        let level = new Level(this.Width, this.Height);
         switch (this.Type) {
             case Mario.LevelType.Overground:
                 this.GenerateOverground(level);
