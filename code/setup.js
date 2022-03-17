@@ -1,6 +1,10 @@
 /**
 	Just create the global mario object.
-	Code by Rob Kleffner, 2011
-*/
+	Adapted from Rob Kleffner, 2011.
+	Code by Pedro Esteves, 2022
+**/
 
-var Mario = {};
+class Mario {
+	static MarioCharacter;
+	static GlobalMapState;
+};

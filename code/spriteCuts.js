@@ -1,80 +1,70 @@
 /**
     Helper to cut up the sprites.
-    Code by Rob Kleffner, 2011
-*/
+    Adapted from Rob Kleffner, 2011.
+    Code by Pedro Esteves, 2022.
+**/
 
-Mario.SpriteCuts = {
-
+class SpriteCuts {
     /*********************
      * Font related
      ********************/
-    CreateBlackFont: function () {
+    static CreateBlackFont() {
         return new Engine.SpriteFont([], Engine.Resources.Images["font"], 8, 8, this.GetCharArray(0));
-    },
+    }
 
-    CreateRedFont: function () {
+    static CreateRedFont() {
         return new Engine.SpriteFont([], Engine.Resources.Images["font"], 8, 8, this.GetCharArray(8));
-    },
+    }
 
-    CreateGreenFont: function () {
+    static CreateGreenFont() {
         return new Engine.SpriteFont([], Engine.Resources.Images["font"], 8, 8, this.GetCharArray(16));
-    },
+    }
 
-    CreateBlueFont: function () {
+    static CreateBlueFont() {
         return new Engine.SpriteFont([], Engine.Resources.Images["font"], 8, 8, this.GetCharArray(24));
-    },
+    }
 
-    CreateYellowFont: function () {
+    static CreateYellowFont() {
         return new Engine.SpriteFont([], Engine.Resources.Images["font"], 8, 8, this.GetCharArray(32));
-    },
+    }
 
-    CreatePinkFont: function () {
+    static CreatePinkFont() {
         return new Engine.SpriteFont([], Engine.Resources.Images["font"], 8, 8, this.GetCharArray(40));
-    },
+    }
 
-    CreateCyanFont: function () {
+    static CreateCyanFont() {
         return new Engine.SpriteFont([], Engine.Resources.Images["font"], 8, 8, this.GetCharArray(48));
-    },
+    }
 
-    CreateWhiteFont: function () {
+    static CreateWhiteFont() {
         return new Engine.SpriteFont([], Engine.Resources.Images["font"], 8, 8, this.GetCharArray(56));
-    },
+    }
 
-    GetCharArray: function (y) {
-        var letters = [];
-        var i = 0;
-        for (i = 32; i < 127; i++) {
-            letters[i] = { X: (i - 32) * 8, Y: y };
-        }
+    static GetCharArray(y) {
+        let letters = [];
+        for (let i = 32; i < 127; i++) letters[i] = { X: (i - 32) * 8, Y: y };
         return letters;
-    },
+    }
 
     /*********************
      * Spritesheet related
      ********************/
-    GetBackgroundSheet: function () {
-        var sheet = [];
-        var x = 0, y = 0, width = Engine.Resources.Images["background"].width / 32, height = Engine.Resources.Images["background"].height / 32;
+    static GetBackgroundSheet() {
+        return this.GetSheet("background", 32);
+    }
 
-        for (x = 0; x < width; x++) {
+    static GetLevelSheet() {
+        return this.GetSheet("map", 16);
+    }
+
+    static GetSheet(name, size) {
+        let sheet = [];
+        const width = Engine.Resources.Images[name].width / size, height = Engine.Resources.Images[name].height / size;
+
+        for (let x = 0; x < width; x++) {
             sheet[x] = [];
 
-            for (y = 0; y < height; y++) {
-                sheet[x][y] = { X: x * 32, Y: y * 32, Width: 32, Height: 32 };
-            }
-        }
-        return sheet;
-    },
-
-    GetLevelSheet: function () {
-        var sheet = [], x = 0, y = 0, width = Engine.Resources.Images["map"].width / 16, height = Engine.Resources.Images["map"].height / 16;
-
-        for (x = 0; x < width; x++) {
-            sheet[x] = [];
-
-            for (y = 0; y < height; y++) {
-                sheet[x][y] = { X: x * 16, Y: y * 16, Width: 16, Height: 16 };
-            }
+            for (let y = 0; y < height; y++) sheet[x][y] = { X: x * size, Y: y * size, Width: size, Height: size };
         }
         return sheet;
     }

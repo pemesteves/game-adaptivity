@@ -1,49 +1,72 @@
-var Mario = {
-    /** SPRITE CUTS **/
-    SpriteCuts: {
-        CreateBlackFont: function () {
-            return new Engine.SpriteFont([], Engine.Resources.Images.font, 8, 8, this.GetCharArray(0));
-        },
-        CreateRedFont: function () {
-            return new Engine.SpriteFont([], Engine.Resources.Images.font, 8, 8, this.GetCharArray(8));
-        },
-        CreateGreenFont: function () {
-            return new Engine.SpriteFont([], Engine.Resources.Images.font, 8, 8, this.GetCharArray(16));
-        },
-        CreateBlueFont: function () {
-            return new Engine.SpriteFont([], Engine.Resources.Images.font, 8, 8, this.GetCharArray(24));
-        },
-        CreateYellowFont: function () {
-            return new Engine.SpriteFont([], Engine.Resources.Images.font, 8, 8, this.GetCharArray(32));
-        },
-        CreatePinkFont: function () {
-            return new Engine.SpriteFont([], Engine.Resources.Images.font, 8, 8, this.GetCharArray(40));
-        },
-        CreateCyanFont: function () {
-            return new Engine.SpriteFont([], Engine.Resources.Images.font, 8, 8, this.GetCharArray(48));
-        },
-        CreateWhiteFont: function () {
-            return new Engine.SpriteFont([], Engine.Resources.Images.font, 8, 8, this.GetCharArray(56));
-        },
-        GetCharArray: function (a) {
-            for (var b = [], c = 0, c = 32; c < 127; c++) b[c] = { X: (c - 32) * 8, Y: a };
-            return b;
-        },
-        GetBackgroundSheet: function () {
-            for (var a = [], b = 0, c = 0, e = Engine.Resources.Images.background.width / 32, d = Engine.Resources.Images.background.height / 32, b = 0; b < e; b++) {
-                a[b] = [];
-                for (c = 0; c < d; c++) a[b][c] = { X: b * 32, Y: c * 32, Width: 32, Height: 32 };
-            }
-            return a;
-        },
-        GetLevelSheet: function () {
-            for (var a = [], b = 0, c = 0, e = Engine.Resources.Images.map.width / 16, d = Engine.Resources.Images.map.height / 16, b = 0; b < e; b++) {
-                a[b] = [];
-                for (c = 0; c < d; c++) a[b][c] = { X: b * 16, Y: c * 16, Width: 16, Height: 16 };
-            }
-            return a;
-        },
-    },
+class Mario {
+	static MarioCharacter;
+	static GlobalMapState;
+};
+
+class SpriteCuts {
+    /*********************
+     * Font related
+     ********************/
+    static CreateBlackFont() {
+        return new Engine.SpriteFont([], Engine.Resources.Images["font"], 8, 8, this.GetCharArray(0));
+    }
+
+    static CreateRedFont() {
+        return new Engine.SpriteFont([], Engine.Resources.Images["font"], 8, 8, this.GetCharArray(8));
+    }
+
+    static CreateGreenFont() {
+        return new Engine.SpriteFont([], Engine.Resources.Images["font"], 8, 8, this.GetCharArray(16));
+    }
+
+    static CreateBlueFont() {
+        return new Engine.SpriteFont([], Engine.Resources.Images["font"], 8, 8, this.GetCharArray(24));
+    }
+
+    static CreateYellowFont() {
+        return new Engine.SpriteFont([], Engine.Resources.Images["font"], 8, 8, this.GetCharArray(32));
+    }
+
+    static CreatePinkFont() {
+        return new Engine.SpriteFont([], Engine.Resources.Images["font"], 8, 8, this.GetCharArray(40));
+    }
+
+    static CreateCyanFont() {
+        return new Engine.SpriteFont([], Engine.Resources.Images["font"], 8, 8, this.GetCharArray(48));
+    }
+
+    static CreateWhiteFont() {
+        return new Engine.SpriteFont([], Engine.Resources.Images["font"], 8, 8, this.GetCharArray(56));
+    }
+
+    static GetCharArray(y) {
+        let letters = [];
+        for (let i = 32; i < 127; i++) letters[i] = { X: (i - 32) * 8, Y: y };
+        return letters;
+    }
+
+    /*********************
+     * Spritesheet related
+     ********************/
+    static GetBackgroundSheet() {
+        return this.GetSheet("background", 32);
+    }
+
+    static GetLevelSheet() {
+        return this.GetSheet("map", 16);
+    }
+
+    static GetSheet(name, size) {
+        let sheet = [];
+        const width = Engine.Resources.Images[name].width / size, height = Engine.Resources.Images[name].height / size;
+
+        for (let x = 0; x < width; x++) {
+            sheet[x] = [];
+
+            for (let y = 0; y < height; y++) sheet[x][y] = { X: x * size, Y: y * size, Width: size, Height: size };
+        }
+        return sheet;
+    }
 };
 
 class Tile {
@@ -409,7 +432,7 @@ class BackgroundRenderer extends Engine.Drawable {
         this.Distance = distance;
         this.TilesY = ((height / 32) | 0) + 1;
 
-        this.Background = Mario.SpriteCuts.GetBackgroundSheet();
+        this.Background = SpriteCuts.GetBackgroundSheet();
     }
 
     Draw = function (context, camera) {
@@ -1146,7 +1169,7 @@ class LevelRenderer extends Engine.Drawable {
         this.Bounce = 0;
         this.AnimTime = 0;
 
-        this.Background = Mario.SpriteCuts.GetLevelSheet();
+        this.Background = SpriteCuts.GetLevelSheet();
     }
 
     Update(delta) {
@@ -2852,7 +2875,7 @@ class TitleState extends Engine.GameState {
         this.logo.Image = Engine.Resources.Images["logo"];
         this.logo.X = 0, this.logo.Y = 0;
     
-        this.font = Mario.SpriteCuts.CreateRedFont();
+        this.font = SpriteCuts.CreateRedFont();
         this.font.Strings[0] = { String: "Press S to Start", X: 96, Y: 120 };
     
         this.logoY = 20;
@@ -2898,7 +2921,7 @@ class TitleState extends Engine.GameState {
     }
 
     CheckForChange(context) {
-        if (Engine.KeyboardInput.IsKeyDown(Engine.Keys.S)) context.ChangeState(new PredefinedLevelState(1, 0));// Mario.GlobalMapState);
+        if (Engine.KeyboardInput.IsKeyDown(Engine.Keys.S)) context.ChangeState(/*new PredefinedLevelState(1, 0));// */Mario.GlobalMapState);
     }
 };
 
@@ -3052,7 +3075,7 @@ class LoseState extends Engine.GameState {
         this.gameOver.X = 112;
         this.gameOver.Y = 68;
     
-        this.font = Mario.SpriteCuts.CreateBlackFont();
+        this.font = SpriteCuts.CreateBlackFont();
         this.font.Strings[0] = { String: "Game over!", X: 116, Y: 160 };
     
         this.drawManager.Add(this.font);
@@ -3098,7 +3121,7 @@ class WinState extends Engine.GameState {
         this.drawManager = new Engine.DrawableManager();
         this.camera = new Engine.Camera();
 
-        this.font = Mario.SpriteCuts.CreateBlackFont();
+        this.font = SpriteCuts.CreateBlackFont();
         this.font.Strings[0] = { String: "Thank you for saving me, Mario!", X: 36, Y: 160 };
 
         this.kissing = new Engine.AnimatedSprite();
@@ -3143,7 +3166,13 @@ class WinState extends Engine.GameState {
 
 /** MAP STATE **/
 
-Mario.MapTile = { Grass: 0, Water: 1, Level: 2, Road: 3, Decoration: 4 };
+class MapTile {
+    static Grass = 0;
+    static Water = 1;
+    static Level = 2;
+    static Road = 3;
+    static Decoration = 4;
+};
 
 class MapState extends Engine.GameState {
     constructor() {
@@ -3177,7 +3206,7 @@ class MapState extends Engine.GameState {
         sprite.Image = Engine.Resources.Images[imageName];
         sprite.SetColumnCount(columnCount);
         sprite.SetRowCount(rowCount);
-        for (let i = 0; i < sequencesArr.size(); i++)
+        for (let i = 0; i < sequencesArr.length; i++)
             sprite.AddNewSequence(sequencesArr[i].name, sequencesArr[i].sRow, sequencesArr[i].sCol, sequencesArr[i].eRow, sequencesArr[i].eCol);
         sprite.FramesPerSecond = fps;
         sprite.PlaySequence(sequenceName, true);
@@ -3205,8 +3234,8 @@ class MapState extends Engine.GameState {
             { "name": "fire", "sRow": 0, "sCol": 4, "eRow": 0, "eCol": 5 }
         ], 1 / 3, "large", 0, 0);
 
-        this.FontShadow = Mario.SpriteCuts.CreateBlackFont();
-        this.Font = Mario.SpriteCuts.CreateWhiteFont();
+        this.FontShadow = SpriteCuts.CreateBlackFont();
+        this.Font = SpriteCuts.CreateWhiteFont();
 
         //get the correct world decoration
         this.DecoSprite.PlaySequence("world" + (this.WorldNumber % 4), true);
@@ -3272,7 +3301,7 @@ class MapState extends Engine.GameState {
                 td = t0 - t1;
                 t = td * 2;
 
-                this.Level[x][y] = t > 0 ? Mario.MapTile.Water : Mario.MapTile.Grass;
+                this.Level[x][y] = t > 0 ? MapTile.Water : MapTile.Grass;
             }
         }
 
@@ -3282,12 +3311,12 @@ class MapState extends Engine.GameState {
         for (i = 0; i < 100 && t < 12; i++) {
             x = ((Math.random() * (((width - 1) / 3) | 0)) | 0) * 3 + 2;
             y = ((Math.random() * (((height - 1) / 3) | 0)) | 0) * 3 + 1;
-            if (this.Level[x][y] === Mario.MapTile.Grass) {
+            if (this.Level[x][y] === MapTile.Grass) {
                 if (x < lowestX) {
                     lowestX = x;
                     lowestY = y;
                 }
-                this.Level[x][y] = Mario.MapTile.Level;
+                this.Level[x][y] = MapTile.Level;
                 this.Data[x][y] = -1;
                 t++;
             }
@@ -3306,10 +3335,10 @@ class MapState extends Engine.GameState {
 
         for (x = 0; x < width; x++) {
             for (y = 0; y < height; y++) {
-                if (this.Level[x][y] === Mario.MapTile.Grass && (x !== this.XFarthestCap || y !== this.YFarthestCap - 1)) {
+                if (this.Level[x][y] === MapTile.Grass && (x !== this.XFarthestCap || y !== this.YFarthestCap - 1)) {
                     t0 = dec.PerlinNoise(x * 10 + xo0, y * 10 + yo0);
 
-                    if (t0 > 0) this.Level[x][y] = Mario.MapTile.Decoration;
+                    if (t0 > 0) this.Level[x][y] = MapTile.Decoration;
                 }
             }
         }
@@ -3321,7 +3350,7 @@ class MapState extends Engine.GameState {
         let x = 0, y = 0;
         for (x = 0; x < width; x++) {
             for (y = 0; y < height; y++) {
-                if (this.Level[x][y] === Mario.MapTile.Level && this.Data[x][y] === -1) {
+                if (this.Level[x][y] === MapTile.Level && this.Data[x][y] === -1) {
                     this.Connect(x, y, width, height);
                     return true;
                 }
@@ -3335,7 +3364,7 @@ class MapState extends Engine.GameState {
 
         for (x = 0; x < width; x++) {
             for (y = 0; y < height; y++) {
-                if (this.Level[x][y] === Mario.MapTile.Level && this.Data[x][y] === -2) {
+                if (this.Level[x][y] === MapTile.Level && this.Data[x][y] === -2) {
                     xd = Math.abs(xSource - x) | 0;
                     yd = Math.abs(ySource - y) | 0;
                     d = xd * xd + yd * yd;
@@ -3349,7 +3378,7 @@ class MapState extends Engine.GameState {
         }
 
         this.DrawRoad(xSource, ySource, xTarget, yTarget);
-        this.Level[xSource][ySource] = Mario.MapTile.Level;
+        this.Level[xSource][ySource] = MapTile.Level;
         this.Data[xSource][ySource] = -2;
         return;
     }
@@ -3361,31 +3390,31 @@ class MapState extends Engine.GameState {
         if (xFirst) {
             while (x0 > x1) {
                 this.Data[x0][y0] = 0;
-                this.Level[x0--][y0] = Mario.MapTile.Road;
+                this.Level[x0--][y0] = MapTile.Road;
             }
             while (x0 < x1) {
                 this.Data[x0][y0] = 0;
-                this.Level[x0++][y0] = Mario.MapTile.Road;
+                this.Level[x0++][y0] = MapTile.Road;
             }
         }
 
         while (y0 > y1) {
             this.Data[x0][y0] = 0;
-            this.Level[x0][y0--] = Mario.MapTile.Road;
+            this.Level[x0][y0--] = MapTile.Road;
         }
         while (y0 < y1) {
             this.Data[x0][y0] = 0;
-            this.Level[x0][y0++] = Mario.MapTile.Road;
+            this.Level[x0][y0++] = MapTile.Road;
         }
 
         if (!xFirst) {
             while (x0 > x1) {
                 this.Data[x0][y0] = 0;
-                this.Level[x0--][y0] = Mario.MapTile.Road;
+                this.Level[x0--][y0] = MapTile.Road;
             }
             while (x0 < x1) {
                 this.Data[x0][y0] = 0;
-                this.Level[x0++][y0] = Mario.MapTile.Road;
+                this.Level[x0++][y0] = MapTile.Road;
             }
         }
     }
@@ -3395,12 +3424,12 @@ class MapState extends Engine.GameState {
 
         for (x = 0; x < width; x++) {
             for (y = 0; y < height; y++) {
-                if (this.Level[x][y] !== Mario.MapTile.Level) continue;
+                if (this.Level[x][y] !== MapTile.Level) continue;
                 roads = 0;
 
                 for (xx = x - 1; xx <= x + 1; xx++) {
                     for (yy = y - 1; yy <= y + 1; yy++) {
-                        if (this.Level[xx][yy] === Mario.MapTile.Road) roads++;
+                        if (this.Level[xx][yy] === MapTile.Road) roads++;
                     }
                 }
 
@@ -3423,15 +3452,15 @@ class MapState extends Engine.GameState {
     }
 
     Travel(x, y, dir, depth) {
-        if (this.Level[x][y] !== Mario.MapTile.Road && this.Level[x][y] !== Mario.MapTile.Level) return;
+        if (this.Level[x][y] !== MapTile.Road && this.Level[x][y] !== MapTile.Level) return;
 
-        if (this.Level[x][y] === Mario.MapTile.Road) {
+        if (this.Level[x][y] === MapTile.Road) {
             if (this.Data[x][y] === 1) return;
 
             this.Data[x][y] = 1;
         }
 
-        if (this.Level[x][y] === Mario.MapTile.Level) {
+        if (this.Level[x][y] === MapTile.Level) {
             if (this.Data[x][y] > 0) {
                 if (this.LevelId !== 0 && ((Math.random() * 4) | 0) === 0) this.Data[x][y] = -3;
                 else this.Data[x][y] = ++this.LevelId;
@@ -3460,7 +3489,7 @@ class MapState extends Engine.GameState {
             for (y = 0; y < 15; y++) {
                 this.MapContext.drawImage(image, ((this.WorldNumber / 4) | 0) * 16, 0, 16, 16, x * 16, y * 16, 16, 16);
 
-                if (this.Level[x][y] === Mario.MapTile.Level) {
+                if (this.Level[x][y] === MapTile.Level) {
                     type = this.Data[x][y];
                     if (type === 0) this.MapContext.drawImage(image, 0, 7 * 16, 16, 16, x * 16, y * 16, 16, 16);
                     else if (type === -1) this.MapContext.drawImage(image, 3 * 16, 8 * 16, 16, 16, x * 16, y * 16, 16, 16);
@@ -3471,14 +3500,14 @@ class MapState extends Engine.GameState {
                         this.MapContext.drawImage(image, 2 * 16, 7 * 16, 16, 16, x * 16, (y - 1) * 16, 16, 16);
                         this.MapContext.drawImage(image, 2 * 16, 8 * 16, 16, 16, x * 16, y * 16, 16, 16);
                     } else this.MapContext.drawImage(image, (type - 1) * 16, 6 * 16, 16, 16, x * 16, y * 16, 16, 16);
-                } else if (this.Level[x][y] === Mario.MapTile.Road) {
+                } else if (this.Level[x][y] === MapTile.Road) {
                     p0 = this.IsRoad(x - 1, y) ? 1 : 0;
                     p1 = this.IsRoad(x, y - 1) ? 1 : 0;
                     p2 = this.IsRoad(x + 1, y) ? 1 : 0;
                     p3 = this.IsRoad(x, y + 1) ? 1 : 0;
                     s = p0 + (p1 * 2) + (p2 * 4) + (p3 * 8);
                     this.MapContext.drawImage(image, s * 16, 32, 16, 16, x * 16, y * 16, 16, 16);
-                } else if (this.Level[x][y] === Mario.MapTile.Water) {
+                } else if (this.Level[x][y] === MapTile.Water) {
                     for (xx = 0; xx < 2; xx++) {
                         for (yy = 0; yy < 2; yy++) {
                             p0 = this.IsWater(x * 2 + (xx - 1), y * 2 + (yy - 1)) ? 0 : 1;
@@ -3498,7 +3527,7 @@ class MapState extends Engine.GameState {
         if (x < 0) x = 0;
         if (y < 0) y = 0;
 
-        if (this.Level[x][y] === Mario.MapTile.Road || this.Level[x][y] === Mario.MapTile.Level) return true;
+        if (this.Level[x][y] === MapTile.Road || this.Level[x][y] === MapTile.Level) return true;
 
         return false;
     }
@@ -3509,7 +3538,7 @@ class MapState extends Engine.GameState {
 
         for (let xx = 0; xx < 2; xx++) {
             for (let yy = 0; yy < 2; yy++) {
-                if (this.Level[((x + xx) / 2) | 0][((y + yy) / 2) | 0] !== Mario.MapTile.Water) return false;
+                if (this.Level[((x + xx) / 2) | 0][((y + yy) / 2) | 0] !== MapTile.Water) return false;
             }
         }
 
@@ -3524,15 +3553,15 @@ class MapState extends Engine.GameState {
 
         let x = (this.XMario / 16) | 0, y = (this.YMario / 16) | 0, difficulty = 0, type = 0;
 
-        if (this.Level[x][y] === Mario.MapTile.Road) this.Data[x][y] = 0;
+        if (this.Level[x][y] === MapTile.Road) this.Data[x][y] = 0;
 
         if (this.MoveTime > 0) this.MoveTime--;
         else {
             this.XMarioA = 0;
             this.YMarioA = 0;
 
-            if (this.CanEnterLevel && Engine.KeyboardInput.IsKeyDown(Engine.Keys.S) && this.Level[x][y] === Mario.MapTile.Level && this.Data[x][y] !== -11
-                && this.Level[x][y] === Mario.MapTile.Level && this.Data[x][y] !== 0 && this.Data[x][y] > -10) {
+            if (this.CanEnterLevel && Engine.KeyboardInput.IsKeyDown(Engine.Keys.S) && this.Level[x][y] === MapTile.Level && this.Data[x][y] !== -11
+                && this.Level[x][y] === MapTile.Level && this.Data[x][y] !== 0 && this.Data[x][y] > -10) {
                 difficulty = this.WorldNumber + 1;
                 Mario.MarioCharacter.LevelString = difficulty + "-";
                 type = LevelType.Overground;
@@ -3585,8 +3614,8 @@ class MapState extends Engine.GameState {
     TryWalking(xd, yd) {
         let x = (this.XMario / 16) | 0, y = (this.YMario / 16) | 0, xt = x + xd, yt = y + yd;
 
-        if (this.Level[xt][yt] === Mario.MapTile.Road || this.Level[xt][yt] === Mario.MapTile.Level) {
-            if (this.Level[xt][yt] === Mario.MapTile.Road && (this.Data[xt][yt] !== 0) && (this.Data[x][y] !== 0 && this.Data[x][y] > -10)) return;
+        if (this.Level[xt][yt] === MapTile.Road || this.Level[xt][yt] === MapTile.Level) {
+            if (this.Level[xt][yt] === MapTile.Road && (this.Data[xt][yt] !== 0) && (this.Data[x][y] !== 0 && this.Data[x][y] > -10)) return;
 
             this.XMarioA = xd * 8;
             this.YMarioA = yd * 8;
@@ -3599,9 +3628,9 @@ class MapState extends Engine.GameState {
         while (true) {
             x += xa;
             y += ya;
-            if (this.Level[x][y] !== Mario.MapTile.Road) return distance;
-            if (this.Level[x - ya][y + xa] === Mario.MapTile.Road) return distance;
-            if (this.Level[x + ya][y - xa] === Mario.MapTile.Road) return distance;
+            if (this.Level[x][y] !== MapTile.Road) return distance;
+            if (this.Level[x - ya][y + xa] === MapTile.Road) return distance;
+            if (this.Level[x + ya][y - xa] === MapTile.Road) return distance;
 
             distance++;
         }
@@ -3616,15 +3645,15 @@ class MapState extends Engine.GameState {
 
         for (y = 0; y <= 15; y++) {
             for (x = 20; x >= 0; x--) {
-                if (this.Level[x][y] === Mario.MapTile.Water && this.IsWater(x * 2 - 1, y * 2 - 1)) {
+                if (this.Level[x][y] === MapTile.Water && this.IsWater(x * 2 - 1, y * 2 - 1)) {
                     this.WaterSprite.X = x * 16 - 8;
                     this.WaterSprite.Y = y * 16 - 8;
                     this.WaterSprite.Draw(context, this.camera);
-                } else if (this.Level[x][y] === Mario.MapTile.Decoration) {
+                } else if (this.Level[x][y] === MapTile.Decoration) {
                     this.DecoSprite.X = x * 16;
                     this.DecoSprite.Y = y * 16;
                     this.DecoSprite.Draw(context, this.camera);
-                } else if (this.Level[x][y] === Mario.MapTile.Level && this.Data[x][y] === -2) {
+                } else if (this.Level[x][y] === MapTile.Level && this.Data[x][y] === -2) {
                     this.HelpSprite.X = x * 16 + 16;
                     this.HelpSprite.Y = y * 16 - 16;
                     this.HelpSprite.Draw(context, this.camera);
@@ -3728,8 +3757,8 @@ class LevelState extends Engine.GameState {
         this.SpritesToAdd = [];
         this.SpritesToRemove = [];
 
-        this.FontShadow = Mario.SpriteCuts.CreateBlackFont();
-        this.Font = Mario.SpriteCuts.CreateWhiteFont();
+        this.FontShadow = SpriteCuts.CreateBlackFont();
+        this.Font = SpriteCuts.CreateWhiteFont();
 
         for (i = 0; i < 2; i++) {
             scrollSpeed = 4 >> i;

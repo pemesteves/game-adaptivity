@@ -32,7 +32,7 @@ class TitleState extends Engine.GameState {
         this.logo.Image = Engine.Resources.Images["logo"];
         this.logo.X = 0, this.logo.Y = 0;
     
-        this.font = Mario.SpriteCuts.CreateRedFont();
+        this.font = SpriteCuts.CreateRedFont();
         this.font.Strings[0] = { String: "Press S to Start", X: 96, Y: 120 };
     
         this.logoY = 20;

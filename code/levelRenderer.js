@@ -16,7 +16,7 @@ class LevelRenderer extends Engine.Drawable {
         this.Bounce = 0;
         this.AnimTime = 0;
 
-        this.Background = Mario.SpriteCuts.GetLevelSheet();
+        this.Background = SpriteCuts.GetLevelSheet();
     }
 
     Update(delta) {

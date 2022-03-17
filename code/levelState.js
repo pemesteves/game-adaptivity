@@ -59,8 +59,8 @@ class LevelState extends Engine.GameState {
         this.SpritesToAdd = [];
         this.SpritesToRemove = [];
 
-        this.FontShadow = Mario.SpriteCuts.CreateBlackFont();
-        this.Font = Mario.SpriteCuts.CreateWhiteFont();
+        this.FontShadow = SpriteCuts.CreateBlackFont();
+        this.Font = SpriteCuts.CreateWhiteFont();
 
         for (i = 0; i < 2; i++) {
             scrollSpeed = 4 >> i;

@@ -12,7 +12,7 @@ class BackgroundRenderer extends Engine.Drawable {
         this.Distance = distance;
         this.TilesY = ((height / 32) | 0) + 1;
 
-        this.Background = Mario.SpriteCuts.GetBackgroundSheet();
+        this.Background = SpriteCuts.GetBackgroundSheet();
     }
 
     Draw = function (context, camera) {
