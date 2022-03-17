@@ -421,7 +421,7 @@ class Character extends NotchSprite {
 
         block = this.World.Level.GetBlock(x, y);
 
-        if (((Mario.Tile.Behaviors[block & 0xff]) & Mario.Tile.PickUpable) > 0) {
+        if (((Tile.Behaviors[block & 0xff]) & Tile.PickUpable) > 0) {
             this.GetCoin();
             Engine.Resources.PlaySound("coin");
             this.World.Level.SetBlock(x, y, 0);

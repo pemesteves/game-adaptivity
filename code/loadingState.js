@@ -76,7 +76,7 @@ class LoadingState extends Engine.GameState {
         }
     
         //load the array of tile behaviors
-        Mario.Tile.LoadBehaviors();
+        Tile.LoadBehaviors();
     }
 
     Exit() {

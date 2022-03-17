@@ -401,9 +401,9 @@ class MapState extends Engine.GameState {
                 && this.Level[x][y] === Mario.MapTile.Level && this.Data[x][y] !== 0 && this.Data[x][y] > -10) {
                 difficulty = this.WorldNumber + 1;
                 Mario.MarioCharacter.LevelString = difficulty + "-";
-                type = Mario.LevelType.Overground;
+                type = LevelType.Overground;
 
-                if (this.Data[x][y] > 1 && ((Math.random() * 3) | 0) === 0) type = Mario.LevelType.Underground;
+                if (this.Data[x][y] > 1 && ((Math.random() * 3) | 0) === 0) type = LevelType.Underground;
 
                 if (this.Data[x][y] < 0) {
                     if (this.Data[x][y] === -2) {
@@ -416,7 +416,7 @@ class MapState extends Engine.GameState {
                         difficulty += 1;
                     }
 
-                    type = Mario.LevelType.Castle;
+                    type = LevelType.Castle;
                 }
                 else Mario.MarioCharacter.LevelString += this.Data[x][y];
 

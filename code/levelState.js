@@ -40,11 +40,11 @@ class LevelState extends Engine.GameState {
         this.Level = levelGenerator.CreateLevel(this.LevelType, this.LevelDifficulty);
 
         //play music here
-        //if (this.LevelType === Mario.LevelType.Overground) {
+        //if (this.LevelType === LevelType.Overground) {
         //Mario.PlayOvergroundMusic();
-        //} else if (this.LevelType === Mario.LevelType.Underground) {
+        //} else if (this.LevelType === LevelType.Underground) {
         //Mario.PlayUndergroundMusic();
-        //} else if (this.LevelType === Mario.LevelType.Castle) {
+        //} else if (this.LevelType === LevelType.Castle) {
         //Mario.PlayCastleMusic();
         //}
 
@@ -162,7 +162,7 @@ class LevelState extends Engine.GameState {
 
                     if (dir !== 0) {
                         b = this.Level.GetBlock(x, y);
-                        if (((Mario.Tile.Behaviors[b & 0xff]) & Mario.Tile.Animated) > 0 && (((b % 16) / 4) | 0) === 3 && ((b / 16) | 0) === 0 && (this.Tick - x * 2) % 100 === 0) {
+                        if (((Tile.Behaviors[b & 0xff]) & Tile.Animated) > 0 && (((b % 16) / 4) | 0) === 3 && ((b / 16) | 0) === 0 && (this.Tick - x * 2) % 100 === 0) {
                             xCannon = x;
                             for (i = 0; i < 8; i++) {
                                 this.AddSprite(new Sparkle(this, x * 16 + 8, y * 16 + ((Math.random() * 16) | 0), Math.random() * dir, 0, 0, 1, 5));
@@ -362,12 +362,12 @@ class LevelState extends Engine.GameState {
     Bump(x, y, canBreakBricks) {
         let block = this.Level.GetBlock(x, y), xx = 0, yy = 0;
 
-        if ((Mario.Tile.Behaviors[block & 0xff] & Mario.Tile.Bumpable) > 0) {
+        if ((Tile.Behaviors[block & 0xff] & Tile.Bumpable) > 0) {
             this.BumpInto(x, y - 1);
             this.Level.SetBlock(x, y, 4);
             this.Level.SetBlockData(x, y, 4);
 
-            if ((Mario.Tile.Behaviors[block & 0xff] & Mario.Tile.Special) > 0) {
+            if ((Tile.Behaviors[block & 0xff] & Tile.Special) > 0) {
                 Engine.Resources.PlaySound("sprout");
                 if (!Mario.MarioCharacter.Large) {
                     this.AddSprite(new Mushroom(this, x * 16 + 8, y * 16 + 8));
@@ -381,7 +381,7 @@ class LevelState extends Engine.GameState {
             }
         }
 
-        if ((Mario.Tile.Behaviors[block & 0xff] & Mario.Tile.Breakable) > 0) {
+        if ((Tile.Behaviors[block & 0xff] & Tile.Breakable) > 0) {
             this.BumpInto(x, y - 1);
             if (canBreakBricks) {
                 Engine.Resources.PlaySound("breakblock");
@@ -397,7 +397,7 @@ class LevelState extends Engine.GameState {
 
     BumpInto(x, y) {
         let block = this.Level.GetBlock(x, y), i = 0;
-        if (((Mario.Tile.Behaviors[block & 0xff]) & Mario.Tile.PickUpable) > 0) {
+        if (((Tile.Behaviors[block & 0xff]) & Tile.PickUpable) > 0) {
             Mario.MarioCharacter.GetCoin();
             Engine.Resources.PlaySound("coin");
             this.Level.SetBlock(x, y, 0);

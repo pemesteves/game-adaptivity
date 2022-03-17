@@ -22,13 +22,13 @@ class BackgroundGenerator {
     CreateLevel() {
         let level = new Level(this.Width, this.Height);
         switch (this.Type) {
-            case Mario.LevelType.Overground:
+            case LevelType.Overground:
                 this.GenerateOverground(level);
                 break;
-            case Mario.LevelType.Underground:
+            case LevelType.Underground:
                 this.GenerateUnderground(level);
                 break;
-            case Mario.LevelType.Castle:
+            case LevelType.Castle:
                 this.GenerateCastle(level);
                 break;
         }

@@ -44,93 +44,102 @@ var Mario = {
             return a;
         },
     },
+};
 
-    /** LEVEL **/
+class Tile {
+    static BlockUpper = 1 << 0;
+    static BlockAll = 1 << 1;
+    static BlockLower = 1 << 2;
+    static Special = 1 << 3;
+    static Bumpable = 1 << 4;
+    static Breakable = 1 << 5;
+    static PickUpable = 1 << 6;
+    static Animated = 1 << 7;
+    static Behaviors = [];
 
-    Tile: {
-        BlockUpper: 1,
-        BlockAll: 2,
-        BlockLower: 4,
-        Special: 8,
-        Bumpable: 16,
-        Breakable: 32,
-        PickUpable: 64,
-        Animated: 128,
-        Behaviors: [],
-        LoadBehaviors: function () {
-            for (
-                var a = [0, 20, 28, 0, 130, 130, 130, 130, 2, 2, 2, 2, 2, 0, 138, 0, 162, 146, 154, 162, 146, 146, 154, 146, 2, 0, 2, 2, 2, 0, 2, 0, 192, 192, 192, 192, 0, 0, 0, 0, 2, 2, 0, 0, 0, 0, 2, 0, 0, 0, 0, 0, 0, 0, 0, 0, 2, 2],
-                b = 0,
-                b = 58;
-                b < 128;
-                b++
-            )
-                a[b] = 0;
-            a[128] = 2;
-            a[129] = 2;
-            a[130] = 2;
-            a[131] = 0;
-            a[132] = 1;
-            a[133] = 1;
-            a[134] = 1;
-            a[135] = 0;
-            a[136] = 2;
-            a[137] = 2;
-            a[138] = 2;
-            a[139] = 0;
-            a[140] = 2;
-            a[141] = 2;
-            a[142] = 2;
-            a[143] = 0;
-            a[144] = 2;
-            a[145] = 0;
-            a[146] = 2;
-            a[147] = 0;
-            a[148] = 0;
-            a[149] = 0;
-            a[150] = 0;
-            a[151] = 0;
-            a[152] = 2;
-            a[153] = 2;
-            a[154] = 2;
-            a[155] = 0;
-            a[156] = 2;
-            a[157] = 2;
-            a[158] = 2;
-            a[159] = 0;
-            a[160] = 2;
-            a[161] = 2;
-            a[162] = 2;
-            a[163] = 0;
-            a[164] = 0;
-            a[165] = 0;
-            a[166] = 0;
-            a[167] = 0;
-            a[168] = 2;
-            a[169] = 2;
-            a[170] = 2;
-            a[171] = 0;
-            a[172] = 2;
-            a[173] = 2;
-            a[174] = 2;
-            a[175] = 0;
-            a[176] = 2;
-            a[177] = 2;
-            a[178] = 2;
-            a[179] = 0;
-            a[180] = 1;
-            a[181] = 1;
-            a[182] = 1;
-            for (b = 183; b < 224; b++) a[b] = 0;
-            a[224] = 1;
-            a[225] = 1;
-            a[226] = 1;
-            for (b = 227; b < 256; b++) a[b] = 0;
-            this.Behaviors = a;
-        },
-    },
-    LevelType: { Overground: 0, Underground: 1, Castle: 2 },
-    Odds: { Straight: 0, HillStraight: 1, Tubes: 2, Jump: 3, Cannons: 4 },
+    static AddValueToArr(arr, val, quant) {
+        for (let i = 0; i < quant; i++) arr.push(val);
+        return arr;
+    }
+
+    static LoadBehaviors() {
+        let b = [];
+        b = this.AddValueToArr(b, 0, 1);
+        b = this.AddValueToArr(b, 20, 1);
+        b = this.AddValueToArr(b, 28, 1);
+        b = this.AddValueToArr(b, 0, 1);
+        b = this.AddValueToArr(b, 130, 4);
+        b = this.AddValueToArr(b, 2, 5);
+        b = this.AddValueToArr(b, 0, 1);
+        b = this.AddValueToArr(b, 138, 1);
+        b = this.AddValueToArr(b, 0, 1);
+        b = this.AddValueToArr(b, 162, 1);
+        b = this.AddValueToArr(b, 146, 1);
+        b = this.AddValueToArr(b, 154, 1);
+        b = this.AddValueToArr(b, 162, 1);
+        b = this.AddValueToArr(b, 146, 2);
+        b = this.AddValueToArr(b, 154, 1);
+        b = this.AddValueToArr(b, 146, 1);
+        b = this.AddValueToArr(b, 2, 1);
+        b = this.AddValueToArr(b, 0, 1);
+        b = this.AddValueToArr(b, 2, 3);
+        b = this.AddValueToArr(b, 0, 1);
+        b = this.AddValueToArr(b, 2, 1);
+        b = this.AddValueToArr(b, 0, 1);
+        b = this.AddValueToArr(b, 192, 4);
+        b = this.AddValueToArr(b, 0, 1);
+        b = this.AddValueToArr(b, 0, 4);
+        b = this.AddValueToArr(b, 2, 2);
+        b = this.AddValueToArr(b, 0, 4);
+        b = this.AddValueToArr(b, 2, 1);
+        b = this.AddValueToArr(b, 0, 9);
+        b = this.AddValueToArr(b, 2, 1);
+        b = this.AddValueToArr(b, 0, 70);
+        b = this.AddValueToArr(b, 2, 3);
+        b = this.AddValueToArr(b, 0, 1);
+        b = this.AddValueToArr(b, 1, 3);
+        b = this.AddValueToArr(b, 0, 1);
+        b = this.AddValueToArr(b, 2, 3);
+        b = this.AddValueToArr(b, 0, 1);
+        b = this.AddValueToArr(b, 2, 3);
+        b = this.AddValueToArr(b, 0, 1);
+        b = this.AddValueToArr(b, 2, 1);
+        b = this.AddValueToArr(b, 0, 1);
+        b = this.AddValueToArr(b, 2, 1);
+        b = this.AddValueToArr(b, 0, 5);
+        b = this.AddValueToArr(b, 2, 3);
+        b = this.AddValueToArr(b, 0, 1);
+        b = this.AddValueToArr(b, 2, 3);
+        b = this.AddValueToArr(b, 0, 1);
+        b = this.AddValueToArr(b, 2, 3);
+        b = this.AddValueToArr(b, 0, 5);
+        b = this.AddValueToArr(b, 2, 3);
+        b = this.AddValueToArr(b, 0, 1);
+        b = this.AddValueToArr(b, 2, 3);
+        b = this.AddValueToArr(b, 0, 1);
+        b = this.AddValueToArr(b, 2, 3);
+        b = this.AddValueToArr(b, 0, 1);
+        b = this.AddValueToArr(b, 1, 3);
+        b = this.AddValueToArr(b, 0, 41);
+        b = this.AddValueToArr(b, 1, 3);
+        b = this.AddValueToArr(b, 0, 29);
+
+        this.Behaviors = b;
+    }
+};
+
+class Odds {
+    static Straight = 0;
+    static HillStraight = 1;
+    static Tubes = 2;
+    static Jump = 3;
+    static Cannons = 4;
+};
+
+class LevelType {
+    static Overground = 0;
+    static Underground = 1;
+    static Castle = 2;
 };
 
 class Level {
@@ -194,9 +203,9 @@ class Level {
 
     IsBlocking(x, y, xa, ya) {
         let block = this.GetBlock(x, y);
-        let blocking = ((Mario.Tile.Behaviors[block & 0xff]) & Mario.Tile.BlockAll) > 0;
-        blocking |= (ya > 0) && ((Mario.Tile.Behaviors[block & 0xff]) & Mario.Tile.BlockUpper) > 0;
-        blocking |= (ya < 0) && ((Mario.Tile.Behaviors[block & 0xff]) & Mario.Tile.BlockLower) > 0;
+        let blocking = ((Tile.Behaviors[block & 0xff]) & Tile.BlockAll) > 0;
+        blocking |= (ya > 0) && ((Tile.Behaviors[block & 0xff]) & Tile.BlockUpper) > 0;
+        blocking |= (ya < 0) && ((Tile.Behaviors[block & 0xff]) & Tile.BlockLower) > 0;
 
         return blocking;
     }
@@ -236,13 +245,13 @@ class BackgroundGenerator {
     CreateLevel() {
         let level = new Level(this.Width, this.Height);
         switch (this.Type) {
-            case Mario.LevelType.Overground:
+            case LevelType.Overground:
                 this.GenerateOverground(level);
                 break;
-            case Mario.LevelType.Underground:
+            case LevelType.Underground:
                 this.GenerateUnderground(level);
                 break;
-            case Mario.LevelType.Castle:
+            case LevelType.Castle:
                 this.GenerateCastle(level);
                 break;
         }
@@ -983,7 +992,7 @@ class Character extends NotchSprite {
 
         block = this.World.Level.GetBlock(x, y);
 
-        if (((Mario.Tile.Behaviors[block & 0xff]) & Mario.Tile.PickUpable) > 0) {
+        if (((Tile.Behaviors[block & 0xff]) & Tile.PickUpable) > 0) {
             this.GetCoin();
             Engine.Resources.PlaySound("coin");
             this.World.Level.SetBlock(x, y, 0);
@@ -1158,7 +1167,7 @@ class LevelRenderer extends Engine.Drawable {
         for (x = xTileStart; x < xTileEnd + 1; x++) {
             for (y = 0; y < this.TilesY; y++) {
                 b = this.Level.GetBlock(x, y) & 0xff;
-                if ((Mario.Tile.Behaviors[b] & Mario.Tile.Animated) === 0) {
+                if ((Tile.Behaviors[b] & Tile.Animated) === 0) {
                     frame = this.Background[b % 16][(b / 16) | 0];
                     context.drawImage(Engine.Resources.Images["map"], frame.X, frame.Y, frame.Width, frame.Height, ((x << 4) - camera.X) | 0, (y << 4) | 0, frame.Width, frame.Height);
                 }
@@ -1172,7 +1181,7 @@ class LevelRenderer extends Engine.Drawable {
             for (y = (camera.Y / 16) | 0; y <= ((camera.Y + this.Height) / 16) | 0; y++) {
                 b = this.Level.GetBlock(x, y);
 
-                if (((Mario.Tile.Behaviors[b & 0xff]) & Mario.Tile.Animated) > 0) {
+                if (((Tile.Behaviors[b & 0xff]) & Tile.Animated) > 0) {
                     animTime = ((this.Bounce / 3) | 0) % 4;
                     if ((((b % 16) / 4) | 0) === 0 && ((b / 16) | 0) === 1) {
                         animTime = ((this.Bounce / 2 + (x + y) / 8) | 0) % 20;
@@ -1231,13 +1240,13 @@ class LevelGenerator {
 
         this.Type = type;
         this.Difficulty = difficulty;
-        this.Odds[Mario.Odds.Straight] = 20;
-        this.Odds[Mario.Odds.HillStraight] = 10;
-        this.Odds[Mario.Odds.Tubes] = 2 + difficulty;
-        this.Odds[Mario.Odds.Jump] = 2 * difficulty;
-        this.Odds[Mario.Odds.Cannon] = -10 + 5 * difficulty;
+        this.Odds[Odds.Straight] = 20;
+        this.Odds[Odds.HillStraight] = 10;
+        this.Odds[Odds.Tubes] = 2 + difficulty;
+        this.Odds[Odds.Jump] = 2 * difficulty;
+        this.Odds[Odds.Cannon] = -10 + 5 * difficulty;
 
-        if (this.Type !== Mario.LevelType.Overground) this.Odds[Mario.Odds.HillStraight] = 0;
+        if (this.Type !== LevelType.Overground) this.Odds[Odds.HillStraight] = 0;
 
         for (i = 0; i < this.Odds.length; i++) {
             if (this.Odds[i] < 0) this.Odds[i] = 0;
@@ -1261,7 +1270,7 @@ class LevelGenerator {
             }
         }
 
-        if (type === Mario.LevelType.Castle || type === Mario.LevelType.Underground) {
+        if (type === LevelType.Castle || type === LevelType.Underground) {
             for (x = 0; x < level.Width; x++) {
                 if (run-- <= 0 && x > 4) {
                     ceiling = (Math.random() * 4) | 0;
@@ -1285,11 +1294,11 @@ class LevelGenerator {
         }
 
         switch (type) {
-            case Mario.Odds.Straight: return this.BuildStraight(level, x, maxLength, false);
-            case Mario.Odds.HillStraight: return this.BuildHillStraight(level, x, maxLength);
-            case Mario.Odds.Tubes: return this.BuildTubes(level, x, maxLength);
-            case Mario.Odds.Jump: return this.BuildJump(level, x, maxLength);
-            case Mario.Odds.Cannons: return this.BuildCannons(level, x, maxLength);
+            case Odds.Straight: return this.BuildStraight(level, x, maxLength, false);
+            case Odds.HillStraight: return this.BuildHillStraight(level, x, maxLength);
+            case Odds.Tubes: return this.BuildTubes(level, x, maxLength);
+            case Odds.Jump: return this.BuildJump(level, x, maxLength);
+            case Odds.Cannons: return this.BuildCannons(level, x, maxLength);
         }
         return 0;
     }
@@ -1528,8 +1537,8 @@ class LevelGenerator {
 
         for (i = 0; i < 2; i++) b[i] = [];
 
-        if (this.Type === Mario.LevelType.Castle) to = 8;
-        else if (this.Type === Mario.LevelType.Underground) to = 12;
+        if (this.Type === LevelType.Castle) to = 8;
+        else if (this.Type === LevelType.Underground) to = 12;
 
         for (x = 0; x < width; x++) {
             for (y = 0; y < height; y++) {
@@ -1596,13 +1605,13 @@ class PredefinedLevelGenerator extends LevelGenerator {
 
         this.Type = type;
         this.Difficulty = difficulty;
-        this.Odds[Mario.Odds.Straight] = 20;
-        this.Odds[Mario.Odds.HillStraight] = 10;
-        this.Odds[Mario.Odds.Tubes] = 2 + difficulty;
-        this.Odds[Mario.Odds.Jump] = 2 * difficulty;
-        this.Odds[Mario.Odds.Cannon] = -10 + 5 * difficulty;
+        this.Odds[Odds.Straight] = 20;
+        this.Odds[Odds.HillStraight] = 10;
+        this.Odds[Odds.Tubes] = 2 + difficulty;
+        this.Odds[Odds.Jump] = 2 * difficulty;
+        this.Odds[Odds.Cannon] = -10 + 5 * difficulty;
 
-        if (this.Type !== Mario.LevelType.Overground) this.Odds[Mario.Odds.HillStraight] = 0;
+        if (this.Type !== LevelType.Overground) this.Odds[Odds.HillStraight] = 0;
 
         for (i = 0; i < this.Odds.length; i++) {
             if (this.Odds[i] < 0) this.Odds[i] = 0;
@@ -1626,7 +1635,7 @@ class PredefinedLevelGenerator extends LevelGenerator {
             }
         }
 
-        if (type === Mario.LevelType.Castle || type === Mario.LevelType.Underground) {
+        if (type === LevelType.Castle || type === LevelType.Underground) {
             for (x = 0; x < level.Width; x++) {
                 if (run-- <= 0 && x > 4) {
                     ceiling = (Math.random() * 4) | 0;
@@ -2830,9 +2839,9 @@ class TitleState extends Engine.GameState {
         this.drawManager = new Engine.DrawableManager();
         this.camera = new Engine.Camera();
     
-        let bgGenerator = new BackgroundGenerator(2048, 15, true, Mario.LevelType.Overground);
+        let bgGenerator = new BackgroundGenerator(2048, 15, true, LevelType.Overground);
         let bgLayer0 = new BackgroundRenderer(bgGenerator.CreateLevel(), 320, 240, 2);
-        bgGenerator.SetValues(2048, 15, false, Mario.LevelType.Overground);
+        bgGenerator.SetValues(2048, 15, false, LevelType.Overground);
         let bgLayer1 = new BackgroundRenderer(bgGenerator.CreateLevel(), 320, 240, 1);
     
         this.title = new Engine.Sprite();
@@ -2967,7 +2976,7 @@ class LoadingState extends Engine.GameState {
         }
     
         //load the array of tile behaviors
-        Mario.Tile.LoadBehaviors();
+        Tile.LoadBehaviors();
     }
 
     Exit() {
@@ -3526,9 +3535,9 @@ class MapState extends Engine.GameState {
                 && this.Level[x][y] === Mario.MapTile.Level && this.Data[x][y] !== 0 && this.Data[x][y] > -10) {
                 difficulty = this.WorldNumber + 1;
                 Mario.MarioCharacter.LevelString = difficulty + "-";
-                type = Mario.LevelType.Overground;
+                type = LevelType.Overground;
 
-                if (this.Data[x][y] > 1 && ((Math.random() * 3) | 0) === 0) type = Mario.LevelType.Underground;
+                if (this.Data[x][y] > 1 && ((Math.random() * 3) | 0) === 0) type = LevelType.Underground;
 
                 if (this.Data[x][y] < 0) {
                     if (this.Data[x][y] === -2) {
@@ -3541,7 +3550,7 @@ class MapState extends Engine.GameState {
                         difficulty += 1;
                     }
 
-                    type = Mario.LevelType.Castle;
+                    type = LevelType.Castle;
                 }
                 else Mario.MarioCharacter.LevelString += this.Data[x][y];
 
@@ -3700,11 +3709,11 @@ class LevelState extends Engine.GameState {
         this.Level = levelGenerator.CreateLevel(this.LevelType, this.LevelDifficulty);
 
         //play music here
-        //if (this.LevelType === Mario.LevelType.Overground) {
+        //if (this.LevelType === LevelType.Overground) {
         //Mario.PlayOvergroundMusic();
-        //} else if (this.LevelType === Mario.LevelType.Underground) {
+        //} else if (this.LevelType === LevelType.Underground) {
         //Mario.PlayUndergroundMusic();
-        //} else if (this.LevelType === Mario.LevelType.Castle) {
+        //} else if (this.LevelType === LevelType.Castle) {
         //Mario.PlayCastleMusic();
         //}
 
@@ -3823,7 +3832,7 @@ class LevelState extends Engine.GameState {
 
                     if (dir !== 0) {
                         b = this.Level.GetBlock(x, y);
-                        if (((Mario.Tile.Behaviors[b & 0xff]) & Mario.Tile.Animated) > 0 && (((b % 16) / 4) | 0) === 3 && ((b / 16) | 0) === 0 && (this.Tick - x * 2) % 100 === 0) {
+                        if (((Tile.Behaviors[b & 0xff]) & Tile.Animated) > 0 && (((b % 16) / 4) | 0) === 3 && ((b / 16) | 0) === 0 && (this.Tick - x * 2) % 100 === 0) {
                             xCannon = x;
                             for (i = 0; i < 8; i++) {
                                 this.AddSprite(new Sparkle(this, x * 16 + 8, y * 16 + ((Math.random() * 16) | 0), Math.random() * dir, 0, 0, 1, 5));
@@ -4023,12 +4032,12 @@ class LevelState extends Engine.GameState {
     Bump(x, y, canBreakBricks) {
         let block = this.Level.GetBlock(x, y), xx = 0, yy = 0;
 
-        if ((Mario.Tile.Behaviors[block & 0xff] & Mario.Tile.Bumpable) > 0) {
+        if ((Tile.Behaviors[block & 0xff] & Tile.Bumpable) > 0) {
             this.BumpInto(x, y - 1);
             this.Level.SetBlock(x, y, 4);
             this.Level.SetBlockData(x, y, 4);
 
-            if ((Mario.Tile.Behaviors[block & 0xff] & Mario.Tile.Special) > 0) {
+            if ((Tile.Behaviors[block & 0xff] & Tile.Special) > 0) {
                 Engine.Resources.PlaySound("sprout");
                 if (!Mario.MarioCharacter.Large) {
                     this.AddSprite(new Mushroom(this, x * 16 + 8, y * 16 + 8));
@@ -4042,7 +4051,7 @@ class LevelState extends Engine.GameState {
             }
         }
 
-        if ((Mario.Tile.Behaviors[block & 0xff] & Mario.Tile.Breakable) > 0) {
+        if ((Tile.Behaviors[block & 0xff] & Tile.Breakable) > 0) {
             this.BumpInto(x, y - 1);
             if (canBreakBricks) {
                 Engine.Resources.PlaySound("breakblock");
@@ -4058,7 +4067,7 @@ class LevelState extends Engine.GameState {
 
     BumpInto(x, y) {
         let block = this.Level.GetBlock(x, y), i = 0;
-        if (((Mario.Tile.Behaviors[block & 0xff]) & Mario.Tile.PickUpable) > 0) {
+        if (((Tile.Behaviors[block & 0xff]) & Tile.PickUpable) > 0) {
             Mario.MarioCharacter.GetCoin();
             Engine.Resources.PlaySound("coin");
             this.Level.SetBlock(x, y, 0);

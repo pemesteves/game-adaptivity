@@ -19,13 +19,13 @@ class LevelGenerator {
 
         this.Type = type;
         this.Difficulty = difficulty;
-        this.Odds[Mario.Odds.Straight] = 20;
-        this.Odds[Mario.Odds.HillStraight] = 10;
-        this.Odds[Mario.Odds.Tubes] = 2 + difficulty;
-        this.Odds[Mario.Odds.Jump] = 2 * difficulty;
-        this.Odds[Mario.Odds.Cannon] = -10 + 5 * difficulty;
+        this.Odds[Odds.Straight] = 20;
+        this.Odds[Odds.HillStraight] = 10;
+        this.Odds[Odds.Tubes] = 2 + difficulty;
+        this.Odds[Odds.Jump] = 2 * difficulty;
+        this.Odds[Odds.Cannon] = -10 + 5 * difficulty;
 
-        if (this.Type !== Mario.LevelType.Overground) this.Odds[Mario.Odds.HillStraight] = 0;
+        if (this.Type !== LevelType.Overground) this.Odds[Odds.HillStraight] = 0;
 
         for (i = 0; i < this.Odds.length; i++) {
             if (this.Odds[i] < 0) this.Odds[i] = 0;
@@ -49,7 +49,7 @@ class LevelGenerator {
             }
         }
 
-        if (type === Mario.LevelType.Castle || type === Mario.LevelType.Underground) {
+        if (type === LevelType.Castle || type === LevelType.Underground) {
             for (x = 0; x < level.Width; x++) {
                 if (run-- <= 0 && x > 4) {
                     ceiling = (Math.random() * 4) | 0;
@@ -73,11 +73,11 @@ class LevelGenerator {
         }
 
         switch (type) {
-            case Mario.Odds.Straight: return this.BuildStraight(level, x, maxLength, false);
-            case Mario.Odds.HillStraight: return this.BuildHillStraight(level, x, maxLength);
-            case Mario.Odds.Tubes: return this.BuildTubes(level, x, maxLength);
-            case Mario.Odds.Jump: return this.BuildJump(level, x, maxLength);
-            case Mario.Odds.Cannons: return this.BuildCannons(level, x, maxLength);
+            case Odds.Straight: return this.BuildStraight(level, x, maxLength, false);
+            case Odds.HillStraight: return this.BuildHillStraight(level, x, maxLength);
+            case Odds.Tubes: return this.BuildTubes(level, x, maxLength);
+            case Odds.Jump: return this.BuildJump(level, x, maxLength);
+            case Odds.Cannons: return this.BuildCannons(level, x, maxLength);
         }
         return 0;
     }
@@ -316,8 +316,8 @@ class LevelGenerator {
 
         for (i = 0; i < 2; i++) b[i] = [];
 
-        if (this.Type === Mario.LevelType.Castle) to = 8;
-        else if (this.Type === Mario.LevelType.Underground) to = 12;
+        if (this.Type === LevelType.Castle) to = 8;
+        else if (this.Type === LevelType.Underground) to = 12;
 
         for (x = 0; x < width; x++) {
             for (y = 0; y < height; y++) {

@@ -37,7 +37,7 @@ class LevelRenderer extends Engine.Drawable {
         for (x = xTileStart; x < xTileEnd + 1; x++) {
             for (y = 0; y < this.TilesY; y++) {
                 b = this.Level.GetBlock(x, y) & 0xff;
-                if ((Mario.Tile.Behaviors[b] & Mario.Tile.Animated) === 0) {
+                if ((Tile.Behaviors[b] & Tile.Animated) === 0) {
                     frame = this.Background[b % 16][(b / 16) | 0];
                     context.drawImage(Engine.Resources.Images["map"], frame.X, frame.Y, frame.Width, frame.Height, ((x << 4) - camera.X) | 0, (y << 4) | 0, frame.Width, frame.Height);
                 }
@@ -51,7 +51,7 @@ class LevelRenderer extends Engine.Drawable {
             for (y = (camera.Y / 16) | 0; y <= ((camera.Y + this.Height) / 16) | 0; y++) {
                 b = this.Level.GetBlock(x, y);
 
-                if (((Mario.Tile.Behaviors[b & 0xff]) & Mario.Tile.Animated) > 0) {
+                if (((Tile.Behaviors[b & 0xff]) & Tile.Animated) > 0) {
                     animTime = ((this.Bounce / 3) | 0) % 4;
                     if ((((b % 16) / 4) | 0) === 0 && ((b / 16) | 0) === 1) {
                         animTime = ((this.Bounce / 2 + (x + y) / 8) | 0) % 20;

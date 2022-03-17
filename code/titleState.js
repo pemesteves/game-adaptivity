@@ -19,9 +19,9 @@ class TitleState extends Engine.GameState {
         this.drawManager = new Engine.DrawableManager();
         this.camera = new Engine.Camera();
     
-        let bgGenerator = new BackgroundGenerator(2048, 15, true, Mario.LevelType.Overground);
+        let bgGenerator = new BackgroundGenerator(2048, 15, true, LevelType.Overground);
         let bgLayer0 = new BackgroundRenderer(bgGenerator.CreateLevel(), 320, 240, 2);
-        bgGenerator.SetValues(2048, 15, false, Mario.LevelType.Overground);
+        bgGenerator.SetValues(2048, 15, false, LevelType.Overground);
         let bgLayer1 = new BackgroundRenderer(bgGenerator.CreateLevel(), 320, 240, 1);
     
         this.title = new Engine.Sprite();
