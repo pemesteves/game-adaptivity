@@ -19,7 +19,7 @@ class WinState extends Engine.GameState {
         this.drawManager = new Engine.DrawableManager();
         this.camera = new Engine.Camera();
 
-        this.font = Mario.SpriteCuts.CreateBlackFont();
+        this.font = SpriteCuts.CreateBlackFont();
         this.font.Strings[0] = { String: "Thank you for saving me, Mario!", X: 36, Y: 160 };
 
         this.kissing = new Engine.AnimatedSprite();
