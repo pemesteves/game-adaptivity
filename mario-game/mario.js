@@ -2025,7 +2025,7 @@ class Fireball extends NotchSprite {
         this.World = world;
         this.X = x;
         this.Y = y;
-        this.Facing = facing;
+        this.Facing = facing || 1;
 
         this.XPicO = 4;
         this.YPicO = 4;
@@ -2921,7 +2921,7 @@ class TitleState extends Engine.GameState {
     }
 
     CheckForChange(context) {
-        if (Engine.KeyboardInput.IsKeyDown(Engine.Keys.S)) context.ChangeState(/*new PredefinedLevelState(1, 0));// */Mario.GlobalMapState);
+        if (Engine.KeyboardInput.IsKeyDown(Engine.Keys.S)) context.ChangeState(Mario.GlobalMapState);
     }
 };
 
@@ -3044,7 +3044,7 @@ class LoadingState extends Engine.GameState {
             //set up the global map state variable
             Mario.GlobalMapState = new MapState();
     
-            context.ChangeState(new TitleState());
+            context.ChangeState(new PredefinedTitleState());
         }
     }
 };
@@ -3100,7 +3100,7 @@ class LoseState extends Engine.GameState {
     }
 
     CheckForChange(context) {
-        if (this.wasKeyDown && !Engine.KeyboardInput.IsKeyDown(Engine.Keys.S)) context.ChangeState(new TitleState());
+        if (this.wasKeyDown && !Engine.KeyboardInput.IsKeyDown(Engine.Keys.S)) context.ChangeState(new PredefinedTitleState());
     }
 };
 
@@ -3159,7 +3159,7 @@ class WinState extends Engine.GameState {
 
     CheckForChange = function (context) {
         if (this.waitTime <= 0 &&  this.wasKeyDown && !Engine.KeyboardInput.IsKeyDown(Engine.Keys.S)) {
-            context.ChangeState(new TitleState());
+            context.ChangeState(new PredefinedTitleState());
         }
     }
 };
@@ -4171,3 +4171,10 @@ class GameplayMetrics {
         this.noJumps++;
     }
 };
+
+/** PREDEFINED TITLE STATE **/
+class PredefinedTitleState extends TitleState {
+    CheckForChange(context) {
+        if (Engine.KeyboardInput.IsKeyDown(Engine.Keys.S)) context.ChangeState(new PredefinedLevelState(1, 0));
+    }
+}

@@ -13,6 +13,8 @@ class Tile {
     static Breakable = 1 << 5;
     static PickUpable = 1 << 6;
     static Animated = 1 << 7;
+    static Coin = 11000000;
+    static CoinBlock = 10010010;
     static Behaviors = [];
 
     static AddValueToArr(arr, val, quant) {
