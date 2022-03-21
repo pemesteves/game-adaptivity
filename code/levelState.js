@@ -35,10 +35,12 @@ class LevelState extends Engine.GameState {
         this.GotoLoseState = false;
     }
 
-    Enter() {
-        let levelGenerator = new LevelGenerator(320, 15), i = 0, scrollSpeed = 0, w = 0, h = 0, bgLevelGenerator = null;
-        this.Level = levelGenerator.CreateLevel(this.LevelType, this.LevelDifficulty);
+    GetLevel() {
+        return new LevelGenerator(320, 15).CreateLevel(this.LevelType, this.LevelDifficulty);
+    }
 
+    Enter() {
+        this.Level = this.GetLevel();
         //play music here
         //if (this.LevelType === LevelType.Overground) {
         //Mario.PlayOvergroundMusic();
@@ -62,12 +64,12 @@ class LevelState extends Engine.GameState {
         this.FontShadow = SpriteCuts.CreateBlackFont();
         this.Font = SpriteCuts.CreateWhiteFont();
 
-        for (i = 0; i < 2; i++) {
+        let scrollSpeed = 0, w = 0, h = 0;
+        for (let i = 0; i < 2; i++) {
             scrollSpeed = 4 >> i;
             w = ((((this.Level.Width * 16) - 320) / scrollSpeed) | 0) + 320;
             h = ((((this.Level.Height * 16) - 240) / scrollSpeed) | 0) + 240;
-            bgLevelGenerator = new BackgroundGenerator(w / 32 + 1, h / 32 + 1, i === 0, this.LevelType);
-            this.BgLayer[i] = new BackgroundRenderer(bgLevelGenerator.CreateLevel(), 320, 240, scrollSpeed);
+            this.BgLayer[i] = new BackgroundRenderer(new BackgroundGenerator(w / 32 + 1, h / 32 + 1, i === 0, this.LevelType).CreateLevel(), 320, 240, scrollSpeed);
         }
 
         Mario.MarioCharacter.Initialize(this);

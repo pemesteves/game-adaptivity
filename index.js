@@ -6,7 +6,7 @@ var surveyJSON = {
       {
           "type": "html",
           "name": "Game",
-          "html": "<link rel=\"stylesheet\" href=\"mario.css\"/>\n<canvas id=\"canvas\" width=\"640\" height=\"480\"> \n\t\t\t <p>Your browser does not support the canvas element.</p>\n\t\t</canvas>\n<script src=\"engine.min.js\"></script>\n<script src=\"mario-game/mario.js\"></script>\n<script>$(document).ready(function (){new Engine.Application().Initialize(new LoadingState(), 320, 240);});</script>"
+          "html": "<link rel=\"stylesheet\" href=\"mario.css\"/>\n<canvas id=\"canvas\" width=\"640\" height=\"480\"> \n\t\t\t <p>Your browser does not support the canvas element.</p>\n\t\t</canvas>\n<script src=\"mario-game/engine.js\"></script>\n<script src=\"mario-game/mario.js\"></script>\n<script>$(document).ready(function (){new Engine.Application().Initialize(new LoadingState(), 320, 240);});</script>"
       }
   ]
 }

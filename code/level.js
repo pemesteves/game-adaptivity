@@ -164,7 +164,7 @@ class Level {
     IsBlocking(x, y, xa, ya) {
         let block = this.GetBlock(x, y);
         let blocking = ((Tile.Behaviors[block & 0xff]) & Tile.BlockAll) > 0;
-        blocking |= (ya > 0) && ((Mario.ile.Behaviors[block & 0xff]) & Tile.BlockUpper) > 0;
+        blocking |= (ya > 0) && ((Tile.Behaviors[block & 0xff]) & Tile.BlockUpper) > 0;
         blocking |= (ya < 0) && ((Tile.Behaviors[block & 0xff]) & Tile.BlockLower) > 0;
 
         return blocking;
@@ -182,5 +182,29 @@ class Level {
 
     IsOutsideBoundaries(x, y) {
         return x < 0 || y < 0 || x >= this.Width || y >= this.Height;
+    }
+
+    SetMap(map) {
+        this.Map = map;
+    }
+
+    SetData(data) {
+        this.Data = data;
+    }
+
+    SetExit(x, y) {
+        this.ExitX = x;
+        this.ExitY = y;
+    }
+
+    SetSpriteTemplates(tmp) {
+        for (let i = 0; i < tmp.length; i++) {
+            const tmp_line = tmp[i];
+            for (let j = 0; j < tmp_line.length; j++) {
+                if (tmp_line[j] === null) continue;
+                
+                this.SetSpriteTemplate(i, j, new SpriteTemplate(tmp_line[j].Type, tmp_line[j].Winged));
+            }
+        }
     }
 };
