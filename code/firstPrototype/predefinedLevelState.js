@@ -8,7 +8,7 @@ class PredefinedLevelState extends LevelState {
         super(difficulty, type);
 
         this.NextLevel = false;
-        this.agent = new Agent();
+        this.agent = new PlayerAgent();
     }
 
     GetLevel() {
