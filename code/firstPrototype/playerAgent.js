@@ -12,6 +12,9 @@ class PlayerAgent extends Agent {
     }
 
     StoreEvent(evt) {
+        // Only store events from keys related to the gameplay
+        if (evt.keyCode !== Engine.Keys.A && evt.keyCode !== Engine.Keys.S && evt.keyCode !== Engine.Keys.Left && evt.keyCode !== Engine.Keys.Right) return;
+
         this.actions.push({
             'ticks': this.ticks,
             'keycode': evt.keyCode, // TODO fix because it is deprecated?
