@@ -33,6 +33,12 @@ class LevelState extends Engine.GameState {
 
         this.GotoMapState = false;
         this.GotoLoseState = false;
+
+        Mario.MarioCharacter.gameplayMetrics.setLevelState(this); 
+    }
+
+    GetName() {
+        return "LevelState";
     }
 
     GetLevel() {
@@ -415,4 +421,8 @@ class LevelState extends Engine.GameState {
         if (this.GotoLoseState) context.ChangeState(new LoseState());
         else if (this.GotoMapState) context.ChangeState(Mario.GlobalMapState);
     };
+
+    GetTimeLeft() {
+        return this.TimeLeft;
+    }
 };

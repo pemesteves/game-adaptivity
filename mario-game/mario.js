@@ -1122,6 +1122,9 @@ class Character extends NotchSprite {
         this.DeathTime = 1;
         Engine.Resources.PlaySound("death");
         this.SetLarge(false, false);
+
+        // Register Death Time
+        this.gameplayMetrics.registerDeathTime();
     }
 
     GetFlower() {
@@ -3713,6 +3716,12 @@ class LevelState extends Engine.GameState {
 
         this.GotoMapState = false;
         this.GotoLoseState = false;
+
+        Mario.MarioCharacter.gameplayMetrics.setLevelState(this); 
+    }
+
+    GetName() {
+        return "LevelState";
     }
 
     GetLevel() {
@@ -3836,7 +3845,7 @@ class LevelState extends Engine.GameState {
                     st = this.Level.GetSpriteTemplate(x, y);
 
                     if (st !== null) {
-                        if (st.LastVisibleTick !== this.Tick - 1 && (st.Sprite === null || !this.Sprites.Contains(st.Sprite)))
+                        if (st.LastVisibleTick !== this.Tick - 1 && (st.Sprite === null || !this.Sprites.Contains(st.Sprite))) 
                             st.Spawn(this, x, y, dir);
 
                         st.LastVisibleTick = this.Tick;
@@ -3864,9 +3873,9 @@ class LevelState extends Engine.GameState {
 
             for (i = 0; i < this.ShellsToCheck.length; i++) {
                 for (j = 0; j < this.Sprites.Objects.length; j++) {
-                    if (this.Sprites.Objects[j] !== this.ShellsToCheck[i] && !this.ShellsToCheck[i].Dead
-                        && this.Sprites.Objects[j].ShellCollideCheck(this.ShellsToCheck[i])
-                        && Mario.MarioCharacter.Carried === this.ShellsToCheck[i] && !this.ShellsToCheck[i].Dead) {
+                    if (this.Sprites.Objects[j] !== this.ShellsToCheck[i] && !this.ShellsToCheck[i].Dead 
+                            && this.Sprites.Objects[j].ShellCollideCheck(this.ShellsToCheck[i])
+                            && Mario.MarioCharacter.Carried === this.ShellsToCheck[i] && !this.ShellsToCheck[i].Dead) {
                         Mario.MarioCharacter.Carried = null;
                         this.ShellsToCheck[i].Die();
                     }
@@ -3904,7 +3913,7 @@ class LevelState extends Engine.GameState {
 
         if (this.Camera.X < 0) this.Camera.X = 0;
         else if (this.Camera.Y < 0) this.Camera.Y = 0;
-
+        
         if (this.Camera.X > this.Level.Width * 16 - 320) this.Camera.X = this.Level.Width * 16 - 320;
         if (this.Camera.Y > this.Level.Height * 16 - 240) this.Camera.Y = this.Level.Height * 16 - 240;
 
@@ -3974,7 +3983,7 @@ class LevelState extends Engine.GameState {
 
         let time = this.TimeLeft | 0;
         if (time < 0) time = 0;
-
+        
         this.DrawStringShadow(context, " " + time, 34, 1);
     }
 
@@ -4095,6 +4104,10 @@ class LevelState extends Engine.GameState {
         if (this.GotoLoseState) context.ChangeState(new LoseState());
         else if (this.GotoMapState) context.ChangeState(Mario.GlobalMapState);
     };
+
+    GetTimeLeft() {
+        return this.TimeLeft;
+    }
 };
 
 /** PREDEFINED LEVEL STATE **/
@@ -4123,8 +4136,8 @@ class PredefinedLevelState extends LevelState {
 
     CheckForChange(context) {
         if (this.GotoLoseState || this.NextLevel) {
-            console.log(Mario.MarioCharacter.gameplayMetrics.noJumps);
-            
+            console.log(Mario.MarioCharacter.gameplayMetrics.printMetrics());
+
             this.agent.StoreActions(); // Store player actions
 
             context.ChangeState(new PredefinedLevelState(1, 0)); // TODO Count Number os Losses
@@ -4162,10 +4175,35 @@ class PredefinedLevelState extends LevelState {
 class GameplayMetrics {
     constructor() {
         this.noJumps = 0;
+    
+        this.levelState = null;
+    }
+
+    setLevelState(levelState) {   
+        if (levelState.GetName === undefined || levelState.GetName() !== "LevelState") {
+            console.error("setLevelState should receive an instance of LevelState");
+            return;
+        }
+
+        this.levelState = levelState;
     }
 
     registerJump() {
         this.noJumps++;
+    }
+
+    registerDeathTime() {
+        if (this.levelState == null) return;
+
+        const t = this.levelState.GetTimeLeft();
+        this.timeLeft = t < 0 ? 0 : t;
+    }
+
+    printMetrics() {
+        return {
+            "noJumps": this.noJumps,
+            "timeLeft": this.timeLeft,
+        };
     }
 };
 
@@ -4220,7 +4258,6 @@ class PlayerAgent extends Agent {
 
     StoreActions() {
         console.log(JSON.stringify(this.actions)); // TODO Store in JSON file or send to server ?
-        console.log(this.ticks);
     }
 };
 

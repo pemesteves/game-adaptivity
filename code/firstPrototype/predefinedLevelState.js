@@ -27,8 +27,8 @@ class PredefinedLevelState extends LevelState {
 
     CheckForChange(context) {
         if (this.GotoLoseState || this.NextLevel) {
-            console.log(Mario.MarioCharacter.gameplayMetrics.noJumps);
-            
+            console.log(Mario.MarioCharacter.gameplayMetrics.printMetrics());
+
             this.agent.StoreActions(); // Store player actions
 
             context.ChangeState(new PredefinedLevelState(1, 0)); // TODO Count Number os Losses

@@ -24,6 +24,5 @@ class PlayerAgent extends Agent {
 
     StoreActions() {
         console.log(JSON.stringify(this.actions)); // TODO Store in JSON file or send to server ?
-        console.log(this.ticks);
     }
 };

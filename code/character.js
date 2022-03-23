@@ -504,6 +504,9 @@ class Character extends NotchSprite {
         this.DeathTime = 1;
         Engine.Resources.PlaySound("death");
         this.SetLarge(false, false);
+
+        // Register Death Time
+        this.gameplayMetrics.registerDeathTime();
     }
 
     GetFlower() {
