@@ -18,4 +18,8 @@ class Agent extends NotchSprite {
 
         this.ticks++;
     }
+
+    StoreActions() {
+        console.log(this.ticks);
+    }
 };
