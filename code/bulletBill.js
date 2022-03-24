@@ -30,7 +30,7 @@ class BulletBill extends NotchSprite {
         if (this.Dead) return;
 
         let xMarioD = Mario.MarioCharacter.X - this.X, yMarioD = Mario.MarioCharacter.Y - this.Y;
-        if (xMarioD > -16 && xMarioD < 16 && yMarioD > -this.Height && yMarioD < this.World.Mario.Height) {
+        if (xMarioD > -16 && xMarioD < 16 && yMarioD > - this.Height && yMarioD < Mario.MarioCharacter.Height) {
             if (Mario.MarioCharacter.Y > 0 && yMarioD <= 0 && (!Mario.MarioCharacter.OnGround || !Mario.MarioCharacter.WasOnGround)) {
                 Mario.MarioCharacter.Stomp(this);
                 this.Dead = true;
@@ -67,7 +67,7 @@ class BulletBill extends NotchSprite {
 
         this.Xa = this.Facing * sideWaysSpeed;
         this.XFlip = this.Facing === -1;
-        this.Move(this.Xa, 0); // TODO Move or SubMove ?
+        this.SubMove(this.Xa, 0);
     }
 
     SubMove(xa, ya) {

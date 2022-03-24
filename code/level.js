@@ -196,15 +196,4 @@ class Level {
         this.ExitX = x;
         this.ExitY = y;
     }
-
-    SetSpriteTemplates(tmp) {
-        for (let i = 0; i < tmp.length; i++) {
-            const tmp_line = tmp[i];
-            for (let j = 0; j < tmp_line.length; j++) {
-                if (tmp_line[j] === null) continue;
-                
-                this.SetSpriteTemplate(i, j, new SpriteTemplate(tmp_line[j].Type, tmp_line[j].Winged));
-            }
-        }
-    }
 };

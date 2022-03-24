@@ -57,27 +57,28 @@ class Enemy extends NotchSprite {
 
         let xMarioD = Mario.MarioCharacter.X - this.X, yMarioD = Mario.MarioCharacter.Y - this.Y;
 
-        if (xMarioD > -this.Width * 2 - 4 && xMarioD < this.Width * 2 + 4) {
-            if (yMarioD > -this.Height && yMarioD < Mario.MarioCharacter.Height) {
-                if (this.Type !== Enemy.Spiky && Mario.MarioCharacter.Ya > 0 && yMarioD <= 0 && (!Mario.MarioCharacter.OnGround || !Mario.MarioCharacter.WasOnGround)) {
-                    Mario.MarioCharacter.Stomp(this);
-                    if (this.Winged) {
-                        this.Winged = false;
-                        this.Ya = 0;
-                    } else {
-                        this.YPicO = 31 - (32 - 8);
-                        this.PicHeight = 8;
+        if (xMarioD > -this.Width * 2 - 4 && xMarioD < this.Width * 2 + 4 && 
+                yMarioD > -this.Height && yMarioD < Mario.MarioCharacter.Height) {
+            if (!(this.Type !== Enemy.Spiky && Mario.MarioCharacter.Ya > 0 && yMarioD <= 0 && (!Mario.MarioCharacter.OnGround || !Mario.MarioCharacter.WasOnGround))) {
+                Mario.MarioCharacter.GetHurt();
+                return;
+            }
 
-                        if (this.SpriteTemplate !== null) this.SpriteTemplate.IsDead = true;
+            Mario.MarioCharacter.Stomp(this);
+            if (this.Winged) {
+                this.Winged = false;
+                this.Ya = 0;
+            } else {
+                this.YPicO = 31 - (32 - 8);
+                this.PicHeight = 8;
 
-                        this.DeadTime = 10;
-                        this.Winged = false;
+                if (this.SpriteTemplate !== null) this.SpriteTemplate.IsDead = true;
 
-                        if (this.Type === Enemy.RedKoopa) this.World.AddSprite(new Shell(this.World, this.X, this.Y, 0));
-                        else if (this.Type === Enemy.GreenKoopa) this.World.AddSprite(new Shell(this.World, this.X, this.Y, 1));
-                    }
-                }
-                else Mario.MarioCharacter.GetHurt();
+                this.DeadTime = 10;
+                this.Winged = false;
+
+                if (this.Type === Enemy.RedKoopa) this.World.AddSprite(new Shell(this.World, this.X, this.Y, 0));
+                else if (this.Type === Enemy.GreenKoopa) this.World.AddSprite(new Shell(this.World, this.X, this.Y, 1));
             }
         }
     }

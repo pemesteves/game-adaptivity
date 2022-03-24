@@ -13,7 +13,17 @@ class PredefinedLevelGenerator {
         lvl.SetExit(this.level.ExitX, this.level.ExitY);
         lvl.SetMap(this.level.Map);
         lvl.SetData(this.level.Data);
-        lvl.SetSpriteTemplates(this.level.SpriteTemplates);
+
+        // Set Sprite Templates
+        const tmp = this.level.SpriteTemplates;
+        for (let i = 0; i < tmp.length; i++) {
+            const tmp_line = tmp[i];
+            for (let j = 0; j < tmp_line.length; j++) {
+                if (tmp_line[j] === null) continue;
+
+                this.SetSpriteTemplate(i, j, new SpriteTemplate(tmp_line[j].Type, tmp_line[j].Winged));
+            }
+        }
 
         return lvl;
     }

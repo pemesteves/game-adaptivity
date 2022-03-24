@@ -53,7 +53,6 @@ class Character extends NotchSprite {
     }
 
     Initialize(world) {
-        this.World = world;
         this.X = 32;
         this.Y = 0;
         this.PowerUpTime = 0;
