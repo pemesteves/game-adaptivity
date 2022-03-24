@@ -5,6 +5,6 @@
 **/
 
 class Mario {
-	static MarioCharacter;
-	static GlobalMapState;
+    static MarioCharacter;
+    static GlobalMapState;
 };

@@ -34,7 +34,7 @@ class LevelGenerator {
             this.Odds[i] = this.TotalOdds - this.Odds[i];
         }
 
-        level = new Level(this.Width, this.Height);
+        level = new Level(this.Width, this.Height, type);
         length += this.BuildStraight(level, 0, level.Width, true);
 
         while (length < level.Width - 64) length += this.BuildZone(level, length, level.Width - length);
@@ -62,11 +62,11 @@ class LevelGenerator {
         }
 
         this.FixWalls(level);
-
         return level;
     }
 
     BuildZone(level, x, maxLength) {
+        return this.BuildHillStraight(level, x, maxLength);
         let t = (Math.random() * this.TotalOdds) | 0, type = 0, i = 0;
         for (i = 0; i < this.Odds.length; i++) {
             if (this.Odds[i] <= t) type = i;
@@ -86,21 +86,12 @@ class LevelGenerator {
         let js = ((Math.random() * 4) | 0) + 2, jl = ((Math.random() * 2) | 0) + 2, length = js * 2 + jl, x = 0, y = 0,
             hasStairs = ((Math.random() * 3) | 0) === 0, floor = this.Height - 1 - ((Math.random() * 4) | 0);
 
-        for (x = xo; x < xo + length; x++) {
-            if (x < xo + js || x > xo + length - js - 1) {
-                for (y = 0; y < this.Height; y++) {
-                    if (y >= floor) level.SetBlock(x, y, 1 + 9 * 16);
-                    else if (hasStairs && x < xo + js && y >= floor - (x - xo) + 1) level.SetBlock(x, y, 9);
-                    else if (hasStairs && x >= xo + js && y >= floor - ((xo + length) - x) + 2) level.SetBlock(x, y, 9);
-                }
-            }
-        }
+        level.SetJumpSection(js, jl, length, xo, hasStairs, floor);
 
         return length;
     }
 
     BuildCannons(level, xo, maxLength) {
-        alert("cannons");
         let length = ((Math.random() * 10) | 0) + 2, floor = this.Height - 1 - (Math.random() * 4) | 0,
             xCannon = xo + 1 + (Math.random() * 4) | 0, x = 0, y = 0, cannonHeight = 0;
 
@@ -132,60 +123,69 @@ class LevelGenerator {
     }
 
     BuildHillStraight(level, xo, maxLength) {
-        let length = ((Math.random() * 10) | 0) + 10, floor = this.Height - 1 - (Math.random() * 4) | 0,
-            x = 0, y = 0, h = floor, keepGoing = true, l = 0, xxo = 0, occupied = [], xx = 0, yy = 0;
+        let length = ((Math.random() * 10) | 0) + 10, floor = this.Height - 1 - (Math.random() * 4) | 0;
 
         if (length > maxLength) length = maxLength;
 
-        for (x = xo; x < xo + length; x++) {
-            for (y = 0; y < this.Height; y++) {
+        let hillStraight = new HillStraightSection(xo, length, floor);
+
+        for (let x = xo; x < xo + length; x++) {
+            for (let y = 0; y < this.Height; y++) {
                 if (y >= floor) level.SetBlock(x, y, 1 + 9 * 16);
             }
         }
 
         this.AddEnemyLine(level, xo + 1, xo + length - 1, floor - 1);
 
+        let h = floor, l = 0, xxo = 0, occupied = [], i = 0, keepGoing = true;
         while (keepGoing) {
             h = h - 2 - (Math.random() * 3) | 0;
-            if (h <= 0) {
+            hillStraight.SetHrndValue(h);
+
+            if (h <= 0) break;
+
+            l = ((Math.random() * 5) | 0) + 3;
+            hillStraight.SetLrndValue(l);
+            xxo = ((Math.random() * (length - l - 2)) | 0) + xo + 1;
+            hillStraight.SetXXOrndValue(xxo);
+
+            if (occupied[xxo - xo] || occupied[xxo - xo + l] || occupied[xxo - xo - 1] || occupied[xxo - xo + l + 1]) break;
+
+            occupied[xxo - xo] = true;
+            occupied[xxo - xo + l] = true;
+
+            this.AddEnemyLine(level, xxo, xxo + l, h - 1);
+
+            if (((Math.random() * 4) | 0) === 0) {
+                hillStraight.SetDecorateIteration(i);
+                hillStraight.SetDecorate(this.Decorate(level, xxo - 1, xxo + l + 1, h));
                 keepGoing = false;
-            } else {
-                l = ((Math.random() * 5) | 0) + 3;
-                xxo = ((Math.random() * (length - l - 2)) | 0) + xo + 1;
+            }
 
-                if (occupied[xxo - xo] || occupied[xxo - xo + l] || occupied[xxo - xo - 1] || occupied[xxo - xo + l + 1]) {
-                    keepGoing = false;
-                } else {
-                    occupied[xxo - xo] = true;
-                    occupied[xxo - xo + l] = true;
-                    this.AddEnemyLine(level, xxo, xxo + l, h - 1);
-                    if (((Math.random() * 4) | 0) === 0) {
-                        this.Decorate(level, xxo - 1, xxo + l + 1, h);
-                        keepGoing = false;
-                    }
+            for (let x = xxo; x < xxo + l; x++) {
+                for (let y = h; y < floor; y++) {
+                    let xx = 5;
+                    let yy = 9;
 
-                    for (x = xxo; x < xxo + l; x++) {
-                        for (y = h; y < floor; y++) {
-                            xx = 5;
-                            yy = 9;
-                            if (x === xxo) xx = 4;
+                    if (x === xxo) xx = 4;
+                    if (x === xxo + l - 1) xx = 6;
+                    if (y === h) yy = 8;
 
-                            if (x === xxo + l - 1) xx = 6;
+                    hillStraight.AddGetBlock(i, level.GetBlock(x, y));
 
-                            if (y === h) yy = 8;
-
-                            if (level.GetBlock(x, y) === 0) {
-                                level.SetBlock(x, y, xx + yy * 16);
-                            } else {
-                                if (level.GetBlock(x, y) === (4 + 8 * 16)) level.SetBlock(x, y, 4 + 11 * 16);
-
-                                if (level.GetBlock(x, y) === (6 + 8 * 16)) level.SetBlock(x, y, 6 + 11 * 16);
-                            }
-                        }
+                    if (level.GetBlock(x, y) === 0) {
+                        level.SetBlock(x, y, xx + yy * 16);
+                    } else {
+                        if (level.GetBlock(x, y) === (4 + 8 * 16)) level.SetBlock(x, y, 4 + 11 * 16);
+                        if (level.GetBlock(x, y) === (6 + 8 * 16)) level.SetBlock(x, y, 6 + 11 * 16);
                     }
                 }
             }
+
+            i++;
         }
+
+        level.SetHillStraightSection(hillStraight);
 
         return length;
     }
@@ -205,62 +205,78 @@ class LevelGenerator {
 
     BuildTubes(level, xo, maxLength) {
         let length = ((Math.random() * 10) | 0) + 5, floor = this.Height - 1 - (Math.random() * 4) | 0,
-            xTube = xo + 1 + (Math.random() * 4) | 0, tubeHeight = floor - ((Math.random() * 2) | 0) - 2,
-            x = 0, y = 0, xPic = 0;
+            xTube = xo + 1 + (Math.random() * 4) | 0, tubeHeight = floor - ((Math.random() * 2) | 0) - 2;
+
+        let tubeSection = new TubeSection(xo, length, floor, xTube, tubeHeight);
 
         if (length > maxLength) length = maxLength;
 
-        for (x = xo; x < xo + length; x++) {
+        for (let x = xo; x < xo + length; x++) {
             if (x > xTube + 1) {
-                xTube += 3 + ((Math.random() * 4) | 0);
-                tubeHeight = floor - ((Math.random() * 2) | 0) - 2;
+                let rnd = ((Math.random() * 4) | 0)
+                xTube += 3 + rnd;
+                tubeSection.AddXTubeRndValue(rnd);
+
+                rnd = ((Math.random() * 2) | 0);
+                tubeHeight = floor - rnd - 2;
+                tubeSection.AddTubeHeightRndValue(rnd);
             }
             if (xTube >= xo + length - 2) xTube += 10;
 
             if (x === xTube && ((Math.random() * 11) | 0) < this.Difficulty + 1)
                 level.SetSpriteTemplate(x, tubeHeight, new SpriteTemplate(Enemy.Flower, false));
 
-            for (y = 0; y < this.Height; y++) {
+            for (let y = 0; y < this.Height; y++) {
                 if (y >= floor) {
                     level.SetBlock(x, y, 1 + 9 * 16);
                 } else if (y < floor && (x === xTube || x === xTube + 1) && y >= tubeHeight) {
-                    xPic = 10 + x - xTube;
+                    let xPic = 10 + x - xTube;
                     if (y === tubeHeight) level.SetBlock(x, y, xPic);
                     else level.SetBlock(x, y, xPic + 16);
                 }
             }
         }
 
+        level.SetTubeSection(tubeSection);
+
         return length;
     }
 
     BuildStraight(level, xo, maxLength, safe) {
-        let length = ((Math.random() * 10) | 0) + 2, floor = this.Height - 1 - ((Math.random() * 4) | 0), x = 0, y = 0;
+        let length = ((Math.random() * 10) | 0) + 2, floor = this.Height - 1 - ((Math.random() * 4) | 0);
 
         if (safe) length = 10 + ((Math.random() * 5) | 0);
-        
+
         if (length > maxLength) length = maxLength;
 
-        for (x = xo; x < xo + length; x++) {
-            for (y = 0; y < this.Height; y++) {
+        let straightSection = new StraightSection(xo, length, floor);
+
+        for (let x = xo; x < xo + length; x++) {
+            for (let y = 0; y < this.Height; y++) {
                 if (y >= floor) level.SetBlock(x, y, 1 + 9 * 16);
             }
         }
 
-        if (!safe && length > 5) this.Decorate(level, xo, xo + length, floor);
+        if (!safe && length > 5) straightSection.SetDecorate(this.Decorate(level, xo, xo + length, floor));
+
+        level.SetStraightSection(straightSection);
 
         return length;
     }
 
     Decorate(level, x0, x1, floor) {
-        if (floor < 1) return;
+        if (floor < 1) return null;
 
-        let rocks = true, s = (Math.random() * 4) | 0, e = (Math.random() * 4) | 0, x = 0;
+        let decorate = new DecorateSection(x0, x1, floor);
+
+        let s = (Math.random() * 4) | 0, e = (Math.random() * 4) | 0;
+
+        decorate.SetBegin(s, e);
 
         this.AddEnemyLine(level, x0 + 1, x1 - 1, floor - 1);
 
         if (floor - 2 > 0 && (x1 - 1 - e) - (x0 + 1 + s) > 1) {
-            for (x = x0 + 1 + s; x < x1 - 1 - e; x++) {
+            for (let x = x0 + 1 + s; x < x1 - 1 - e; x++) {
                 level.SetBlock(x, floor - 2, 2 + 2 * 16);
             }
         }
@@ -268,27 +284,26 @@ class LevelGenerator {
         s = (Math.random() * 4) | 0;
         e = (Math.random() * 4) | 0;
 
-        if (floor - 4 > 0 && (x1 - 1 - e) - (x0 + 1 + s) > 2) {
-            for (x = x0 + 1 + s; x < x1 - 1 - e; x++) {
-                if (!rocks) continue;
+        decorate.SetEnd(s, e);
 
-                if (x !== x0 + 1 && x !== x1 - 2 && ((Math.random() * 3) | 0) === 0) {
-                    if (((Math.random() * 4) | 0) === 0) {
-                        level.SetBlock(x, floor - 4, 4 + 2 + 16);
-                    } else {
-                        level.SetBlock(x, floor - 4, 4 + 1 + 16);
-                    }
-                } else if (((Math.random() * 4) | 0) === 0) {
-                    if (((Math.random() * 4) | 0) === 0) {
-                        level.SetBlock(x, floor - 4, 2 + 16);
-                    } else {
-                        level.SetBlock(x, floor - 4, 1 + 16);
-                    }
+        if (floor - 4 > 0 && (x1 - 1 - e) - (x0 + 1 + s) > 2) {
+            for (let x = x0 + 1 + s; x < x1 - 1 - e; x++) {
+                const rnd1 = ((Math.random() * 3) | 0), rnd2 = ((Math.random() * 4) | 0),
+                    rnd3 = ((Math.random() * 4) | 0), rnd4 = ((Math.random() * 4) | 0);
+
+                decorate.SetRandomValues(rnd1, rnd2, rnd3, rnd4);
+
+                if (x !== x0 + 1 && x !== x1 - 2 && rnd1 === 0) {
+                    level.SetBlock(x, floor - 4, rnd2 === 0 ? 22 : 21); // 4 + 2 + 16 / 4 + 1 + 16
+                } else if (rnd3 === 0) {
+                    level.SetBlock(x, floor - 4, rnd4 === 0 ? 18 : 17); // 2 + 16 / 1 + 16
                 } else {
                     level.SetBlock(x, floor - 4, 16);
                 }
             }
         }
+
+        return decorate;
     }
 
     FixWalls(level) {

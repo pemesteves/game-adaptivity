@@ -53,6 +53,7 @@ class Character extends NotchSprite {
     }
 
     Initialize(world) {
+        this.World = world;
         this.X = 32;
         this.Y = 0;
         this.PowerUpTime = 0;
@@ -251,7 +252,11 @@ class Character extends NotchSprite {
         this.OnGround = false;
         this.SubMove(this.Xa, 0);
         this.SubMove(0, this.Ya);
-        if (this.Y > this.World.Level.Height * 16 + 16) this.Die();
+
+        // Fall into hole
+        if (this.Y > this.World.Level.Height * 16 + 16) {
+            this.Die();
+        }
 
         if (this.X < 0) {
             this.X = 0;

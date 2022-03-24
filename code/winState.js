@@ -46,7 +46,7 @@ class WinState extends Engine.GameState {
 
     Update(delta) {
         this.drawManager.Update(delta);
-    
+
         if (this.waitTime > 0) this.waitTime -= delta;
         else if (Engine.KeyboardInput.IsKeyDown(Engine.Keys.S)) this.wasKeyDown = true;
     }
@@ -56,8 +56,8 @@ class WinState extends Engine.GameState {
     }
 
     CheckForChange = function (context) {
-        if (this.waitTime <= 0 &&  this.wasKeyDown && !Engine.KeyboardInput.IsKeyDown(Engine.Keys.S)) {
-            context.ChangeState(new TitleState());
+        if (this.waitTime <= 0 && this.wasKeyDown && !Engine.KeyboardInput.IsKeyDown(Engine.Keys.S)) {
+            context.ChangeState(new PredefinedTitleState());
         }
     }
 };

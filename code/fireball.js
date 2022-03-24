@@ -15,7 +15,7 @@ class Fireball extends NotchSprite {
         this.World = world;
         this.X = x;
         this.Y = y;
-        this.Facing =  facing || 1;
+        this.Facing = facing || 1;
 
         this.XPicO = 4;
         this.YPicO = 4;
@@ -32,10 +32,10 @@ class Fireball extends NotchSprite {
     }
 
     Move() {
-        let sideWaysSpeed = 8;
+        let i = 0, sideWaysSpeed = 8;
 
         if (this.DeadTime > 0) {
-            for (let i = 0; i < 8; i++) {
+            for (i = 0; i < 8; i++) {
                 this.World.AddSprite(new Sparkle(this.World, ((this.X + Math.random() * 8 - 4) | 0) + 4, ((this.Y + Math.random() * 8 - 4) | 0) + 2, Math.random() * 2 - 1 * this.Facing, Math.random() * 2 - 1, 0, 1, 5));
             }
             this.World.RemoveSprite(this);

@@ -4,9 +4,13 @@ class HillStraightSection {
         this.Length = length;
         this.Floor = floor;
 
-        this.Hrnd = this.Lrnd = this.XXOrnd = [];
+        this.Hrnd = [];
+        this.Lrnd = [];
+        this.XXOrnd = [];
+        this.Blocks = [];
 
         this.DecorateIteration = -1;
+
 
         this.Decorate = null;
     }
@@ -21,7 +25,7 @@ class HillStraightSection {
 
     SetLrndValue(v) {
         this.Lrnd.push(v);
-    } 
+    }
 
     SetXXOrndValue(v) {
         this.XXOrnd.push(v);
@@ -29,5 +33,13 @@ class HillStraightSection {
 
     SetDecorateIteration(v) {
         this.DecorateIteration = v;
+    }
+
+    AddGetBlock(i, v) {
+        if (this.Blocks.length <= i) {
+            this.Blocks.push([]);
+        }
+
+        this.Blocks[i].push(v);
     }
 };

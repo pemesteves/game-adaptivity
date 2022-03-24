@@ -13,8 +13,6 @@ class Tile {
     static Breakable = 1 << 5;
     static PickUpable = 1 << 6;
     static Animated = 1 << 7;
-    static Coin = 11000000;
-    static CoinBlock = 10010010;
     static Behaviors = [];
 
     static AddValueToArr(arr, val, quant) {
@@ -103,11 +101,12 @@ class Odds {
 };
 
 class Level {
-    constructor(width, height) {
+    constructor(width, height, type) {
         this.Width = width;
         this.Height = height;
         this.ExitX = 10;
         this.ExitY = 10;
+        this.Type = type;
 
         this.Map = [];
         this.Data = [];
@@ -124,6 +123,11 @@ class Level {
                 this.SpriteTemplates[x][y] = null;
             }
         }
+
+        this.JumpSections = [];
+        this.TubeSections = [];
+        this.StraightSections = [];
+        this.HillStraightSections = [];
     }
 
     Update() {
@@ -195,5 +199,50 @@ class Level {
     SetExit(x, y) {
         this.ExitX = x;
         this.ExitY = y;
+    }
+
+    SetJumpSection(js, jl, length, xo, hasStairs, floor) {
+        this.JumpSections.push(new JumpSection(js, jl, length, xo, hasStairs, floor));
+
+        for (let x = xo; x < xo + length; x++) {
+            if (!(x < xo + js || x > xo + length - js - 1)) continue;
+
+            for (let y = 0; y < this.Height; y++) {
+                if (y >= floor) this.SetBlock(x, y, 1 + 9 * 16);
+                else if (hasStairs && x < xo + js && y >= floor - (x - xo) + 1) this.SetBlock(x, y, 9);
+                else if (hasStairs && x >= xo + js && y >= floor - ((xo + length) - x) + 2) this.SetBlock(x, y, 9);
+            }
+        }
+    }
+
+    SetJumpSections(sections) {
+        for (let i = 0; i < sections.length; i++) {
+            const s = sections[i];
+            this.SetJumpSection(s.JS, s.JL, s.Length, s.X0, s.HasStairs, s.Floor);
+        }
+    }
+
+    SetTubeSection(section) {
+        this.TubeSections.push(section);
+    }
+
+    SetTubeSections(sections) {
+        this.TubeSections = sections;
+    }
+
+    SetStraightSection(section) {
+        this.StraightSections.push(section);
+    }
+
+    SetStraightSections(sections) {
+        this.StraightSections = sections;
+    }
+
+    SetHillStraightSection(section) {
+        this.HillStraightSections.push(section);
+    }
+
+    SetHillStraightSections(sections) {
+        this.HillStraightSections = sections;
     }
 };

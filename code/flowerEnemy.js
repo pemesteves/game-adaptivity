@@ -34,7 +34,7 @@ class FlowerEnemy extends Enemy {
         let i = 0, xd = 0;
         if (this.DeadTime > 0) {
             this.DeadTime--;
-    
+
             if (this.DeadTime === 0) {
                 this.DeadTime = 1;
                 for (i = 0; i < 8; i++)
@@ -42,17 +42,17 @@ class FlowerEnemy extends Enemy {
 
                 this.World.RemoveSprite(this);
             }
-    
+
             this.X += this.Xa;
             this.Y += this.Ya;
             this.Ya *= 0.95;
             this.Ya += 1;
-    
+
             return;
         }
-    
+
         this.Tick++;
-    
+
         if (this.Y >= this.YStart) {
             this.YStart = this.Y;
             xd = Math.abs(Mario.MarioCharacter.X - this.X) | 0;
@@ -61,11 +61,11 @@ class FlowerEnemy extends Enemy {
             else this.Ya = 0;
         }
         else this.JumpTime = 0;
-    
+
         this.Y += this.Ya;
         this.Ya *= 0.9;
         this.Ya += 0.1;
-    
+
         this.XPic = (((this.Tick / 2) | 0) & 1) * 2 + (((this.Tick / 6) | 0) & 1);
     }
 };

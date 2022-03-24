@@ -1455,7 +1455,7 @@ class DecorateSection {
         this.Rnd3.push(rnd3);
         this.Rnd4.push(rnd4);
     }
-}
+};
 
 class LevelGenerator {
     constructor(width, height) {

@@ -17,7 +17,7 @@ class LoseState extends Engine.GameState {
     Enter() {
         this.drawManager = new Engine.DrawableManager();
         this.camera = new Engine.Camera();
-    
+
         this.gameOver = new Engine.AnimatedSprite();
         this.gameOver.Image = Engine.Resources.Images["gameOverGhost"];
         this.gameOver.SetColumnCount(9);
@@ -27,10 +27,10 @@ class LoseState extends Engine.GameState {
         this.gameOver.FramesPerSecond = 1 / 15;
         this.gameOver.X = 112;
         this.gameOver.Y = 68;
-    
+
         this.font = SpriteCuts.CreateBlackFont();
         this.font.Strings[0] = { String: "Game over!", X: 116, Y: 160 };
-    
+
         this.drawManager.Add(this.font);
         this.drawManager.Add(this.gameOver);
     }
@@ -53,6 +53,6 @@ class LoseState extends Engine.GameState {
     }
 
     CheckForChange(context) {
-        if (this.wasKeyDown && !Engine.KeyboardInput.IsKeyDown(Engine.Keys.S)) context.ChangeState(new TitleState());
+        if (this.wasKeyDown && !Engine.KeyboardInput.IsKeyDown(Engine.Keys.S)) context.ChangeState(new PredefinedTitleState());
     }
 };

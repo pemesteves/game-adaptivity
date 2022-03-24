@@ -29,7 +29,7 @@ class CoinAnim extends NotchSprite {
                 }
             }
         }
-    
+
         this.XPic = this.Life & 3;
         this.X += this.Xa;
         this.Y += this.Ya;

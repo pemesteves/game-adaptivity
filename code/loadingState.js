@@ -17,27 +17,27 @@ class LoadingState extends Engine.GameState {
 
     Enter() {
         this.Images = [
-            {"name": "background", "src": "images/bgsheet.png"},
-            {"name": "endScene", "src": "images/endscene.gif"},
-            {"name": "enemies", "src": "images/enemysheet.png"},
-            {"name": "fireMario", "src": "images/firemariosheet.png"},
-            {"name": "font", "src": "images/font.gif"},
-            {"name": "gameOverGhost", "src": "images/gameovergost.gif"},
-            {"name": "items", "src": "images/itemsheet.png"},
-            {"name": "logo", "src": "images/logo.gif"},
-            {"name": "map", "src": "images/mapsheet.png"},
-            {"name": "mario", "src": "images/mariosheet.png"},
-            {"name": "particles", "src": "images/particlesheet.png"},
-            {"name": "racoonMario", "src": "images/racoonmariosheet.png"},
-            {"name": "smallMario", "src": "images/smallmariosheet.png"},
-            {"name": "title", "src": "images/title.gif"},
-            {"name": "worldMap", "src": "images/worldmap.png"},
+            { "name": "background", "src": "images/bgsheet.png" },
+            { "name": "endScene", "src": "images/endscene.gif" },
+            { "name": "enemies", "src": "images/enemysheet.png" },
+            { "name": "fireMario", "src": "images/firemariosheet.png" },
+            { "name": "font", "src": "images/font.gif" },
+            { "name": "gameOverGhost", "src": "images/gameovergost.gif" },
+            { "name": "items", "src": "images/itemsheet.png" },
+            { "name": "logo", "src": "images/logo.gif" },
+            { "name": "map", "src": "images/mapsheet.png" },
+            { "name": "mario", "src": "images/mariosheet.png" },
+            { "name": "particles", "src": "images/particlesheet.png" },
+            { "name": "racoonMario", "src": "images/racoonmariosheet.png" },
+            { "name": "smallMario", "src": "images/smallmariosheet.png" },
+            { "name": "title", "src": "images/title.gif" },
+            { "name": "worldMap", "src": "images/worldmap.png" },
         ];
 
         Engine.Resources.AddImages(this.Images);
-    
+
         let testAudio = new Audio();
-    
+
         if (testAudio.canPlayType("audio/mp3")) {
             Engine.Resources.AddSound("1up", "sounds/1-up.mp3", 1)
                 .AddSound("breakblock", "sounds/breakblock.mp3")
@@ -74,7 +74,7 @@ class LoadingState extends Engine.GameState {
                 .AddSound("stagestart", "sounds/stagestart.wav", 1)
                 .AddSound("stomp", "sounds/stomp.wav", 1);
         }
-    
+
         //load the array of tile behaviors
         Tile.LoadBehaviors();
     }
@@ -94,7 +94,7 @@ class LoadingState extends Engine.GameState {
                 }
             }
         }
-    
+
         this.ScreenColor += this.ColorDirection * 255 * delta;
         if (this.ScreenColor > 255) {
             this.ScreenColor = 255;
@@ -120,8 +120,8 @@ class LoadingState extends Engine.GameState {
         if (this.ImagesLoaded) {
             //set up the global map state variable
             Mario.GlobalMapState = new MapState();
-    
-            context.ChangeState(new TitleState());
+
+            context.ChangeState(new PredefinedTitleState());
         }
     }
 };

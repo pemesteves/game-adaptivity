@@ -6,8 +6,8 @@ class GameplayMetrics {
     }
 
     setLevelState(levelState) {
-        if (typeof levelState !== LevelState) {
-            console.error("setLevelState should receive a variable of type LevelState");
+        if (levelState.GetName === undefined || levelState.GetName() !== "LevelState") {
+            console.error("setLevelState should receive an instance of LevelState");
             return;
         }
 

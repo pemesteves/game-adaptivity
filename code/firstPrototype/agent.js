@@ -7,7 +7,7 @@ class Agent extends NotchSprite {
     constructor(actions) {
         super();
         this.actions = actions;
-        
+
         this.ticks = 0;
         this.time = 0;
         this.currentEvent = 0;

@@ -25,10 +25,10 @@ class NotchSprite extends Engine.Drawable {
     Draw(context, camera) {
         let xPixel = 0, yPixel = 0;
         if (!this.Visible) return;
-    
+
         xPixel = ((this.XOld + (this.X - this.XOld) * this.Delta) | 0) - this.XPicO;
         yPixel = ((this.YOld + (this.Y - this.YOld) * this.Delta) | 0) - this.YPicO;
-    
+
         context.save();
         context.scale(this.XFlip ? -1 : 1, this.YFlip ? -1 : 1);
         context.translate(this.XFlip ? -320 : 0, this.YFlip ? -240 : 0);
@@ -66,11 +66,11 @@ class NotchSprite extends Engine.Drawable {
     CollideCheck() { }
     BumpCheck(xTile, yTile) { };
     Release(mario) { };
-    
+
     ShellCollideCheck(shell) {
         return false;
     }
-    
+
     FireballCollideCheck(fireball) {
         return false;
     }

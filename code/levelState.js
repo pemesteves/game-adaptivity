@@ -34,7 +34,7 @@ class LevelState extends Engine.GameState {
         this.GotoMapState = false;
         this.GotoLoseState = false;
 
-        Mario.MarioCharacter.gameplayMetrics.setLevelState(this); 
+        Mario.MarioCharacter.gameplayMetrics.setLevelState(this);
     }
 
     GetName() {
@@ -162,7 +162,7 @@ class LevelState extends Engine.GameState {
                     st = this.Level.GetSpriteTemplate(x, y);
 
                     if (st !== null) {
-                        if (st.LastVisibleTick !== this.Tick - 1 && (st.Sprite === null || !this.Sprites.Contains(st.Sprite))) 
+                        if (st.LastVisibleTick !== this.Tick - 1 && (st.Sprite === null || !this.Sprites.Contains(st.Sprite)))
                             st.Spawn(this, x, y, dir);
 
                         st.LastVisibleTick = this.Tick;
@@ -190,9 +190,9 @@ class LevelState extends Engine.GameState {
 
             for (i = 0; i < this.ShellsToCheck.length; i++) {
                 for (j = 0; j < this.Sprites.Objects.length; j++) {
-                    if (this.Sprites.Objects[j] !== this.ShellsToCheck[i] && !this.ShellsToCheck[i].Dead 
-                            && this.Sprites.Objects[j].ShellCollideCheck(this.ShellsToCheck[i])
-                            && Mario.MarioCharacter.Carried === this.ShellsToCheck[i] && !this.ShellsToCheck[i].Dead) {
+                    if (this.Sprites.Objects[j] !== this.ShellsToCheck[i] && !this.ShellsToCheck[i].Dead
+                        && this.Sprites.Objects[j].ShellCollideCheck(this.ShellsToCheck[i])
+                        && Mario.MarioCharacter.Carried === this.ShellsToCheck[i] && !this.ShellsToCheck[i].Dead) {
                         Mario.MarioCharacter.Carried = null;
                         this.ShellsToCheck[i].Die();
                     }
@@ -230,7 +230,7 @@ class LevelState extends Engine.GameState {
 
         if (this.Camera.X < 0) this.Camera.X = 0;
         else if (this.Camera.Y < 0) this.Camera.Y = 0;
-        
+
         if (this.Camera.X > this.Level.Width * 16 - 320) this.Camera.X = this.Level.Width * 16 - 320;
         if (this.Camera.Y > this.Level.Height * 16 - 240) this.Camera.Y = this.Level.Height * 16 - 240;
 
@@ -300,7 +300,7 @@ class LevelState extends Engine.GameState {
 
         let time = this.TimeLeft | 0;
         if (time < 0) time = 0;
-        
+
         this.DrawStringShadow(context, " " + time, 34, 1);
     }
 
@@ -377,11 +377,8 @@ class LevelState extends Engine.GameState {
 
             if ((Tile.Behaviors[block & 0xff] & Tile.Special) > 0) {
                 Engine.Resources.PlaySound("sprout");
-                if (!Mario.MarioCharacter.Large) {
-                    this.AddSprite(new Mushroom(this, x * 16 + 8, y * 16 + 8));
-                } else {
-                    this.AddSprite(new FireFlower(this, x * 16 + 8, y * 16 + 8));
-                }
+                if (!Mario.MarioCharacter.Large) this.AddSprite(new Mushroom(this, x * 16 + 8, y * 16 + 8));
+                else this.AddSprite(new FireFlower(this, x * 16 + 8, y * 16 + 8));
             } else {
                 Mario.MarioCharacter.GetCoin();
                 Engine.Resources.PlaySound("coin");

@@ -20,7 +20,7 @@ class BackgroundGenerator {
     }
 
     CreateLevel() {
-        let level = new Level(this.Width, this.Height);
+        let level = new Level(this.Width, this.Height, this.Type);
         switch (this.Type) {
             case LevelType.Overground:
                 this.GenerateOverground(level);

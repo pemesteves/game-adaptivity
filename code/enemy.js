@@ -57,8 +57,8 @@ class Enemy extends NotchSprite {
 
         let xMarioD = Mario.MarioCharacter.X - this.X, yMarioD = Mario.MarioCharacter.Y - this.Y;
 
-        if (xMarioD > -this.Width * 2 - 4 && xMarioD < this.Width * 2 + 4 && 
-                yMarioD > -this.Height && yMarioD < Mario.MarioCharacter.Height) {
+        if (xMarioD > -this.Width * 2 - 4 && xMarioD < this.Width * 2 + 4 &&
+            yMarioD > -this.Height && yMarioD < Mario.MarioCharacter.Height) {
             if (!(this.Type !== Enemy.Spiky && Mario.MarioCharacter.Ya > 0 && yMarioD <= 0 && (!Mario.MarioCharacter.OnGround || !Mario.MarioCharacter.WasOnGround))) {
                 Mario.MarioCharacter.GetHurt();
                 return;

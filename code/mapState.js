@@ -4,7 +4,7 @@
     Code by Pedro Esteves, 2022.
 **/
 
-classMapTile {
+class MapTile {
     static Grass = 0;
     static Water = 1;
     static Level = 2;

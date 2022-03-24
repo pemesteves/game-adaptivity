@@ -67,7 +67,7 @@ class BulletBill extends NotchSprite {
 
         this.Xa = this.Facing * sideWaysSpeed;
         this.XFlip = this.Facing === -1;
-        this.SubMove(this.Xa, 0);
+        this.SubMove(this.Xa, 0); // TODO Move or SubMove ?
     }
 
     SubMove(xa, ya) {
