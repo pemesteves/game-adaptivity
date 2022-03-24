@@ -128,6 +128,7 @@ class Level {
         this.TubeSections = [];
         this.StraightSections = [];
         this.HillStraightSections = [];
+        this.CannonSections = [];
     }
 
     Update() {
@@ -244,5 +245,13 @@ class Level {
 
     SetHillStraightSections(sections) {
         this.HillStraightSections = sections;
+    }
+    
+    SetCannonSection(section) {
+        this.CannonSections.push(section);
+    }
+
+    SetCannonSections(sections) {
+        this.CannonSections = sections;
     }
 };

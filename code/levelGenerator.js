@@ -66,7 +66,6 @@ class LevelGenerator {
     }
 
     BuildZone(level, x, maxLength) {
-        return this.BuildHillStraight(level, x, maxLength);
         let t = (Math.random() * this.TotalOdds) | 0, type = 0, i = 0;
         for (i = 0; i < this.Odds.length; i++) {
             if (this.Odds[i] <= t) type = i;
@@ -93,18 +92,23 @@ class LevelGenerator {
 
     BuildCannons(level, xo, maxLength) {
         let length = ((Math.random() * 10) | 0) + 2, floor = this.Height - 1 - (Math.random() * 4) | 0,
-            xCannon = xo + 1 + (Math.random() * 4) | 0, x = 0, y = 0, cannonHeight = 0;
+            xCannon = xo + 1 + (Math.random() * 4) | 0;
 
         if (length > maxLength) length = maxLength;
 
-        for (x = xo; x < xo + length; x++) {
+        let cannonSection = new CannonSection(length, floor, xo);
+
+        for (let x = xo; x < xo + length; x++) {
             if (x > xCannon) xCannon += 2 * (Math.random() * 4) | 0;
 
             if (xCannon === xo + length - 1) xCannon += 10;
 
-            cannonHeight = floor - ((Math.random() * 4) | 0) - 1;
+            const cannonHeight = floor - ((Math.random() * 4) | 0) - 1;
 
-            for (y = 0; y < this.Height; y++) {
+            cannonSection.AddXCannon(xCannon);
+            cannonSection.AddCannonHeight(cannonHeight);
+
+            for (let y = 0; y < this.Height; y++) {
                 if (y >= floor) {
                     level.SetBlock(x, y, 1 + 9 * 16);
                 } else if (y < floor && x === xCannon && y >= cannonHeight) {
@@ -118,6 +122,8 @@ class LevelGenerator {
                 }
             }
         }
+
+        level.SetCannonSection(cannonSection);
 
         return length;
     }

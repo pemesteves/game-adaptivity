@@ -30,6 +30,12 @@ class PredefinedLevelGenerator extends LevelGenerator {
             this.BuildHillStraight(lvl, this.level.HillStraightSections[i]);
         }
 
+        lvl.SetCannonSections(this.level.CannonSections);
+
+        for (let i = 0; i < this.level.CannonSections.length; i++) {
+            this.BuildCannons(lvl, this.level.CannonSections[i]);
+        }
+
         lvl.ExitX = this.level.ExitX;
         lvl.ExitY = this.level.ExitY;
         const length = this.level.ExitX - 8, floor = lvl.ExitY;
@@ -155,6 +161,31 @@ class PredefinedLevelGenerator extends LevelGenerator {
                     }
 
                     cnt++;
+                }
+            }
+
+            i++;
+        }
+    }
+
+    BuildCannons(lvl, cannonSection) {
+        const length = cannonSection.Length, floor = cannonSection.Floor, xo = cannonSection.X0;
+
+        let i = 0;
+        for (let x = xo; x < xo + length; x++) {
+            const xCannon = cannonSection.XCannon[i], cannonHeight = cannonSection.CannonHeight[i];
+
+            for (let y = 0; y < this.Height; y++) {
+                if (y >= floor) {
+                    lvl.SetBlock(x, y, 1 + 9 * 16);
+                } else if (y < floor && x === xCannon && y >= cannonHeight) {
+                    if (y === cannonHeight) {
+                        lvl.SetBlock(x, y, 14);
+                    } else if (y === cannonHeight + 1) {
+                        lvl.SetBlock(x, y, 14 + 16);
+                    } else {
+                        lvl.SetBlock(x, y, 14 + 2 * 16);
+                    }
                 }
             }
 
