@@ -188,7 +188,7 @@ class Character extends NotchSprite {
                 this.Ya = this.JumpTime * this.YJumpSpeed;
                 this.OnGround = false;
                 this.Sliding = false;
-                this.gameplayMetrics.registerJump();
+                this.gameplayMetrics.RegisterJump();
             } else if (this.Sliding && this.MayJump) {
                 Engine.Resources.PlaySound("jump");
                 this.XJumpSpeed = -this.Facing * 6;
@@ -199,7 +199,7 @@ class Character extends NotchSprite {
                 this.OnGround = false;
                 this.Sliding = false;
                 this.Facing = -this.Facing;
-                this.gameplayMetrics.registerJump();
+                this.gameplayMetrics.RegisterJump();
             } else if (this.JumpTime > 0) {
                 this.Xa += this.XJumpSpeed;
                 this.Ya = this.JumpTime * this.YJumpSpeed;
@@ -405,6 +405,9 @@ class Character extends NotchSprite {
             }
             if (ya > 0) {
                 this.Y = (((this.Y - 1) / 16 + 1) | 0) * 16 - 1;
+
+                // Grounded
+                if (!this.WasOnGround) this.gameplayMetrics.RegisterGrounded();
                 this.OnGround = true;
             }
 
@@ -510,7 +513,7 @@ class Character extends NotchSprite {
         this.SetLarge(false, false);
 
         // Register Death Time
-        this.gameplayMetrics.registerDeathTime();
+        this.gameplayMetrics.RegisterDeathTime();
     }
 
     GetFlower() {
@@ -565,5 +568,9 @@ class Character extends NotchSprite {
             this.Coins = 0;
             this.Get1Up();
         }
+    }
+
+    ResetMetrics() {
+        this.gameplayMetrics = new GameplayMetrics();
     }
 };

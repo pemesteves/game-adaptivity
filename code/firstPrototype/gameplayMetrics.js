@@ -1,33 +1,65 @@
 class GameplayMetrics {
     constructor() {
-        this.noJumps = 0;
+        this.jumps = [];
+        this.grounded = [];
 
         this.levelState = null;
     }
 
-    setLevelState(levelState) {
+    SetLevelState(levelState) {
         if (levelState.GetName === undefined || levelState.GetName() !== "LevelState") {
-            console.error("setLevelState should receive an instance of LevelState");
+            console.error("SetLevelState should receive an instance of LevelState");
             return;
         }
 
         this.levelState = levelState;
     }
 
-    registerJump() {
-        this.noJumps++;
+    RegisterJump() {
+        console.log("JUMP");
+        this.jumps.push(this.GetNearestGap());
     }
 
-    registerDeathTime() {
+    RegisterGrounded() {
+        console.log("GROUDED");
+        this.grounded.push(this.GetNearestGap());
+    }
+
+    GetNearestGap() {
+        const xPos = (Mario.MarioCharacter.X - 8) / 16, facing = Mario.MarioCharacter.Facing;
+        const jumps = this.levelState.Level.JumpSections;
+
+        let minDist = Infinity;
+        for (let i = 0; i < jumps.length; i++) {
+            if (xPos < jumps[i].GetHoleStartX()) {
+                const dist = jumps[i].GetHoleStartX() - xPos;
+                if (dist > minDist) break;
+
+                minDist = dist;
+            } else if (xPos > jumps[i].GetHoleEndX()) {
+                const dist = xPos - jumps[i].GetHoleEndX();
+                if (dist > minDist) break;
+
+                minDist = dist;
+            } else {
+                console.log("Inside gap: Jumping on walls");
+            }
+        }
+
+        return minDist;
+    }
+
+    RegisterDeathTime() {
         if (this.levelState == null) return;
 
         const t = this.levelState.GetTimeLeft();
         this.timeLeft = t < 0 ? 0 : t;
     }
 
-    printMetrics() {
+    PrintMetrics() {
         return {
-            "noJumps": this.noJumps,
+            "jumps": this.jumps,
+            "grounded": this.grounded,
             "timeLeft": this.timeLeft,
         };
     }

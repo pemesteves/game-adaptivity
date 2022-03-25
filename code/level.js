@@ -209,25 +209,12 @@ class Level {
         this.ExitY = y;
     }
 
-    SetJumpSection(js, jl, length, xo, hasStairs, floor) {
-        this.JumpSections.push(new JumpSection(js, jl, length, xo, hasStairs, floor));
-
-        for (let x = xo; x < xo + length; x++) {
-            if (!(x < xo + js || x > xo + length - js - 1)) continue;
-
-            for (let y = 0; y < this.Height; y++) {
-                if (y >= floor) this.SetBlock(x, y, 1 + 9 * 16);
-                else if (hasStairs && x < xo + js && y >= floor - (x - xo) + 1) this.SetBlock(x, y, 9);
-                else if (hasStairs && x >= xo + js && y >= floor - ((xo + length) - x) + 2) this.SetBlock(x, y, 9);
-            }
-        }
+    SetJumpSection(section) {
+        this.JumpSections.push(section);
     }
 
     SetJumpSections(sections) {
-        for (let i = 0; i < sections.length; i++) {
-            const s = sections[i];
-            this.SetJumpSection(s.JS, s.JL, s.Length, s.X0, s.HasStairs, s.Floor);
-        }
+        this.JumpSections = sections;
     }
 
     SetTubeSection(section) {

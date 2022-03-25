@@ -87,10 +87,28 @@ class LevelGenerator {
     BuildJump(level, xo, maxLength) {
         let js = ((Math.random() * 4) | 0) + 2, jl = ((Math.random() * 2) | 0) + 2, length = js * 2 + jl, x = 0, y = 0,
             hasStairs = ((Math.random() * 3) | 0) === 0, floor = this.Height - 1 - ((Math.random() * 4) | 0);
-
-        level.SetJumpSection(js, jl, length, xo, hasStairs, floor);
+        
+        let jumpSection = new JumpSection(js, jl, length, xo, hasStairs, floor);
+        level.SetJumpSection(jumpSection);
+        
+        this.BuildJumpSection(level, jumpSection);
 
         return length;
+    }
+
+    BuildJumpSection(level, section) {
+        for (let x = section.X0; x < section.X0 + section.Length; x++) {
+            if (!(x < section.X0 + section.JS || x > section.X0 + section.Length - section.JS - 1)) continue;
+
+            for (let y = 0; y < this.Height; y++) {
+                if (y >= section.Floor)
+                    level.SetBlock(x, y, 1 + 9 * 16);
+                else if (section.HasStairs && x < section.X0 + section.JS && y >= section.Floor - (x - section.X0) + 1)
+                    level.SetBlock(x, y, 9);
+                else if (section.HasStairs && x >= section.X0 + section.JS && y >= section.Floor - ((section.X0 + section.Length) - x) + 2)
+                    level.SetBlock(x, y, 9);
+            }
+        }
     }
 
     BuildCannons(level, xo, maxLength) {

@@ -10,8 +10,15 @@ class PredefinedLevelGenerator extends LevelGenerator {
     }
 
     CreateLevel() {
-        let lvl = new Level(this.Width, this.Height, this.level.Type);
+        let lvl = new PredefinedLevel(this.Width, this.Height, this.level.Type);
         this.Type = this.level.Type;
+        
+        for (let i = 0; i < this.level.JumpSections.length; i++) {
+            const s = this.level.JumpSections[i];
+            const section = new JumpSection(s.JS, s.JL, s.Length, s.X0, s.HasStairs, s.Floor);
+            lvl.SetJumpSection(section);
+            super.BuildJumpSection(lvl, section);
+        }
 
         lvl.SetStraightSections(this.level.StraightSections);
 
