@@ -407,7 +407,7 @@ class Character extends NotchSprite {
                 this.Y = (((this.Y - 1) / 16 + 1) | 0) * 16 - 1;
 
                 // Grounded
-                if (!this.WasOnGround) this.gameplayMetrics.RegisterGrounded();
+                if (!this.WasOnGround) this.gameplayMetrics.RegisterLanding();
                 this.OnGround = true;
             }
 
@@ -429,7 +429,7 @@ class Character extends NotchSprite {
         block = this.World.Level.GetBlock(x, y);
 
         if (((Tile.Behaviors[block & 0xff]) & Tile.PickUpable) > 0) {
-            this.GetCoin();
+            this.GetCoin(x, y);
             Engine.Resources.PlaySound("coin");
             this.World.Level.SetBlock(x, y, 0);
             for (xx = 0; xx < 2; xx++) {
@@ -562,7 +562,9 @@ class Character extends NotchSprite {
         if (this.Lives === 99) this.Lives = 99;
     }
 
-    GetCoin() {
+    GetCoin(x, y) {
+        if (x !== undefined && y !== undefined) this.gameplayMetrics.CollectedCoin(x, y);
+
         this.Coins++;
         if (this.Coins === 100) {
             this.Coins = 0;

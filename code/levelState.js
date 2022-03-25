@@ -380,7 +380,7 @@ class LevelState extends Engine.GameState {
                 if (!Mario.MarioCharacter.Large) this.AddSprite(new Mushroom(this, x * 16 + 8, y * 16 + 8));
                 else this.AddSprite(new FireFlower(this, x * 16 + 8, y * 16 + 8));
             } else {
-                Mario.MarioCharacter.GetCoin();
+                Mario.MarioCharacter.GetCoin(x, y);
                 Engine.Resources.PlaySound("coin");
                 this.AddSprite(new CoinAnim(this, x, y));
             }
@@ -403,7 +403,7 @@ class LevelState extends Engine.GameState {
     BumpInto(x, y) {
         let block = this.Level.GetBlock(x, y), i = 0;
         if (((Tile.Behaviors[block & 0xff]) & Tile.PickUpable) > 0) {
-            Mario.MarioCharacter.GetCoin();
+            Mario.MarioCharacter.GetCoin(x, y);
             Engine.Resources.PlaySound("coin");
             this.Level.SetBlock(x, y, 0);
             this.AddSprite(new CoinAnim(x, y + 1));

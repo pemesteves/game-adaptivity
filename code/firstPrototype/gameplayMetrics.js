@@ -1,7 +1,10 @@
 class GameplayMetrics {
     constructor() {
         this.jumps = [];
-        this.grounded = [];
+        this.landings = [];
+        this.coins = [];
+
+        this.timeLeft = -1;
 
         this.levelState = null;
     }
@@ -20,9 +23,22 @@ class GameplayMetrics {
         this.jumps.push(this.GetNearestGap());
     }
 
-    RegisterGrounded() {
-        console.log("GROUDED");
-        this.grounded.push(this.GetNearestGap());
+    RegisterLanding() {
+        console.log("LANDING");
+        this.landings.push(this.GetNearestGap());
+    }
+
+    CollectedCoin(x, y) {
+        const lvl = this.levelState.Level;
+        if (!(lvl instanceof PredefinedLevel)) return;
+        
+        const ID = lvl.GetCoinID(x, y);
+        if (ID === null) {
+            console.error("ERROR: Coin doesn't exist!");
+            return;
+        }
+
+        this.coins.push(ID);
     }
 
     GetNearestGap() {
@@ -59,8 +75,9 @@ class GameplayMetrics {
     PrintMetrics() {
         return {
             "jumps": this.jumps,
-            "grounded": this.grounded,
+            "landings": this.landings,
             "timeLeft": this.timeLeft,
+            "coins": this.coins,
         };
     }
 };

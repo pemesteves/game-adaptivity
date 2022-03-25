@@ -29,4 +29,12 @@ class PredefinedLevel extends Level {
             });
         }
     }
+
+    GetCoinID(x, y) {
+        for (let i = 0; i < this.coins.length; i++) {
+            if (this.coins[i].X === x && this.coins[i].Y === y) return this.coins[i].ID;
+        }
+
+        return null;
+    }
 }
