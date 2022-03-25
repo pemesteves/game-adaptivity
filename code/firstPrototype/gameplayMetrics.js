@@ -5,6 +5,9 @@ class GameplayMetrics {
         this.coins = [];
         this.noCoins = -1;
 
+        this.powerups = [];
+        this.noPowerups = -1;
+
         this.timeLeft = -1;
 
         this.levelState = null;
@@ -33,6 +36,10 @@ class GameplayMetrics {
         this.noCoins = no; 
     }
 
+    RegisterNoPowerups(no) {
+        this.noPowerups = no; 
+    }
+
     CollectedCoin(x, y) {
         const lvl = this.levelState.Level;
         if (!(lvl instanceof PredefinedLevel)) return;
@@ -44,6 +51,19 @@ class GameplayMetrics {
         }
 
         this.coins.push(ID);
+    }
+
+    CollectedPowerup(x, y) {
+        const lvl = this.levelState.Level;
+        if (!(lvl instanceof PredefinedLevel)) return;
+        
+        const ID = lvl.GetPowerupID(x, y);
+        if (ID === null) {
+            console.error("ERROR: Powerup doesn't exist!");
+            return;
+        }
+
+        this.powerups.push(ID);
     }
 
     GetNearestGap() {
@@ -84,6 +104,8 @@ class GameplayMetrics {
             "timeLeft": this.timeLeft,
             "noCoins": this.noCoins,
             "collectedCoins": this.coins,
+            "noPowerups": this.noPowerups,
+            "collectedPowerups": this.powerups,
         };
     }
 };

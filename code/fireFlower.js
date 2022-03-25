@@ -13,6 +13,8 @@ class FireFlower extends NotchSprite {
         this.World = world;
         this.X = x;
         this.Y = y;
+        this.InitX = x;
+        this.InitY = y;
         this.Image = Engine.Resources.Images["items"];
 
         this.XPicO = 8;
@@ -29,7 +31,7 @@ class FireFlower extends NotchSprite {
     CollideCheck() {
         let xMarioD = Mario.MarioCharacter.X - this.X, yMarioD = Mario.MarioCharacter.Y - this.Y;
         if (xMarioD > -16 && xMarioD < 16 && yMarioD > -this.Height && yMarioD < Mario.MarioCharacter.Height) {
-            Mario.MarioCharacter.GetFlower();
+            Mario.MarioCharacter.GetFlower((this.InitX - 8) / 16, (this.InitY - 8) / 16);
             this.World.RemoveSprite(this);
         }
     }

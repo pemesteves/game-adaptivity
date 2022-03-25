@@ -519,8 +519,10 @@ class Character extends NotchSprite {
         this.gameplayMetrics.RegisterEndingTime();
     }
 
-    GetFlower() {
+    GetFlower(x, y) {
         if (this.DeathTime > 0 && this.World.Paused) return;
+
+        this.gameplayMetrics.CollectedPowerup(x, y);
 
         if (!this.Fire) {
             this.World.Paused = true;
@@ -533,9 +535,11 @@ class Character extends NotchSprite {
         }
     }
 
-    GetMushroom() {
+    GetMushroom(x, y) {
         if (this.DeathTime > 0 && this.World.Paused) return;
 
+        this.gameplayMetrics.CollectedPowerup(x, y);
+        
         if (!this.Large) {
             this.World.Paused = true;
             this.PowerUpTime = 18;

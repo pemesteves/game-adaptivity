@@ -37,4 +37,12 @@ class PredefinedLevel extends Level {
 
         return null;
     }
+
+    GetPowerupID(x, y) {
+        for (let i = 0; i < this.powerups.length; i++) {
+            if (this.powerups[i].X === x && this.powerups[i].Y === y) return this.powerups[i].ID;
+        }
+
+        return null;
+    }
 }

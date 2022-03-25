@@ -77,6 +77,7 @@ class PredefinedLevelGenerator extends LevelGenerator {
 
         // Register Gameplay Metrics
         Mario.MarioCharacter.gameplayMetrics.RegisterNoCoins(lvl.coins.length);
+        Mario.MarioCharacter.gameplayMetrics.RegisterNoPowerups(lvl.powerups.length);
 
         return lvl;
     }

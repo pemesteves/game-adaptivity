@@ -16,6 +16,8 @@ class Mushroom extends NotchSprite {
         this.World = world;
         this.X = x;
         this.Y = y;
+        this.InitX = x;
+        this.InitY = y;
         this.Image = Engine.Resources.Images["items"];
         this.XPicO = 8;
         this.YPicO = 15;
@@ -29,7 +31,7 @@ class Mushroom extends NotchSprite {
     CollideCheck() {
         let xMarioD = Mario.MarioCharacter.X - this.X, yMarioD = Mario.MarioCharacter.Y - this.Y;
         if (xMarioD > -16 && xMarioD < 16 && yMarioD > -this.Height && yMarioD < Mario.MarioCharacter.Height) {
-            Mario.MarioCharacter.GetMushroom();
+            Mario.MarioCharacter.GetMushroom((this.InitX - 8) / 16, (this.InitY - 8) / 16);
             this.World.RemoveSprite(this);
         }
     }
