@@ -11,6 +11,7 @@ class PredefinedLevelGenerator extends LevelGenerator {
 
     CreateLevel() {
         let lvl = new Level(this.Width, this.Height, this.level.Type);
+        this.Type = this.level.Type;
 
         lvl.SetStraightSections(this.level.StraightSections);
 
@@ -56,23 +57,21 @@ class PredefinedLevelGenerator extends LevelGenerator {
             }
         }
 
-        this.FixWalls(lvl);
-        /*let lvl = new Level(this.level.Width, this.level.Height, this.Type);
-        lvl.SetExit(this.level.ExitX, this.level.ExitY);
-        lvl.SetMap(this.level.Map);
-        lvl.SetData(this.level.Data);
-
-        // Set Sprite Templates
-        const tmp = this.level.SpriteTemplates;
-        for (let i = 0; i < tmp.length; i++) {
-            const tmp_line = tmp[i];
-            for (let j = 0; j < tmp_line.length; j++) {
-                if (tmp_line[j] === null) continue;
-
-                lvl.SetSpriteTemplate(i, j, new SpriteTemplate(tmp_line[j].Type, tmp_line[j].Winged));
+        if (this.level.Type === LevelType.Castle || this.level.Type === LevelType.Underground) {
+            let i = 0, run = 0, ceiling = 0;
+            for (let x = 0; x < lvl.Width; x++) {
+                if (run-- <= 0 && x > 4) {
+                    ceiling = this.level.CeilingRnd[i];
+                    run =  this.level.RunRnd[i];
+                    i++;
+                }
+                for (let y = 0; y < lvl.Height; y++) {
+                    if ((x > 4 && y <= ceiling) || x < 1) lvl.SetBlock(x, y, 1 + 9 * 16);
+                }
             }
-        }*/
+        }
 
+        this.FixWalls(lvl);
         return lvl;
     }
 

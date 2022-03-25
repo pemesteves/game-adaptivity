@@ -129,6 +129,10 @@ class Level {
         this.StraightSections = [];
         this.HillStraightSections = [];
         this.CannonSections = [];
+
+        // Only used in LevelType.Castle and LevelType.Underground
+        this.CeilingRnd = [];
+        this.RunRnd = [];
     }
 
     Update() {
@@ -253,5 +257,21 @@ class Level {
 
     SetCannonSections(sections) {
         this.CannonSections = sections;
+    }
+
+    SetCeilingRnd(c) {
+        this.CeilingRnd.push(c);
+    }
+
+    SetCeilingRndArr(c) {
+        this.CeilingRnd = c; 
+    }
+
+    SetRunRnd(r) {
+        this.RunRnd.push(r);
+    }
+
+    SetRunRndArr(r) {
+        this.RunRnd = r;
     }
 };
