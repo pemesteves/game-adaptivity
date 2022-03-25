@@ -130,6 +130,8 @@ class Level {
         this.HillStraightSections = [];
         this.CannonSections = [];
 
+        this.EnemySpriteTemplates = [];
+
         // Only used in LevelType.Castle and LevelType.Underground
         this.CeilingRnd = [];
         this.RunRnd = [];
@@ -187,6 +189,7 @@ class Level {
     SetSpriteTemplate(x, y, template) {
         if (this.IsOutsideBoundaries(x, y)) return;
         this.SpriteTemplates[x][y] = template;
+        this.EnemySpriteTemplates.push(new EnemySpriteTemplate(x, y, template));
     }
 
     IsOutsideBoundaries(x, y) {
@@ -250,7 +253,7 @@ class Level {
     SetHillStraightSections(sections) {
         this.HillStraightSections = sections;
     }
-    
+
     SetCannonSection(section) {
         this.CannonSections.push(section);
     }
@@ -264,7 +267,7 @@ class Level {
     }
 
     SetCeilingRndArr(c) {
-        this.CeilingRnd = c; 
+        this.CeilingRnd = c;
     }
 
     SetRunRnd(r) {
@@ -273,5 +276,23 @@ class Level {
 
     SetRunRndArr(r) {
         this.RunRnd = r;
+    }
+
+    PrintLevel() {
+        return {
+            "Width": this.Width,
+            "Height": this.Height,
+            "ExitX": this.ExitX,
+            "ExitY": this.ExitY,
+            "Type": this.Type,
+            "EnemySpriteTemplates": this.EnemySpriteTemplates,
+            "JumpSections": this.JumpSections,
+            "TubeSections": this.TubeSections,
+            "StraightSections": this.StraightSections,
+            "HillStraightSections": this.HillStraightSections,
+            "CannonSections": this.CannonSections,
+            "CeilingRnd": this.CeilingRnd,
+            "RunRnd": this.RunRnd
+        };
     }
 };

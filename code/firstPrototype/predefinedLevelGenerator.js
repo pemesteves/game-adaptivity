@@ -47,14 +47,9 @@ class PredefinedLevelGenerator extends LevelGenerator {
             }
         }
 
-        const tmp = this.level.SpriteTemplates;
+        const tmp = this.level.EnemySpriteTemplates;
         for (let i = 0; i < tmp.length; i++) {
-            const tmp_line = tmp[i];
-            for (let j = 0; j < tmp_line.length; j++) {
-                if (tmp_line[j] === null) continue;
-
-                lvl.SetSpriteTemplate(i, j, new SpriteTemplate(tmp_line[j].Type, tmp_line[j].Winged));
-            }
+            lvl.SetSpriteTemplate(tmp[i].X, tmp[i].Y, new SpriteTemplate(tmp[i].SpriteTemplate.Type, tmp[i].SpriteTemplate.Winged));
         }
 
         if (this.level.Type === LevelType.Castle || this.level.Type === LevelType.Underground) {

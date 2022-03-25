@@ -16,9 +16,9 @@ class PlayerAgent extends Agent {
         if (evt.keyCode !== Engine.Keys.A && evt.keyCode !== Engine.Keys.S && evt.keyCode !== Engine.Keys.Left && evt.keyCode !== Engine.Keys.Right) return;
 
         this.actions.push({
-            'ticks': this.ticks,
-            'keycode': evt.keyCode, // TODO fix because it is deprecated?
-            'event': evt.type
+            't': this.ticks, // Ticks
+            'k': evt.keyCode, // Key Code
+            'e': evt.type // Event Type
         });
     }
 

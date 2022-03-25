@@ -13,9 +13,9 @@ class AIAgent extends Agent {
 
         while (true) {
             const evt = this.actions[this.currentEvent]
-            if (!(this.currentEvent < this.actions.length && evt.ticks <= this.ticks)) break;
+            if (!(this.currentEvent < this.actions.length && evt.t <= this.ticks)) break;
 
-            document.dispatchEvent(new KeyboardEvent(evt.event, { 'keyCode': evt.keycode }));
+            document.dispatchEvent(new KeyboardEvent(evt.e, { 'keyCode': evt.k }));
 
             this.currentEvent++;
         }
