@@ -3,6 +3,7 @@ class GameplayMetrics {
         this.jumps = [];
         this.landings = [];
         this.coins = [];
+        this.noCoins = -1;
 
         this.timeLeft = -1;
 
@@ -26,6 +27,10 @@ class GameplayMetrics {
     RegisterLanding() {
         console.log("LANDING");
         this.landings.push(this.GetNearestGap());
+    }
+
+    RegisterNoCoins(no) {
+        this.noCoins = no; 
     }
 
     CollectedCoin(x, y) {
@@ -65,7 +70,7 @@ class GameplayMetrics {
         return minDist;
     }
 
-    RegisterDeathTime() {
+    RegisterEndingTime() {
         if (this.levelState == null) return;
 
         const t = this.levelState.GetTimeLeft();
@@ -77,7 +82,8 @@ class GameplayMetrics {
             "jumps": this.jumps,
             "landings": this.landings,
             "timeLeft": this.timeLeft,
-            "coins": this.coins,
+            "noCoins": this.noCoins,
+            "collectedCoins": this.coins,
         };
     }
 };

@@ -502,6 +502,9 @@ class Character extends NotchSprite {
         this.World.Paused = true;
         this.WinTime = 1;
         Engine.Resources.PlaySound("exit");
+        
+        // Register Winning Time
+        this.gameplayMetrics.RegisterEndingTime();
     }
 
     Die() {
@@ -513,7 +516,7 @@ class Character extends NotchSprite {
         this.SetLarge(false, false);
 
         // Register Death Time
-        this.gameplayMetrics.RegisterDeathTime();
+        this.gameplayMetrics.RegisterEndingTime();
     }
 
     GetFlower() {
