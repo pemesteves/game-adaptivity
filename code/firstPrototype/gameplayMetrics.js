@@ -2,11 +2,16 @@ class GameplayMetrics {
     constructor() {
         this.jumps = [];
         this.landings = [];
+        
         this.coins = [];
         this.noCoins = -1;
 
         this.powerups = [];
         this.noPowerups = -1;
+
+        // TODO Implement enemy death detection
+        this.enemies = [];
+        this.noEnemies = -1;
 
         this.timeLeft = -1;
 
@@ -40,6 +45,10 @@ class GameplayMetrics {
         this.noPowerups = no; 
     }
 
+    RegisterNoEnemies(no) {
+        this.noEnemies = no; 
+    }
+
     CollectedCoin(x, y) {
         const lvl = this.levelState.Level;
         if (!(lvl instanceof PredefinedLevel)) return;
@@ -64,6 +73,10 @@ class GameplayMetrics {
         }
 
         this.powerups.push(ID);
+    }
+
+    KilledEnemy(ID) {
+        this.enemies.push(ID);
     }
 
     GetNearestGap() {

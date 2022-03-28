@@ -31,6 +31,8 @@ class Enemy extends NotchSprite {
 
         this.X = x;
         this.Y = y;
+        this.InitX = x;
+        this.InitY = y;
         this.World = world;
 
         this.Type = type;
@@ -227,7 +229,6 @@ class Enemy extends NotchSprite {
             this.Ya = -5;
             this.FlyDeath = true;
             if (this.SpriteTemplate !== null) this.SpriteTemplate.IsDead = true;
-
             this.DeadTime = 100;
             this.Winged = false;
             this.YFlip = true;
