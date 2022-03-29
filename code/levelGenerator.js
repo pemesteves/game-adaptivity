@@ -54,7 +54,7 @@ class LevelGenerator {
                 if (run-- <= 0 && x > 4) {
                     ceiling = (Math.random() * 4) | 0;
                     run = ((Math.random() * 4) | 0) + 4;
-                    
+
                     level.SetCeilingRnd(ceiling);
                     level.SetRunRnd(run);
                 }
@@ -87,10 +87,10 @@ class LevelGenerator {
     BuildJump(level, xo, maxLength) {
         let js = ((Math.random() * 4) | 0) + 2, jl = ((Math.random() * 2) | 0) + 2, length = js * 2 + jl, x = 0, y = 0,
             hasStairs = ((Math.random() * 3) | 0) === 0, floor = this.Height - 1 - ((Math.random() * 4) | 0);
-        
+
         let jumpSection = new JumpSection(js, jl, length, xo, hasStairs, floor);
         level.SetJumpSection(jumpSection);
-        
+
         this.BuildJumpSection(level, jumpSection);
 
         return length;
@@ -302,9 +302,10 @@ class LevelGenerator {
 
         this.AddEnemyLine(level, x0 + 1, x1 - 1, floor - 1);
 
+        // Set coin lines
         if (floor - 2 > 0 && (x1 - 1 - e) - (x0 + 1 + s) > 1) {
             for (let x = x0 + 1 + s; x < x1 - 1 - e; x++) {
-                level.SetBlock(x, floor - 2, 2 + 2 * 16);
+                level.SetBlock(x, floor - 2, 34); // Set Coin
             }
         }
 
@@ -320,10 +321,18 @@ class LevelGenerator {
 
                 decorate.SetRandomValues(rnd1, rnd2, rnd3, rnd4);
 
+                // Set Block Content
+                /**
+                 * 16: Normal Block
+                 * 17: Normal Block with Coin
+                 * 18: Normal Block with Powerup
+                 * 21: Special Block with Coin
+                 * 22: Special Block with Powerup
+                 */
                 if (x !== x0 + 1 && x !== x1 - 2 && rnd1 === 0) {
-                    level.SetBlock(x, floor - 4, rnd2 === 0 ? 22 : 21); // 4 + 2 + 16 / 4 + 1 + 16
+                    level.SetBlock(x, floor - 4, rnd2 === 0 ? 22 : 21);
                 } else if (rnd3 === 0) {
-                    level.SetBlock(x, floor - 4, rnd4 === 0 ? 18 : 17); // 2 + 16 / 1 + 16
+                    level.SetBlock(x, floor - 4, rnd4 === 0 ? 18 : 17);
                 } else {
                     level.SetBlock(x, floor - 4, 16);
                 }
