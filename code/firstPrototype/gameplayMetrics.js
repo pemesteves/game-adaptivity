@@ -28,12 +28,10 @@ class GameplayMetrics {
     }
 
     RegisterJump() {
-        console.log("JUMP");
         this.jumps.push(this.GetNearestGap());
     }
 
     RegisterLanding() {
-        console.log("LANDING");
         this.landings.push(this.GetNearestGap());
     }
 

@@ -1,7 +1,20 @@
+
+/**
+	Just create the global mario object.
+	Adapted from Rob Kleffner, 2011.
+	Code by Pedro Esteves, 2022
+**/
+
 class Mario {
     static MarioCharacter;
     static GlobalMapState;
 };
+
+/**
+    Helper to cut up the sprites.
+    Adapted from Rob Kleffner, 2011.
+    Code by Pedro Esteves, 2022.
+**/
 
 class SpriteCuts {
     /*********************
@@ -68,6 +81,20 @@ class SpriteCuts {
         return sheet;
     }
 };
+
+class EnemySpriteTemplate {
+    constructor(x, y, sprite) {
+        this.X = x;
+        this.Y = y;
+        this.SpriteTemplate = sprite;
+    }
+};
+
+/**
+    Represents a playable level in the game.
+    Adapted from Rob Kleffner, 2011.
+    Code by Pedro Esteves, 2022.
+**/
 
 class Tile {
     static BlockUpper = 1 << 0;
@@ -151,18 +178,18 @@ class Tile {
     }
 };
 
+class LevelType {
+    static Overground = 0;
+    static Underground = 1;
+    static Castle = 2;
+};
+
 class Odds {
     static Straight = 0;
     static HillStraight = 1;
     static Tubes = 2;
     static Jump = 3;
     static Cannons = 4;
-};
-
-class LevelType {
-    static Overground = 0;
-    static Underground = 1;
-    static Castle = 2;
 };
 
 class Level {
@@ -193,6 +220,13 @@ class Level {
         this.TubeSections = [];
         this.StraightSections = [];
         this.HillStraightSections = [];
+        this.CannonSections = [];
+
+        this.EnemySpriteTemplates = [];
+
+        // Only used in LevelType.Castle and LevelType.Underground
+        this.CeilingRnd = [];
+        this.RunRnd = [];
     }
 
     Update() {
@@ -247,6 +281,7 @@ class Level {
     SetSpriteTemplate(x, y, template) {
         if (this.IsOutsideBoundaries(x, y)) return;
         this.SpriteTemplates[x][y] = template;
+        this.EnemySpriteTemplates.push(new EnemySpriteTemplate(x, y, template));
     }
 
     IsOutsideBoundaries(x, y) {
@@ -266,25 +301,12 @@ class Level {
         this.ExitY = y;
     }
 
-    SetJumpSection(js, jl, length, xo, hasStairs, floor) {
-        this.JumpSections.push(new JumpSection(js, jl, length, xo, hasStairs, floor));
-
-        for (let x = xo; x < xo + length; x++) {
-            if (!(x < xo + js || x > xo + length - js - 1)) continue;
-
-            for (let y = 0; y < this.Height; y++) {
-                if (y >= floor) this.SetBlock(x, y, 1 + 9 * 16);
-                else if (hasStairs && x < xo + js && y >= floor - (x - xo) + 1) this.SetBlock(x, y, 9);
-                else if (hasStairs && x >= xo + js && y >= floor - ((xo + length) - x) + 2) this.SetBlock(x, y, 9);
-            }
-        }
+    SetJumpSection(section) {
+        this.JumpSections.push(section);
     }
 
     SetJumpSections(sections) {
-        for (let i = 0; i < sections.length; i++) {
-            const s = sections[i];
-            this.SetJumpSection(s.JS, s.JL, s.Length, s.X0, s.HasStairs, s.Floor);
-        }
+        this.JumpSections = sections;
     }
 
     SetTubeSection(section) {
@@ -310,9 +332,104 @@ class Level {
     SetHillStraightSections(sections) {
         this.HillStraightSections = sections;
     }
+
+    SetCannonSection(section) {
+        this.CannonSections.push(section);
+    }
+
+    SetCannonSections(sections) {
+        this.CannonSections = sections;
+    }
+
+    SetCeilingRnd(c) {
+        this.CeilingRnd.push(c);
+    }
+
+    SetCeilingRndArr(c) {
+        this.CeilingRnd = c;
+    }
+
+    SetRunRnd(r) {
+        this.RunRnd.push(r);
+    }
+
+    SetRunRndArr(r) {
+        this.RunRnd = r;
+    }
+
+    PrintLevel() {
+        return {
+            "Width": this.Width,
+            "Height": this.Height,
+            "ExitX": this.ExitX,
+            "ExitY": this.ExitY,
+            "Type": this.Type,
+            "EnemySpriteTemplates": this.EnemySpriteTemplates,
+            "JumpSections": this.JumpSections,
+            "TubeSections": this.TubeSections,
+            "StraightSections": this.StraightSections,
+            "HillStraightSections": this.HillStraightSections,
+            "CannonSections": this.CannonSections,
+            "CeilingRnd": this.CeilingRnd,
+            "RunRnd": this.RunRnd
+        };
+    }
 };
 
-/** BACKGROUND GENERATOR **/
+class PredefinedLevel extends Level {
+    constructor(width, height, type) {
+        super(width, height, type);
+
+        this.coinID = 0;
+        this.powerupID = 0;
+
+        this.coins = [];
+        this.powerups = [];
+    }
+
+    SetBlock(x, y, block) {
+        super.SetBlock(x, y, block);
+
+        const b = Tile.Behaviors[block & 0xff];
+
+        if ((b & Tile.PickUpable) > 0 || ((b & Tile.Bumpable) > 0 && (b & Tile.Special) <= 0)) { // Coin
+            this.coins.push({
+                "ID": ++this.coinID,
+                "X": x,
+                "Y": y
+            });
+        }
+        else if ((b & Tile.Special) > 0) { // Powerup
+            this.powerups.push({
+                "ID": ++this.powerupID,
+                "X": x,
+                "Y": y
+            });
+        }
+    }
+
+    GetCoinID(x, y) {
+        for (let i = 0; i < this.coins.length; i++) {
+            if (this.coins[i].X === x && this.coins[i].Y === y) return this.coins[i].ID;
+        }
+
+        return null;
+    }
+
+    GetPowerupID(x, y) {
+        for (let i = 0; i < this.powerups.length; i++) {
+            if (this.powerups[i].X === x && this.powerups[i].Y === y) return this.powerups[i].ID;
+        }
+
+        return null;
+    }
+}
+
+/**
+    Generates the backgrounds for a level.
+    Adapted from Rob Kleffner, 2011.
+    Code by Pedro Esteves, 2022.
+**/
 
 class BackgroundGenerator {
     constructor(width, height, distant, type) {
@@ -486,7 +603,11 @@ class BackgroundGenerator {
     }
 };
 
-/** BACKGROUND RENDERER **/
+/**
+    Renders a background portion of the level.
+    Adapted from Rob Kleffner, 2011.
+    Code by Pedro Esteves, 2022.
+**/
 
 class BackgroundRenderer extends Engine.Drawable {
     constructor(level, width, height, distance) {
@@ -520,7 +641,11 @@ class BackgroundRenderer extends Engine.Drawable {
     }
 };
 
-/** IMPROVED NOISE **/
+/**
+    Noise function to generate the world maps.
+    Adapted from Rob Kleffner, 2011.
+    Code by Pedro Esteves, 2022.
+**/
 
 class ImprovedNoise {
     constructor(seed) {
@@ -587,7 +712,12 @@ class ImprovedNoise {
     }
 };
 
-/** NOTCH SPRITE **/
+/**
+    Notch made his own sprite class for this game. Rather than hack around my own,
+    I directly ported his to JavaScript and used that where needed.
+    Adapted from Rob Kleffner, 2011.
+    Code by Pedro Esteves, 2022.
+**/
 
 class NotchSprite extends Engine.Drawable {
     constructor(image) {
@@ -660,12 +790,16 @@ class NotchSprite extends Engine.Drawable {
     }
 };
 
-/** CHARACTER **/
-
 class CauseOfDeath {
     static Hole = 1;
     static Enemy = 2;
 };
+
+/**
+    Global representation of the mario character.
+    Adapted from Rob Kleffner, 2011.
+    Code by Pedro Esteves, 2022.
+*/
 
 class Character extends NotchSprite {
     constructor() {
@@ -851,7 +985,7 @@ class Character extends NotchSprite {
                 this.Ya = this.JumpTime * this.YJumpSpeed;
                 this.OnGround = false;
                 this.Sliding = false;
-                this.gameplayMetrics.registerJump();
+                this.gameplayMetrics.RegisterJump();
             } else if (this.Sliding && this.MayJump) {
                 Engine.Resources.PlaySound("jump");
                 this.XJumpSpeed = -this.Facing * 6;
@@ -862,7 +996,7 @@ class Character extends NotchSprite {
                 this.OnGround = false;
                 this.Sliding = false;
                 this.Facing = -this.Facing;
-                this.gameplayMetrics.registerJump();
+                this.gameplayMetrics.RegisterJump();
             } else if (this.JumpTime > 0) {
                 this.Xa += this.XJumpSpeed;
                 this.Ya = this.JumpTime * this.YJumpSpeed;
@@ -1068,6 +1202,9 @@ class Character extends NotchSprite {
             }
             if (ya > 0) {
                 this.Y = (((this.Y - 1) / 16 + 1) | 0) * 16 - 1;
+
+                // Grounded
+                if (!this.WasOnGround) this.gameplayMetrics.RegisterLanding();
                 this.OnGround = true;
             }
 
@@ -1089,7 +1226,7 @@ class Character extends NotchSprite {
         block = this.World.Level.GetBlock(x, y);
 
         if (((Tile.Behaviors[block & 0xff]) & Tile.PickUpable) > 0) {
-            this.GetCoin();
+            this.GetCoin(x, y);
             Engine.Resources.PlaySound("coin");
             this.World.Level.SetBlock(x, y, 0);
             for (xx = 0; xx < 2; xx++) {
@@ -1162,6 +1299,9 @@ class Character extends NotchSprite {
         this.World.Paused = true;
         this.WinTime = 1;
         Engine.Resources.PlaySound("exit");
+        
+        // Register Winning Time
+        this.gameplayMetrics.RegisterEndingTime();
     }
 
     Die() {
@@ -1173,11 +1313,13 @@ class Character extends NotchSprite {
         this.SetLarge(false, false);
 
         // Register Death Time
-        this.gameplayMetrics.registerDeathTime();
+        this.gameplayMetrics.RegisterEndingTime();
     }
 
-    GetFlower() {
+    GetFlower(x, y) {
         if (this.DeathTime > 0 && this.World.Paused) return;
+
+        this.gameplayMetrics.CollectedPowerup(x, y);
 
         if (!this.Fire) {
             this.World.Paused = true;
@@ -1190,9 +1332,11 @@ class Character extends NotchSprite {
         }
     }
 
-    GetMushroom() {
+    GetMushroom(x, y) {
         if (this.DeathTime > 0 && this.World.Paused) return;
 
+        this.gameplayMetrics.CollectedPowerup(x, y);
+        
         if (!this.Large) {
             this.World.Paused = true;
             this.PowerUpTime = 18;
@@ -1222,16 +1366,26 @@ class Character extends NotchSprite {
         if (this.Lives === 99) this.Lives = 99;
     }
 
-    GetCoin() {
+    GetCoin(x, y) {
+        if (x !== undefined && y !== undefined) this.gameplayMetrics.CollectedCoin(x, y);
+
         this.Coins++;
         if (this.Coins === 100) {
             this.Coins = 0;
             this.Get1Up();
         }
     }
+
+    ResetMetrics() {
+        this.gameplayMetrics = new GameplayMetrics();
+    }
 };
 
-/** LEVEL RENDERER **/
+/**
+    Renders a playable level.
+    Adapted from Rob Kleffner, 2011.
+    Code by Pedro Esteves, 2022.
+**/
 
 class LevelRenderer extends Engine.Drawable {
     constructor(level, width, height) {
@@ -1322,9 +1476,15 @@ class LevelRenderer extends Engine.Drawable {
     }
 };
 
-/** LEVEL GENERATOR **/
-
 class JumpSection {
+    /**
+     * js: Distance between the start of the jump section and the hole
+     * jl: Distance between the hole and the end of the jump section
+     * length: Section length
+     * x, y: Coordinates (* 16 + 8 to get the character coordinates)
+     * hasStairs: Decide if the gap has stone stairs
+     * floor: Distance between the level top and the hole position
+     */
     constructor(js, jl, length, x0, hasStairs, floor) {
         this.JS = js;
         this.JL = jl;
@@ -1429,14 +1589,39 @@ class HillStraightSection {
     }
 };
 
+class CannonSection {
+    constructor(length, floor, x0) {
+        this.Length = length;
+        this.Floor = floor;
+        this.X0 = x0;
+    
+        this.XCannon = [];
+        this.CannonHeight = [];
+    }
+
+    AddXCannon(x) {
+        this.XCannon.push(x);
+    }
+
+    AddCannonHeight(h) {
+        this.CannonHeight.push(h);
+    }
+}
+
 class DecorateSection {
     constructor(x0, x1, floor) {
         this.X0 = x0;
         this.X1 = x1;
         this.Floor = floor;
 
-        this.SBegin = this.SEnd = this.EBegin = this.EEnd = 0;
-        this.Rnd1 = this.Rnd2 = this.Rnd3 = this.Rnd4 = [];
+        this.SBegin = 0;
+        this.SEnd = 0;
+        this.EBegin = 0;
+        this.EEnd = 0;
+        this.Rnd1 = [];
+        this.Rnd2 = [];
+        this.Rnd3 = [];
+        this.Rnd4 = [];
     }
 
     SetBegin(s, e) {
@@ -1457,6 +1642,12 @@ class DecorateSection {
     }
 };
 
+/**
+    Generates a psuedo-random procedural level.
+    Adapted from Rob Kleffner, 2011.
+    Code by Pedro Esteves, 2022.
+**/
+
 class LevelGenerator {
     constructor(width, height) {
         this.Width = width;
@@ -1468,7 +1659,7 @@ class LevelGenerator {
     }
 
     CreateLevel(type, difficulty) {
-        let i = 0, length = 0, floor = 0, x = 0, y = 0, ceiling = 0, run = 0, level = null;
+        let length = 0, floor = 0, ceiling = 0, run = 0, level = null;
 
         this.Type = type;
         this.Difficulty = difficulty;
@@ -1480,7 +1671,7 @@ class LevelGenerator {
 
         if (this.Type !== LevelType.Overground) this.Odds[Odds.HillStraight] = 0;
 
-        for (i = 0; i < this.Odds.length; i++) {
+        for (let i = 0; i < this.Odds.length; i++) {
             if (this.Odds[i] < 0) this.Odds[i] = 0;
 
             this.TotalOdds += this.Odds[i];
@@ -1496,19 +1687,22 @@ class LevelGenerator {
         level.ExitX = length + 8;
         level.ExitY = floor;
 
-        for (x = length; x < level.Width; x++) {
-            for (y = 0; y < this.Height; y++) {
+        for (let x = length; x < level.Width; x++) {
+            for (let y = 0; y < this.Height; y++) {
                 if (y >= floor) level.SetBlock(x, y, 1 + 9 * 16);
             }
         }
 
         if (type === LevelType.Castle || type === LevelType.Underground) {
-            for (x = 0; x < level.Width; x++) {
+            for (let x = 0; x < level.Width; x++) {
                 if (run-- <= 0 && x > 4) {
                     ceiling = (Math.random() * 4) | 0;
                     run = ((Math.random() * 4) | 0) + 4;
+
+                    level.SetCeilingRnd(ceiling);
+                    level.SetRunRnd(run);
                 }
-                for (y = 0; y < level.Height; y++) {
+                for (let y = 0; y < level.Height; y++) {
                     if ((x > 4 && y <= ceiling) || x < 1) level.SetBlock(x, y, 1 + 9 * 16);
                 }
             }
@@ -1519,7 +1713,6 @@ class LevelGenerator {
     }
 
     BuildZone(level, x, maxLength) {
-        return this.BuildHillStraight(level, x, maxLength);
         let t = (Math.random() * this.TotalOdds) | 0, type = 0, i = 0;
         for (i = 0; i < this.Odds.length; i++) {
             if (this.Odds[i] <= t) type = i;
@@ -1539,25 +1732,48 @@ class LevelGenerator {
         let js = ((Math.random() * 4) | 0) + 2, jl = ((Math.random() * 2) | 0) + 2, length = js * 2 + jl, x = 0, y = 0,
             hasStairs = ((Math.random() * 3) | 0) === 0, floor = this.Height - 1 - ((Math.random() * 4) | 0);
 
-        level.SetJumpSection(js, jl, length, xo, hasStairs, floor);
+        let jumpSection = new JumpSection(js, jl, length, xo, hasStairs, floor);
+        level.SetJumpSection(jumpSection);
+
+        this.BuildJumpSection(level, jumpSection);
 
         return length;
     }
 
+    BuildJumpSection(level, section) {
+        for (let x = section.X0; x < section.X0 + section.Length; x++) {
+            if (!(x < section.X0 + section.JS || x > section.X0 + section.Length - section.JS - 1)) continue;
+
+            for (let y = 0; y < this.Height; y++) {
+                if (y >= section.Floor)
+                    level.SetBlock(x, y, 1 + 9 * 16);
+                else if (section.HasStairs && x < section.X0 + section.JS && y >= section.Floor - (x - section.X0) + 1)
+                    level.SetBlock(x, y, 9);
+                else if (section.HasStairs && x >= section.X0 + section.JS && y >= section.Floor - ((section.X0 + section.Length) - x) + 2)
+                    level.SetBlock(x, y, 9);
+            }
+        }
+    }
+
     BuildCannons(level, xo, maxLength) {
         let length = ((Math.random() * 10) | 0) + 2, floor = this.Height - 1 - (Math.random() * 4) | 0,
-            xCannon = xo + 1 + (Math.random() * 4) | 0, x = 0, y = 0, cannonHeight = 0;
+            xCannon = xo + 1 + (Math.random() * 4) | 0;
 
         if (length > maxLength) length = maxLength;
 
-        for (x = xo; x < xo + length; x++) {
+        let cannonSection = new CannonSection(length, floor, xo);
+
+        for (let x = xo; x < xo + length; x++) {
             if (x > xCannon) xCannon += 2 * (Math.random() * 4) | 0;
 
             if (xCannon === xo + length - 1) xCannon += 10;
 
-            cannonHeight = floor - ((Math.random() * 4) | 0) - 1;
+            const cannonHeight = floor - ((Math.random() * 4) | 0) - 1;
 
-            for (y = 0; y < this.Height; y++) {
+            cannonSection.AddXCannon(xCannon);
+            cannonSection.AddCannonHeight(cannonHeight);
+
+            for (let y = 0; y < this.Height; y++) {
                 if (y >= floor) {
                     level.SetBlock(x, y, 1 + 9 * 16);
                 } else if (y < floor && x === xCannon && y >= cannonHeight) {
@@ -1571,6 +1787,8 @@ class LevelGenerator {
                 }
             }
         }
+
+        level.SetCannonSection(cannonSection);
 
         return length;
     }
@@ -1728,9 +1946,10 @@ class LevelGenerator {
 
         this.AddEnemyLine(level, x0 + 1, x1 - 1, floor - 1);
 
+        // Set coin lines
         if (floor - 2 > 0 && (x1 - 1 - e) - (x0 + 1 + s) > 1) {
             for (let x = x0 + 1 + s; x < x1 - 1 - e; x++) {
-                level.SetBlock(x, floor - 2, 2 + 2 * 16);
+                level.SetBlock(x, floor - 2, 34); // Set Coin
             }
         }
 
@@ -1746,10 +1965,18 @@ class LevelGenerator {
 
                 decorate.SetRandomValues(rnd1, rnd2, rnd3, rnd4);
 
+                // Set Block Content
+                /**
+                 * 16: Normal Block
+                 * 17: Normal Block with Coin
+                 * 18: Normal Block with Powerup
+                 * 21: Special Block with Coin
+                 * 22: Special Block with Powerup
+                 */
                 if (x !== x0 + 1 && x !== x1 - 2 && rnd1 === 0) {
-                    level.SetBlock(x, floor - 4, rnd2 === 0 ? 22 : 21); // 4 + 2 + 16 / 4 + 1 + 16
+                    level.SetBlock(x, floor - 4, rnd2 === 0 ? 22 : 21);
                 } else if (rnd3 === 0) {
-                    level.SetBlock(x, floor - 4, rnd4 === 0 ? 18 : 17); // 2 + 16 / 1 + 16
+                    level.SetBlock(x, floor - 4, rnd4 === 0 ? 18 : 17);
                 } else {
                     level.SetBlock(x, floor - 4, 16);
                 }
@@ -1841,7 +2068,10 @@ class LevelGenerator {
     }
 };
 
-/** PREDEFINED LEVEL GENERATOR **/
+/**
+    Generates a pseudo-random procedural level.
+    Code by Pedro Esteves, 2022.
+**/
 
 class PredefinedLevelGenerator extends LevelGenerator {
     constructor(level) {
@@ -1850,7 +2080,15 @@ class PredefinedLevelGenerator extends LevelGenerator {
     }
 
     CreateLevel() {
-        let lvl = new Level(this.Width, this.Height, this.level.Type);
+        let lvl = new PredefinedLevel(this.Width, this.Height, this.level.Type);
+        this.Type = this.level.Type;
+        
+        for (let i = 0; i < this.level.JumpSections.length; i++) {
+            const s = this.level.JumpSections[i];
+            const section = new JumpSection(s.JS, s.JL, s.Length, s.X0, s.HasStairs, s.Floor);
+            lvl.SetJumpSection(section);
+            super.BuildJumpSection(lvl, section);
+        }
 
         lvl.SetStraightSections(this.level.StraightSections);
 
@@ -1870,6 +2108,12 @@ class PredefinedLevelGenerator extends LevelGenerator {
             this.BuildHillStraight(lvl, this.level.HillStraightSections[i]);
         }
 
+        lvl.SetCannonSections(this.level.CannonSections);
+
+        for (let i = 0; i < this.level.CannonSections.length; i++) {
+            this.BuildCannons(lvl, this.level.CannonSections[i]);
+        }
+
         lvl.ExitX = this.level.ExitX;
         lvl.ExitY = this.level.ExitY;
         const length = this.level.ExitX - 8, floor = lvl.ExitY;
@@ -1880,32 +2124,30 @@ class PredefinedLevelGenerator extends LevelGenerator {
             }
         }
 
-        const tmp = this.level.SpriteTemplates;
+        const tmp = this.level.EnemySpriteTemplates;
         for (let i = 0; i < tmp.length; i++) {
-            const tmp_line = tmp[i];
-            for (let j = 0; j < tmp_line.length; j++) {
-                if (tmp_line[j] === null) continue;
+            lvl.SetSpriteTemplate(tmp[i].X, tmp[i].Y, new SpriteTemplate(tmp[i].SpriteTemplate.Type, tmp[i].SpriteTemplate.Winged));
+        }
 
-                lvl.SetSpriteTemplate(i, j, new SpriteTemplate(tmp_line[j].Type, tmp_line[j].Winged));
+        if (this.level.Type === LevelType.Castle || this.level.Type === LevelType.Underground) {
+            let i = 0, run = 0, ceiling = 0;
+            for (let x = 0; x < lvl.Width; x++) {
+                if (run-- <= 0 && x > 4) {
+                    ceiling = this.level.CeilingRnd[i];
+                    run =  this.level.RunRnd[i];
+                    i++;
+                }
+                for (let y = 0; y < lvl.Height; y++) {
+                    if ((x > 4 && y <= ceiling) || x < 1) lvl.SetBlock(x, y, 1 + 9 * 16);
+                }
             }
         }
 
         this.FixWalls(lvl);
-        /*let lvl = new Level(this.level.Width, this.level.Height, this.Type);
-        lvl.SetExit(this.level.ExitX, this.level.ExitY);
-        lvl.SetMap(this.level.Map);
-        lvl.SetData(this.level.Data);
 
-        // Set Sprite Templates
-        const tmp = this.level.SpriteTemplates;
-        for (let i = 0; i < tmp.length; i++) {
-            const tmp_line = tmp[i];
-            for (let j = 0; j < tmp_line.length; j++) {
-                if (tmp_line[j] === null) continue;
-
-                lvl.SetSpriteTemplate(i, j, new SpriteTemplate(tmp_line[j].Type, tmp_line[j].Winged));
-            }
-        }*/
+        // Register Gameplay Metrics
+        Mario.MarioCharacter.gameplayMetrics.RegisterNoCoins(lvl.coins.length);
+        Mario.MarioCharacter.gameplayMetrics.RegisterNoPowerups(lvl.powerups.length);
 
         return lvl;
     }
@@ -2002,6 +2244,31 @@ class PredefinedLevelGenerator extends LevelGenerator {
         }
     }
 
+    BuildCannons(lvl, cannonSection) {
+        const length = cannonSection.Length, floor = cannonSection.Floor, xo = cannonSection.X0;
+
+        let i = 0;
+        for (let x = xo; x < xo + length; x++) {
+            const xCannon = cannonSection.XCannon[i], cannonHeight = cannonSection.CannonHeight[i];
+
+            for (let y = 0; y < this.Height; y++) {
+                if (y >= floor) {
+                    lvl.SetBlock(x, y, 1 + 9 * 16);
+                } else if (y < floor && x === xCannon && y >= cannonHeight) {
+                    if (y === cannonHeight) {
+                        lvl.SetBlock(x, y, 14);
+                    } else if (y === cannonHeight + 1) {
+                        lvl.SetBlock(x, y, 14 + 16);
+                    } else {
+                        lvl.SetBlock(x, y, 14 + 2 * 16);
+                    }
+                }
+            }
+
+            i++;
+        }
+    }
+
     Decorate(lvl, section) {
         let s = section.SBegin, e = section.EBegin;
         const x0 = section.X0, x1 = section.X1, floor = section.Floor;
@@ -2034,7 +2301,11 @@ class PredefinedLevelGenerator extends LevelGenerator {
     }
 };
 
-/** SPRITE TEMPLATE **/
+/**
+    Creates a specific type of sprite based on the information given.
+    Adapted from Rob Kleffner, 2011.
+    Code by Pedro Esteves, 2022.
+**/
 
 class SpriteTemplate {
     constructor(type, winged) {
@@ -2056,7 +2327,11 @@ class SpriteTemplate {
     }
 };
 
-/** ENEMY **/
+/**
+    A generic template for an enemy in the game.
+    Adapted from Rob Kleffner, 2011.
+    Code by Pedro Esteves, 2022.
+**/
 
 class Enemy extends NotchSprite {
     //Static variables
@@ -2085,6 +2360,8 @@ class Enemy extends NotchSprite {
 
         this.X = x;
         this.Y = y;
+        this.InitX = x;
+        this.InitY = y;
         this.World = world;
 
         this.Type = type;
@@ -2281,7 +2558,6 @@ class Enemy extends NotchSprite {
             this.Ya = -5;
             this.FlyDeath = true;
             if (this.SpriteTemplate !== null) this.SpriteTemplate.IsDead = true;
-
             this.DeadTime = 100;
             this.Winged = false;
             this.YFlip = true;
@@ -2371,7 +2647,11 @@ class Enemy extends NotchSprite {
     }
 };
 
-/** FIREBALL **/
+/**
+    Represents a fireball.
+    Adapted from Rob Kleffner, 2011.
+    Code by Pedro Esteves, 2022.
+**/
 
 class Fireball extends NotchSprite {
     constructor(world, x, y, facing) {
@@ -2517,7 +2797,11 @@ class Fireball extends NotchSprite {
     }
 };
 
-/** SPARKLE **/
+/**
+    Represents a little sparkle object in the game.
+    Adapted from Rob Kleffner, 2011.
+    Code by Pedro Esteves, 2022.
+**/
 
 class Sparkle extends NotchSprite {
     constructor(world, x, y, xa, ya) {
@@ -2551,7 +2835,11 @@ class Sparkle extends NotchSprite {
     }
 };
 
-/** COIN ANIM **/
+/**
+    Represents a simple little coin animation when popping out of the box.
+    Adapted from Rob Kleffner, 2011.
+    Code by Pedro Esteves, 2022.
+**/
 
 class CoinAnim extends NotchSprite {
     constructor(world, x, y) {
@@ -2586,7 +2874,11 @@ class CoinAnim extends NotchSprite {
     }
 };
 
-/** MUSHROOM **/
+/**
+    Represents a life-giving mushroom.
+    Adapted from Rob Kleffner, 2011.
+    Code by Pedro Esteves, 2022.
+**/
 
 class Mushroom extends NotchSprite {
     constructor(world, x, y) {
@@ -2600,6 +2892,8 @@ class Mushroom extends NotchSprite {
         this.World = world;
         this.X = x;
         this.Y = y;
+        this.InitX = x;
+        this.InitY = y;
         this.Image = Engine.Resources.Images["items"];
         this.XPicO = 8;
         this.YPicO = 15;
@@ -2613,7 +2907,7 @@ class Mushroom extends NotchSprite {
     CollideCheck() {
         let xMarioD = Mario.MarioCharacter.X - this.X, yMarioD = Mario.MarioCharacter.Y - this.Y;
         if (xMarioD > -16 && xMarioD < 16 && yMarioD > -this.Height && yMarioD < Mario.MarioCharacter.Height) {
-            Mario.MarioCharacter.GetMushroom();
+            Mario.MarioCharacter.GetMushroom((this.InitX - 8) / 16, (this.InitY - 8) / 16);
             this.World.RemoveSprite(this);
         }
     }
@@ -2729,7 +3023,12 @@ class Mushroom extends NotchSprite {
         }
     }
 };
-/** PARTICLE **/
+
+/**
+	Represents a piece of a broken block.
+	Adapted from Rob Kleffner, 2011.
+	Code by Pedro Esteves, 2022.
+*/
 
 class Particle extends NotchSprite {
     constructor(world, x, y, xa, ya, xPic, yPic) {
@@ -2763,7 +3062,11 @@ class Particle extends NotchSprite {
     }
 };
 
-/** FIRE FLOWER **/
+/**
+	Represents a fire powerup.
+	Adapted from Rob Kleffner, 2011.
+	Code by Pedro Esteves, 2022.
+**/
 
 class FireFlower extends NotchSprite {
     constructor(world, x, y) {
@@ -2774,6 +3077,8 @@ class FireFlower extends NotchSprite {
         this.World = world;
         this.X = x;
         this.Y = y;
+        this.InitX = x;
+        this.InitY = y;
         this.Image = Engine.Resources.Images["items"];
 
         this.XPicO = 8;
@@ -2790,7 +3095,7 @@ class FireFlower extends NotchSprite {
     CollideCheck() {
         let xMarioD = Mario.MarioCharacter.X - this.X, yMarioD = Mario.MarioCharacter.Y - this.Y;
         if (xMarioD > -16 && xMarioD < 16 && yMarioD > -this.Height && yMarioD < Mario.MarioCharacter.Height) {
-            Mario.MarioCharacter.GetFlower();
+            Mario.MarioCharacter.GetFlower((this.InitX - 8) / 16, (this.InitY - 8) / 16);
             this.World.RemoveSprite(this);
         }
     }
@@ -2804,7 +3109,11 @@ class FireFlower extends NotchSprite {
     }
 };
 
-/** BULLET BILL **/
+/**
+    Represents a bullet bill enemy.
+    Adapted from Rob Kleffner, 2011.
+    Code by Pedro Esteves, 2022.
+**/
 
 class BulletBill extends NotchSprite {
     constructor(world, x, y, dir) {
@@ -2901,7 +3210,11 @@ class BulletBill extends NotchSprite {
     }
 };
 
-/** FLOWER ENEMY **/
+/**
+    Represents a flower enemy.
+    Adapted from Rob Kleffner, 2011.
+    Code by Pedro Esteves, 2022.
+**/
 
 class FlowerEnemy extends Enemy {
     constructor(world, x, y) {
@@ -2969,7 +3282,11 @@ class FlowerEnemy extends Enemy {
     }
 };
 
-/** SHELL **/
+/**
+    Represents a shell that once belonged to a now expired koopa.
+    Adapted from Rob Kleffner, 2011.
+    Code by Pedro Esteves, 2022.
+**/
 
 class Shell extends NotchSprite {
     constructor(world, x, y, type) {
@@ -3202,7 +3519,11 @@ class Shell extends NotchSprite {
     }
 };
 
-/** TITLE STATE **/
+/**
+    Displays the title screen and menu.
+    Adapted from Rob Kleffner, 2011.
+    Code by Pedro Esteves, 2022.
+**/
 
 class TitleState extends Engine.GameState {
     constructor() {
@@ -3282,7 +3603,11 @@ class TitleState extends Engine.GameState {
     }
 };
 
-/** LOADING STATE **/
+/**
+    State that loads all the resources for the game.
+    Adapted from Rob Kleffner, 2011.
+    Code by Pedro Esteves, 2022.
+**/
 
 class LoadingState extends Engine.GameState {
     constructor() {
@@ -3406,7 +3731,11 @@ class LoadingState extends Engine.GameState {
     }
 };
 
-/** LOSE STATE **/
+/**
+    State shown when the player loses!
+    Adapted from Rob Kleffner, 2011.
+    Code by Pedro Esteves, 2022.
+**/
 
 class LoseState extends Engine.GameState {
     constructor() {
@@ -3461,7 +3790,11 @@ class LoseState extends Engine.GameState {
     }
 };
 
-/** WIN STATE **/
+/**
+    State that's shown when the player wins the game!
+    Adapted from Rob Kleffner, 2011.
+    Code by Pedro Esteves, 2022.
+**/
 
 class WinState extends Engine.GameState {
     constructor() {
@@ -3521,7 +3854,11 @@ class WinState extends Engine.GameState {
     }
 };
 
-/** MAP STATE **/
+/**
+    State for moving between different playable levels.
+    Adapted from Rob Kleffner, 2011.
+    Code by Pedro Esteves, 2022.
+**/
 
 class MapTile {
     static Grass = 0;
@@ -4057,7 +4394,11 @@ class MapState extends Engine.GameState {
     }
 };
 
-/** LEVEL STATE **/
+/**
+    State for actually playing a randomly generated level.
+    Adapted from Rob Kleffner, 2011.
+    Code by Pedro Esteves, 2022.
+**/
 
 class LevelState extends Engine.GameState {
     constructor(difficulty, type) {
@@ -4089,7 +4430,7 @@ class LevelState extends Engine.GameState {
         this.GotoMapState = false;
         this.GotoLoseState = false;
 
-        Mario.MarioCharacter.gameplayMetrics.setLevelState(this);
+        Mario.MarioCharacter.gameplayMetrics.SetLevelState(this);
     }
 
     GetName() {
@@ -4130,7 +4471,7 @@ class LevelState extends Engine.GameState {
             scrollSpeed = 4 >> i;
             w = ((((this.Level.Width * 16) - 320) / scrollSpeed) | 0) + 320;
             h = ((((this.Level.Height * 16) - 240) / scrollSpeed) | 0) + 240;
-            this.BgLayer[i] = new BackgroundRenderer(new BackgroundGenerator(w / 32 + 1, h / 32 + 1, i === 0, this.LevelType).CreateLevel(), 320, 240, scrollSpeed);
+            this.BgLayer[i] = new BackgroundRenderer(new BackgroundGenerator(w / 32 + 1, h / 32 + 1, i === 0, this.Level.Type).CreateLevel(), 320, 240, scrollSpeed);
         }
 
         Mario.MarioCharacter.Initialize(this);
@@ -4435,7 +4776,7 @@ class LevelState extends Engine.GameState {
                 if (!Mario.MarioCharacter.Large) this.AddSprite(new Mushroom(this, x * 16 + 8, y * 16 + 8));
                 else this.AddSprite(new FireFlower(this, x * 16 + 8, y * 16 + 8));
             } else {
-                Mario.MarioCharacter.GetCoin();
+                Mario.MarioCharacter.GetCoin(x, y);
                 Engine.Resources.PlaySound("coin");
                 this.AddSprite(new CoinAnim(this, x, y));
             }
@@ -4458,7 +4799,7 @@ class LevelState extends Engine.GameState {
     BumpInto(x, y) {
         let block = this.Level.GetBlock(x, y), i = 0;
         if (((Tile.Behaviors[block & 0xff]) & Tile.PickUpable) > 0) {
-            Mario.MarioCharacter.GetCoin();
+            Mario.MarioCharacter.GetCoin(x, y);
             Engine.Resources.PlaySound("coin");
             this.Level.SetBlock(x, y, 0);
             this.AddSprite(new CoinAnim(x, y + 1));
@@ -4479,24 +4820,29 @@ class LevelState extends Engine.GameState {
     }
 };
 
-/** PREDEFINED LEVEL STATE **/
+/**
+    State for actually playing a pseudo-randomly generated level.
+    Code by Pedro Esteves, 2022.
+**/
 
 class PredefinedLevelState extends LevelState {
     constructor(difficulty, type) {
         super(difficulty, type);
 
+        Mario.MarioCharacter.ResetMetrics();
+        Mario.MarioCharacter.gameplayMetrics.SetLevelState(this);
+
         this.NextLevel = false;
         this.agent = new PlayerAgent();
-        //AIAgent([{"ticks":2,"keycode":83,"event":"keyup"},{"ticks":18,"keycode":39,"event":"keydown"},{"ticks":33,"keycode":39,"event":"keydown"},{"ticks":33,"keycode":65,"event":"keydown"},{"ticks":42,"keycode":83,"event":"keydown"},{"ticks":46,"keycode":83,"event":"keyup"},{"ticks":65,"keycode":83,"event":"keydown"},{"ticks":70,"keycode":83,"event":"keyup"},{"ticks":78,"keycode":83,"event":"keydown"},{"ticks":81,"keycode":83,"event":"keyup"},{"ticks":99,"keycode":83,"event":"keydown"},{"ticks":103,"keycode":83,"event":"keyup"},{"ticks":122,"keycode":83,"event":"keydown"},{"ticks":126,"keycode":65,"event":"keyup"},{"ticks":126,"keycode":83,"event":"keyup"},{"ticks":127,"keycode":65,"event":"keydown"},{"ticks":142,"keycode":65,"event":"keydown"},{"ticks":143,"keycode":65,"event":"keydown"},{"ticks":143,"keycode":83,"event":"keydown"},{"ticks":148,"keycode":83,"event":"keyup"},{"ticks":157,"keycode":83,"event":"keydown"},{"ticks":161,"keycode":83,"event":"keyup"},{"ticks":169,"keycode":39,"event":"keyup"},{"ticks":172,"keycode":65,"event":"keyup"},{"ticks":177,"keycode":37,"event":"keydown"},{"ticks":185,"keycode":37,"event":"keyup"},{"ticks":195,"keycode":39,"event":"keydown"},{"ticks":198,"keycode":65,"event":"keydown"},{"ticks":201,"keycode":83,"event":"keydown"},{"ticks":210,"keycode":83,"event":"keyup"},{"ticks":223,"keycode":83,"event":"keydown"},{"ticks":225,"keycode":39,"event":"keyup"},{"ticks":229,"keycode":39,"event":"keydown"},{"ticks":231,"keycode":83,"event":"keyup"},{"ticks":231,"keycode":65,"event":"keyup"},{"ticks":233,"keycode":39,"event":"keyup"},{"ticks":238,"keycode":39,"event":"keydown"},{"ticks":238,"keycode":65,"event":"keydown"},{"ticks":238,"keycode":83,"event":"keydown"},{"ticks":248,"keycode":65,"event":"keyup"},{"ticks":248,"keycode":83,"event":"keyup"},{"ticks":253,"keycode":39,"event":"keyup"},{"ticks":261,"keycode":83,"event":"keydown"},{"ticks":263,"keycode":39,"event":"keydown"},{"ticks":263,"keycode":65,"event":"keydown"},{"ticks":265,"keycode":65,"event":"keyup"},{"ticks":266,"keycode":83,"event":"keyup"},{"ticks":304,"keycode":65,"event":"keydown"},{"ticks":304,"keycode":83,"event":"keydown"},{"ticks":308,"keycode":83,"event":"keyup"},{"ticks":308,"keycode":65,"event":"keyup"},{"ticks":311,"keycode":65,"event":"keydown"},{"ticks":311,"keycode":65,"event":"keyup"},{"ticks":322,"keycode":65,"event":"keydown"},{"ticks":322,"keycode":83,"event":"keydown"},{"ticks":327,"keycode":83,"event":"keyup"},{"ticks":327,"keycode":65,"event":"keyup"},{"ticks":336,"keycode":65,"event":"keydown"},{"ticks":337,"keycode":83,"event":"keydown"},{"ticks":341,"keycode":83,"event":"keyup"},{"ticks":341,"keycode":65,"event":"keyup"},{"ticks":349,"keycode":83,"event":"keydown"},{"ticks":349,"keycode":65,"event":"keydown"},{"ticks":353,"keycode":83,"event":"keyup"},{"ticks":353,"keycode":65,"event":"keyup"},{"ticks":362,"keycode":39,"event":"keyup"},{"ticks":373,"keycode":65,"event":"keydown"},{"ticks":373,"keycode":83,"event":"keydown"},{"ticks":373,"keycode":39,"event":"keydown"},{"ticks":384,"keycode":65,"event":"keyup"},{"ticks":384,"keycode":83,"event":"keyup"},{"ticks":388,"keycode":39,"event":"keydown"},{"ticks":389,"keycode":39,"event":"keydown"},{"ticks":390,"keycode":39,"event":"keydown"},{"ticks":390,"keycode":65,"event":"keydown"},{"ticks":391,"keycode":83,"event":"keydown"},{"ticks":395,"keycode":65,"event":"keyup"},{"ticks":395,"keycode":83,"event":"keyup"},{"ticks":404,"keycode":83,"event":"keydown"},{"ticks":404,"keycode":65,"event":"keydown"},{"ticks":407,"keycode":39,"event":"keyup"},{"ticks":408,"keycode":83,"event":"keyup"},{"ticks":408,"keycode":65,"event":"keyup"},{"ticks":411,"keycode":39,"event":"keydown"},{"ticks":424,"keycode":39,"event":"keyup"},{"ticks":428,"keycode":39,"event":"keydown"},{"ticks":432,"keycode":65,"event":"keydown"},{"ticks":433,"keycode":83,"event":"keydown"},{"ticks":439,"keycode":65,"event":"keyup"},{"ticks":440,"keycode":83,"event":"keyup"},{"ticks":451,"keycode":83,"event":"keydown"},{"ticks":455,"keycode":65,"event":"keydown"},{"ticks":458,"keycode":83,"event":"keyup"},{"ticks":460,"keycode":65,"event":"keyup"},{"ticks":465,"keycode":39,"event":"keyup"},{"ticks":474,"keycode":37,"event":"keydown"},{"ticks":480,"keycode":37,"event":"keyup"},{"ticks":494,"keycode":39,"event":"keydown"},{"ticks":498,"keycode":39,"event":"keyup"},{"ticks":508,"keycode":39,"event":"keydown"},{"ticks":509,"keycode":83,"event":"keydown"},{"ticks":509,"keycode":65,"event":"keydown"},{"ticks":515,"keycode":65,"event":"keyup"},{"ticks":516,"keycode":83,"event":"keyup"},{"ticks":528,"keycode":65,"event":"keydown"},{"ticks":528,"keycode":83,"event":"keydown"},{"ticks":532,"keycode":65,"event":"keyup"},{"ticks":532,"keycode":83,"event":"keyup"},{"ticks":553,"keycode":65,"event":"keydown"},{"ticks":553,"keycode":83,"event":"keydown"},{"ticks":558,"keycode":65,"event":"keyup"},{"ticks":561,"keycode":83,"event":"keyup"},{"ticks":569,"keycode":65,"event":"keydown"},{"ticks":570,"keycode":83,"event":"keydown"},{"ticks":576,"keycode":83,"event":"keyup"},{"ticks":576,"keycode":65,"event":"keyup"},{"ticks":586,"keycode":65,"event":"keydown"},{"ticks":586,"keycode":83,"event":"keydown"},{"ticks":591,"keycode":83,"event":"keyup"},{"ticks":591,"keycode":65,"event":"keyup"},{"ticks":610,"keycode":65,"event":"keydown"},{"ticks":610,"keycode":83,"event":"keydown"},{"ticks":615,"keycode":83,"event":"keyup"},{"ticks":615,"keycode":65,"event":"keyup"},{"ticks":625,"keycode":65,"event":"keydown"},{"ticks":625,"keycode":83,"event":"keydown"},{"ticks":629,"keycode":83,"event":"keyup"},{"ticks":630,"keycode":65,"event":"keyup"},{"ticks":650,"keycode":83,"event":"keydown"},{"ticks":653,"keycode":83,"event":"keyup"},{"ticks":666,"keycode":39,"event":"keyup"},{"ticks":688,"keycode":39,"event":"keydown"},{"ticks":688,"keycode":83,"event":"keydown"},{"ticks":696,"keycode":83,"event":"keyup"},{"ticks":700,"keycode":65,"event":"keydown"},{"ticks":702,"keycode":83,"event":"keydown"},{"ticks":707,"keycode":83,"event":"keyup"},{"ticks":707,"keycode":65,"event":"keyup"},{"ticks":717,"keycode":39,"event":"keyup"},{"ticks":722,"keycode":83,"event":"keydown"},{"ticks":722,"keycode":39,"event":"keydown"},{"ticks":724,"keycode":65,"event":"keydown"},{"ticks":727,"keycode":83,"event":"keyup"},{"ticks":737,"keycode":65,"event":"keyup"},{"ticks":740,"keycode":65,"event":"keydown"},{"ticks":741,"keycode":83,"event":"keydown"},{"ticks":744,"keycode":65,"event":"keyup"},{"ticks":745,"keycode":83,"event":"keyup"},{"ticks":756,"keycode":83,"event":"keydown"},{"ticks":756,"keycode":65,"event":"keydown"},{"ticks":760,"keycode":83,"event":"keyup"},{"ticks":762,"keycode":65,"event":"keyup"},{"ticks":772,"keycode":83,"event":"keydown"},{"ticks":772,"keycode":65,"event":"keydown"},{"ticks":777,"keycode":65,"event":"keyup"},{"ticks":777,"keycode":83,"event":"keyup"},{"ticks":785,"keycode":65,"event":"keydown"},{"ticks":785,"keycode":83,"event":"keydown"},{"ticks":792,"keycode":65,"event":"keyup"},{"ticks":792,"keycode":83,"event":"keyup"},{"ticks":812,"keycode":83,"event":"keydown"},{"ticks":814,"keycode":65,"event":"keydown"},{"ticks":820,"keycode":83,"event":"keyup"},{"ticks":820,"keycode":65,"event":"keyup"},{"ticks":829,"keycode":65,"event":"keydown"},{"ticks":836,"keycode":83,"event":"keydown"},{"ticks":841,"keycode":83,"event":"keyup"},{"ticks":842,"keycode":65,"event":"keyup"},{"ticks":855,"keycode":65,"event":"keydown"},{"ticks":855,"keycode":83,"event":"keydown"},{"ticks":859,"keycode":65,"event":"keyup"},{"ticks":860,"keycode":83,"event":"keyup"},{"ticks":874,"keycode":65,"event":"keydown"},{"ticks":875,"keycode":83,"event":"keydown"},{"ticks":880,"keycode":65,"event":"keyup"},{"ticks":882,"keycode":83,"event":"keyup"},{"ticks":891,"keycode":65,"event":"keydown"},{"ticks":892,"keycode":83,"event":"keydown"},{"ticks":898,"keycode":65,"event":"keyup"},{"ticks":899,"keycode":83,"event":"keyup"},{"ticks":909,"keycode":65,"event":"keydown"},{"ticks":909,"keycode":83,"event":"keydown"},{"ticks":916,"keycode":65,"event":"keyup"},{"ticks":917,"keycode":83,"event":"keyup"},{"ticks":927,"keycode":83,"event":"keydown"},{"ticks":927,"keycode":65,"event":"keydown"},{"ticks":931,"keycode":83,"event":"keyup"},{"ticks":932,"keycode":65,"event":"keyup"},{"ticks":938,"keycode":65,"event":"keydown"},{"ticks":938,"keycode":83,"event":"keydown"},{"ticks":941,"keycode":65,"event":"keyup"},{"ticks":942,"keycode":83,"event":"keyup"},{"ticks":948,"keycode":83,"event":"keydown"},{"ticks":950,"keycode":65,"event":"keydown"},{"ticks":958,"keycode":65,"event":"keyup"},{"ticks":959,"keycode":83,"event":"keyup"},{"ticks":963,"keycode":65,"event":"keydown"},{"ticks":963,"keycode":83,"event":"keydown"},{"ticks":969,"keycode":65,"event":"keyup"},{"ticks":970,"keycode":83,"event":"keyup"},{"ticks":975,"keycode":65,"event":"keydown"},{"ticks":976,"keycode":83,"event":"keydown"},{"ticks":982,"keycode":65,"event":"keyup"},{"ticks":983,"keycode":83,"event":"keyup"},{"ticks":1010,"keycode":83,"event":"keydown"},{"ticks":1011,"keycode":65,"event":"keydown"},{"ticks":1024,"keycode":65,"event":"keyup"},{"ticks":1026,"keycode":83,"event":"keyup"},{"ticks":1032,"keycode":39,"event":"keyup"}]);
+        // AIAgent([{"t":12,"k":39,"e":"keydown"},{"t":28,"k":39,"e":"keydown"},{"t":29,"k":39,"e":"keydown"},{"t":30,"k":39,"e":"keydown"},{"t":30,"k":39,"e":"keydown"},{"t":31,"k":39,"e":"keydown"},{"t":32,"k":39,"e":"keydown"},{"t":33,"k":39,"e":"keydown"},{"t":34,"k":39,"e":"keydown"},{"t":35,"k":39,"e":"keydown"},{"t":36,"k":39,"e":"keydown"},{"t":37,"k":39,"e":"keydown"},{"t":38,"k":39,"e":"keydown"},{"t":38,"k":39,"e":"keydown"},{"t":40,"k":39,"e":"keydown"},{"t":40,"k":39,"e":"keydown"},{"t":41,"k":39,"e":"keydown"},{"t":42,"k":39,"e":"keydown"},{"t":43,"k":39,"e":"keydown"},{"t":44,"k":39,"e":"keydown"},{"t":45,"k":39,"e":"keydown"},{"t":46,"k":39,"e":"keydown"},{"t":46,"k":39,"e":"keydown"},{"t":48,"k":39,"e":"keydown"},{"t":49,"k":39,"e":"keydown"},{"t":50,"k":39,"e":"keydown"},{"t":51,"k":39,"e":"keydown"},{"t":51,"k":39,"e":"keydown"},{"t":52,"k":39,"e":"keydown"},{"t":53,"k":39,"e":"keydown"},{"t":54,"k":39,"e":"keydown"},{"t":55,"k":39,"e":"keydown"},{"t":56,"k":39,"e":"keydown"},{"t":57,"k":39,"e":"keydown"},{"t":58,"k":39,"e":"keydown"},{"t":59,"k":39,"e":"keydown"},{"t":60,"k":39,"e":"keydown"},{"t":61,"k":39,"e":"keydown"},{"t":62,"k":39,"e":"keydown"},{"t":62,"k":39,"e":"keydown"},{"t":63,"k":83,"e":"keydown"},{"t":66,"k":83,"e":"keyup"},{"t":143,"k":83,"e":"keydown"},{"t":146,"k":83,"e":"keyup"},{"t":163,"k":83,"e":"keydown"},{"t":166,"k":83,"e":"keyup"},{"t":196,"k":83,"e":"keydown"},{"t":198,"k":83,"e":"keyup"},{"t":209,"k":83,"e":"keydown"},{"t":212,"k":83,"e":"keyup"},{"t":226,"k":83,"e":"keydown"},{"t":230,"k":83,"e":"keyup"},{"t":256,"k":83,"e":"keydown"},{"t":262,"k":83,"e":"keyup"},{"t":284,"k":83,"e":"keydown"},{"t":289,"k":83,"e":"keyup"},{"t":300,"k":39,"e":"keyup"},{"t":312,"k":83,"e":"keydown"},{"t":313,"k":39,"e":"keydown"},{"t":318,"k":83,"e":"keyup"},{"t":324,"k":39,"e":"keyup"},{"t":398,"k":39,"e":"keydown"},{"t":412,"k":39,"e":"keyup"},{"t":441,"k":37,"e":"keydown"},{"t":446,"k":37,"e":"keyup"}]);
     }
 
     GetLevel() {
-        //const lvl = new LevelGenerator(320, 15).CreateLevel(0, 0);
-        //console.log(JSON.stringify(lvl));
-        //return new PredefinedLevelGenerator({"Width":320,"Height":15,"ExitX":264,"ExitY":13,"Map":[[158,158,158,158,158,158,158,158,158,158,158,158,158,159,157],[0,0,0,0,0,0,0,0,0,0,0,0,0,141,157],[0,0,0,0,0,0,0,0,0,0,0,0,0,141,157],[0,0,0,0,0,0,0,0,0,0,0,0,0,141,157],[0,0,0,0,0,0,0,0,0,0,0,0,0,141,157],[156,172,0,0,0,0,0,0,0,0,0,0,0,141,157],[157,173,0,0,0,0,0,0,0,0,0,0,0,141,157],[157,173,0,0,0,0,0,0,0,0,0,0,0,141,157],[157,173,0,0,0,0,0,0,0,0,0,0,0,141,157],[157,173,0,0,0,0,0,0,0,0,0,0,0,141,157],[157,191,172,0,0,0,0,0,0,0,0,0,0,141,157],[157,157,173,0,0,0,0,0,0,0,0,0,0,141,157],[157,157,173,0,0,0,0,0,0,0,0,0,0,141,157],[157,157,173,0,0,0,0,0,0,0,0,0,0,141,157],[157,157,173,0,0,0,0,0,0,0,0,140,156,143,157],[157,157,173,0,0,0,0,0,0,0,0,141,157,157,157],[157,157,173,0,0,0,0,0,0,0,0,141,157,157,157],[157,157,173,0,0,0,0,0,0,0,0,141,157,157,157],[157,157,173,0,0,0,0,0,0,0,0,142,158,158,158],[157,157,173,0,0,0,0,0,0,0,0,0,0,0,0],[157,157,173,0,0,0,0,0,0,0,0,0,0,0,0],[157,157,173,0,0,0,0,0,0,0,0,140,156,156,156],[157,157,173,0,0,0,0,0,0,0,0,141,157,157,157],[157,157,173,0,0,0,0,0,0,0,0,141,157,157,157],[157,157,191,172,0,0,0,0,0,0,0,141,157,157,157],[157,157,157,173,0,0,0,0,0,0,0,141,157,157,157],[157,157,157,173,0,0,0,0,0,0,0,141,157,157,157],[157,157,157,173,0,0,0,0,0,0,0,141,157,157,157],[157,157,157,173,0,0,0,0,0,0,0,141,157,157,157],[157,157,157,173,0,0,0,0,0,0,0,141,157,157,157],[157,157,157,173,0,0,0,0,0,0,0,141,157,157,157],[157,157,157,173,0,0,0,0,0,0,0,141,157,157,157],[157,157,157,173,0,0,0,0,0,0,0,141,157,157,157],[157,157,157,173,0,0,0,0,0,0,0,142,158,158,158],[157,157,157,173,0,0,0,0,0,0,0,0,0,0,0],[157,157,157,173,0,0,0,0,0,0,0,0,0,0,0],[157,175,158,174,0,0,0,0,0,0,0,140,156,156,156],[157,173,0,0,0,0,0,0,0,0,0,141,157,157,157],[157,173,0,0,0,0,0,0,0,0,0,141,157,157,157],[157,173,0,0,0,0,0,0,0,0,0,141,157,157,157],[157,173,0,0,0,0,0,0,0,0,0,141,157,157,157],[157,173,0,0,0,0,0,0,0,0,0,141,157,157,157],[157,173,0,0,0,0,0,0,0,0,0,141,157,157,157],[157,173,0,0,0,0,0,0,0,0,0,141,157,157,157],[157,173,0,0,0,0,0,0,0,0,0,141,157,157,157],[157,173,0,0,0,0,0,0,0,0,0,141,157,157,157],[157,173,0,0,0,0,0,0,0,0,0,141,157,157,157],[157,173,0,0,0,0,0,0,0,0,0,141,157,157,157],[157,173,0,0,0,0,0,0,0,34,0,141,157,157,157],[157,173,0,0,0,0,0,0,0,34,0,141,157,157,157],[157,173,0,0,0,0,0,0,0,34,0,141,157,157,157],[157,173,0,0,0,0,0,0,0,34,0,141,157,157,157],[157,191,156,172,0,0,0,0,0,0,0,141,157,157,157],[157,157,157,173,0,0,0,0,0,0,0,141,157,157,157],[157,157,157,173,0,0,0,0,0,0,0,141,157,157,157],[157,157,157,173,0,0,0,0,0,0,0,141,157,157,157],[157,157,157,173,0,0,0,0,0,0,0,141,157,157,157],[157,157,157,173,0,0,0,0,0,0,0,141,157,157,157],[157,157,157,173,0,0,0,0,10,26,26,141,157,157,157],[157,157,157,173,0,0,0,0,11,27,27,141,157,157,157],[157,157,157,173,0,0,0,0,0,0,0,141,157,157,157],[157,157,157,173,0,0,0,0,0,0,0,141,157,157,157],[157,157,157,173,0,0,0,0,0,0,0,141,157,157,157],[157,157,157,173,0,0,0,0,0,0,0,142,159,157,157],[157,157,157,173,0,0,0,0,0,0,0,0,141,157,157],[157,157,157,173,0,0,0,0,0,0,0,0,141,157,157],[157,157,157,173,0,0,0,0,0,0,0,0,141,157,157],[157,157,157,173,0,0,0,0,0,0,0,0,141,157,157],[157,157,157,173,0,0,0,0,0,0,0,0,142,158,159],[157,157,157,173,0,0,0,0,0,0,0,0,0,0,141],[157,157,157,173,0,0,0,0,0,0,0,0,34,0,141],[157,157,157,173,0,0,0,0,0,0,17,0,34,0,141],[157,157,157,173,0,0,0,0,0,0,21,0,34,0,141],[157,157,157,173,0,0,0,0,0,0,21,0,0,0,141],[157,157,157,173,0,0,0,0,0,0,17,0,0,0,141],[157,157,157,173,0,0,0,0,0,0,16,0,0,0,141],[157,157,157,173,0,0,0,0,0,0,0,0,0,0,141],[157,157,157,173,0,0,0,0,0,0,0,0,0,0,141],[157,157,157,173,0,0,0,0,0,0,0,0,0,0,141],[157,157,157,173,0,0,0,0,0,0,0,0,0,0,141],[157,175,158,174,0,0,0,0,0,0,0,0,0,0,141],[157,173,0,0,0,0,0,0,0,0,0,0,0,0,141],[157,173,0,0,0,0,0,0,0,0,0,140,156,156,143],[157,173,0,0,0,0,0,0,0,0,0,142,158,158,158],[157,173,0,0,0,0,0,0,0,0,0,0,0,0,0],[157,173,0,0,0,0,0,0,0,0,0,0,0,0,0],[157,173,0,0,0,0,0,0,0,0,0,0,0,0,0],[157,173,0,0,0,0,0,0,0,0,0,140,156,156,156],[157,173,0,0,0,0,0,0,0,0,0,141,157,157,157],[157,173,0,0,0,0,0,0,0,0,0,141,157,157,157],[157,173,0,0,0,0,0,0,0,0,0,141,157,157,157],[157,173,0,0,0,0,0,0,0,0,9,141,157,157,157],[157,173,0,0,0,0,0,0,0,9,9,141,157,157,157],[157,173,0,0,0,0,0,0,9,9,9,142,158,158,158],[157,191,156,172,0,0,0,0,0,0,0,0,0,0,0],[157,157,157,173,0,0,0,0,0,0,0,0,0,0,0],[157,157,157,173,0,0,0,0,0,0,0,0,0,0,0],[157,157,157,173,0,0,0,0,9,9,9,140,156,156,156],[157,157,157,173,0,0,0,0,0,9,9,141,157,157,157],[157,157,157,173,0,0,0,0,0,0,9,141,157,157,157],[157,157,157,173,0,0,0,0,0,0,0,141,157,157,157],[157,157,175,174,0,0,0,0,0,0,0,142,158,159,157],[157,157,173,0,0,0,0,0,0,0,0,0,0,141,157],[157,157,173,0,0,0,0,0,0,0,0,0,0,141,157],[157,157,173,0,0,0,0,0,0,0,0,0,0,141,157],[157,157,173,0,0,0,0,0,0,0,0,0,0,141,157],[157,157,173,0,0,0,0,0,0,0,0,0,0,141,157],[157,157,173,0,0,0,0,0,0,0,0,0,0,141,157],[157,157,173,0,0,0,0,0,0,0,0,0,0,141,157],[157,157,173,0,0,0,0,0,0,0,0,0,0,141,157],[157,157,173,0,0,0,0,0,0,0,0,0,0,141,157],[157,157,173,0,0,0,0,0,0,0,0,0,0,141,157],[157,175,174,0,0,0,0,0,0,0,0,0,140,143,157],[157,173,0,0,0,0,0,0,0,0,0,0,141,157,157],[157,173,0,0,0,0,0,0,0,0,0,0,141,157,157],[157,173,0,0,0,0,0,0,0,0,0,0,141,157,157],[157,173,0,0,0,0,0,0,0,0,0,0,141,157,157],[157,173,0,0,0,0,0,0,0,0,0,0,141,157,157],[157,191,156,172,0,0,0,0,0,0,0,0,141,157,157],[157,157,157,173,0,0,0,0,0,0,34,0,141,157,157],[157,157,157,173,0,0,0,0,21,0,34,0,141,157,157],[157,157,157,173,0,0,0,0,17,0,34,0,141,157,157],[157,157,157,173,0,0,0,0,21,0,34,0,141,157,157],[157,157,157,173,0,0,0,0,0,0,0,0,141,157,157],[157,157,157,173,0,0,0,0,0,0,0,0,142,158,159],[157,157,157,173,0,0,0,0,0,0,0,0,0,0,141],[157,157,157,173,0,0,0,0,0,0,0,0,0,0,141],[157,157,157,173,0,0,0,0,0,0,0,0,0,0,141],[157,157,157,173,0,0,0,0,0,0,0,0,0,140,143],[157,175,158,174,0,0,0,0,0,0,0,0,0,141,157],[157,173,0,0,0,0,0,0,0,21,0,0,0,141,157],[157,173,0,0,0,0,0,0,0,16,0,0,0,141,157],[157,173,0,0,0,0,0,0,0,16,0,0,0,141,157],[157,173,0,0,0,0,0,0,0,0,0,0,0,141,157],[157,173,0,0,0,0,0,0,0,0,140,156,156,143,157],[157,173,0,0,0,0,0,0,0,0,141,157,157,157,157],[157,173,0,0,0,0,0,0,10,26,141,157,157,157,157],[157,173,0,0,0,0,0,0,11,27,141,157,157,157,157],[157,173,0,0,0,0,0,0,0,0,141,157,157,157,157],[157,173,0,0,0,0,0,0,0,0,141,157,157,157,157],[157,191,156,172,0,0,0,0,10,26,141,157,157,157,157],[157,157,157,173,0,0,0,0,11,27,141,157,157,157,157],[157,157,157,173,0,0,0,0,0,0,141,157,157,157,157],[157,157,157,173,0,0,0,10,26,26,141,157,157,157,157],[157,157,157,173,0,0,0,11,27,27,141,157,157,157,157],[157,157,157,173,0,0,0,0,0,0,142,158,158,159,157],[157,157,157,173,0,0,0,0,0,0,0,0,0,141,157],[157,157,157,173,0,0,0,0,0,0,0,0,0,141,157],[157,157,157,173,0,0,0,0,0,0,0,0,0,141,157],[175,158,158,174,0,0,0,0,0,0,0,0,0,141,157],[173,0,0,0,0,0,0,0,0,0,0,140,156,143,157],[173,0,0,0,0,0,0,0,0,0,0,141,157,157,157],[173,0,0,0,0,0,0,0,0,0,0,141,157,157,157],[173,0,0,0,0,0,0,16,0,34,0,141,157,157,157],[173,0,0,0,0,0,0,16,0,34,0,141,157,157,157],[173,0,0,0,0,0,0,21,0,34,0,141,157,157,157],[173,0,0,0,0,0,0,21,0,34,0,141,157,157,157],[173,0,0,0,0,0,0,16,0,0,0,141,157,157,157],[191,172,0,0,0,0,0,16,0,0,0,141,157,157,157],[157,173,0,0,0,0,0,16,0,0,0,141,157,157,157],[157,173,0,0,0,0,0,0,0,0,0,141,157,157,157],[157,173,0,0,0,0,0,0,0,0,0,141,157,157,157],[157,173,0,0,0,0,0,16,0,34,0,141,157,157,157],[157,173,0,0,0,0,0,16,0,34,0,141,157,157,157],[175,174,0,0,0,0,0,16,0,0,0,141,157,157,157],[173,0,0,0,0,0,0,16,0,0,0,141,157,157,157],[173,0,0,0,0,0,0,0,0,0,0,142,158,159,157],[173,0,0,0,0,0,0,0,0,0,0,0,0,141,157],[173,0,0,0,0,0,0,0,0,0,0,0,0,141,157],[173,0,0,0,0,0,0,0,0,0,0,140,156,143,157],[173,0,0,0,0,0,0,0,0,0,0,141,157,157,157],[173,0,0,0,0,0,0,0,0,10,26,141,157,157,157],[173,0,0,0,0,0,0,0,0,11,27,141,157,157,157],[173,0,0,0,0,0,0,0,0,0,0,141,157,157,157],[173,0,0,0,0,0,0,0,0,0,0,141,157,157,157],[173,0,0,0,0,0,0,0,0,0,0,141,157,157,157],[173,0,0,0,0,0,0,0,0,0,0,141,157,157,157],[173,0,0,0,0,0,0,0,0,0,0,141,157,157,157],[191,156,172,0,0,0,0,16,0,0,0,141,157,157,157],[157,157,173,0,0,0,0,21,0,0,0,141,157,157,157],[157,157,173,0,0,0,0,22,0,0,0,141,157,157,157],[157,157,173,0,0,0,0,17,0,34,0,141,157,157,157],[157,157,173,0,0,0,0,16,0,34,0,141,157,157,157],[157,157,173,0,0,0,0,16,0,0,0,141,157,157,157],[157,157,173,0,0,0,0,21,0,0,0,141,157,157,157],[157,157,173,0,0,0,0,16,0,0,0,141,157,157,157],[157,157,173,0,0,0,0,0,0,0,0,142,158,159,157],[157,157,173,0,0,0,0,0,0,0,0,0,0,141,157],[157,157,173,0,0,0,0,0,0,0,0,0,0,141,157],[157,157,173,0,0,0,0,0,0,0,0,0,0,141,157],[157,175,174,0,0,0,0,0,0,0,0,0,0,141,157],[157,173,0,0,0,0,0,0,0,0,0,0,0,142,159],[157,173,0,0,0,0,0,0,0,0,0,0,0,0,141],[157,173,0,0,0,0,0,0,0,0,0,0,0,0,141],[157,173,0,0,0,0,0,0,0,0,21,0,34,0,141],[157,173,0,0,0,0,0,0,0,0,16,0,34,0,141],[157,173,0,0,0,0,0,0,0,0,16,0,34,0,141],[157,173,0,0,0,0,0,0,0,0,16,0,34,0,141],[157,191,172,0,0,0,0,0,0,0,17,0,34,0,141],[157,157,173,0,0,0,0,0,0,0,0,0,0,0,141],[157,157,173,0,0,0,0,0,0,0,0,0,0,0,141],[157,157,173,0,0,0,0,0,0,0,0,0,140,156,143],[157,157,173,0,0,0,0,0,16,0,0,0,141,157,157],[157,157,173,0,0,0,0,0,17,0,34,0,141,157,157],[157,157,173,0,0,0,0,0,21,0,34,0,141,157,157],[157,157,173,0,0,0,0,0,17,0,34,0,141,157,157],[157,157,173,0,0,0,0,0,16,0,34,0,141,157,157],[157,157,173,0,0,0,0,0,21,0,34,0,141,157,157],[157,157,173,0,0,0,0,0,16,0,34,0,141,157,157],[157,157,173,0,0,0,0,0,0,0,0,0,141,157,157],[175,158,174,0,0,0,0,0,0,0,0,0,142,159,157],[173,0,0,0,0,0,0,0,0,0,0,0,0,141,157],[173,0,0,0,0,0,0,0,0,0,0,0,0,141,157],[173,0,0,0,0,0,0,0,0,0,0,0,0,141,157],[173,0,0,0,0,0,0,0,0,0,0,0,0,141,157],[173,0,0,0,0,0,0,0,0,0,0,0,0,142,158],[173,0,0,0,0,0,0,0,0,0,0,0,0,0,0],[173,0,0,0,0,0,0,0,0,0,0,0,0,0,0],[173,0,0,0,0,0,0,0,0,0,0,0,0,0,0],[173,0,0,0,0,0,0,0,0,0,0,0,0,140,156],[173,0,0,0,0,0,0,0,0,0,0,0,0,141,157],[173,0,0,0,0,0,0,0,0,0,0,0,0,141,157],[173,0,0,0,0,0,0,0,0,0,0,0,0,141,157],[173,0,0,0,0,0,0,0,0,0,0,0,0,141,157],[173,0,0,0,0,0,0,0,0,0,0,0,0,141,157],[173,0,0,0,0,0,0,0,0,0,0,0,0,141,157],[173,0,0,0,0,0,0,0,0,0,0,0,0,141,157],[173,0,0,0,0,0,0,0,0,0,0,0,0,141,157],[173,0,0,0,0,0,0,0,0,0,0,0,0,141,157],[173,0,0,0,0,0,0,0,0,0,0,0,0,141,157],[191,172,0,0,0,0,0,0,0,0,0,140,156,143,157],[157,173,0,0,0,0,0,0,0,0,0,141,157,157,157],[157,173,0,0,0,0,0,0,0,0,0,141,157,157,157],[157,173,0,0,0,0,0,0,0,0,0,141,157,157,157],[175,174,0,0,0,0,0,0,0,34,0,141,157,157,157],[173,0,0,0,0,0,0,0,0,34,0,141,157,157,157],[173,0,0,0,0,0,0,0,0,34,0,141,157,157,157],[173,0,0,0,0,0,0,0,0,34,0,141,157,157,157],[173,0,0,0,0,0,0,0,0,0,0,141,157,157,157],[173,0,0,0,0,0,0,0,0,0,0,141,157,157,157],[173,0,0,0,0,0,0,0,0,0,0,141,157,157,157],[173,0,0,0,0,0,0,0,0,0,0,141,157,157,157],[173,0,0,0,0,0,0,0,0,0,0,141,157,157,157],[191,156,156,172,0,0,0,0,0,34,0,141,157,157,157],[157,157,157,173,0,0,0,22,0,34,0,141,157,157,157],[157,157,157,173,0,0,0,16,0,0,0,141,157,157,157],[157,157,157,173,0,0,0,16,0,0,0,141,157,157,157],[157,157,157,173,0,0,0,0,0,0,0,141,157,157,157],[157,157,157,173,0,0,0,0,0,0,0,141,157,157,157],[157,157,157,173,0,0,0,0,0,0,0,141,157,157,157],[157,175,158,174,0,0,0,0,0,0,0,141,157,157,157],[157,173,0,0,0,0,0,0,0,0,0,141,157,157,157],[157,173,0,0,0,0,0,0,0,0,0,141,157,157,157],[157,173,0,0,0,0,0,0,0,0,0,142,158,158,159],[157,173,0,0,0,0,0,0,0,0,0,0,0,0,141],[157,173,0,0,0,0,0,0,0,0,0,0,0,0,141],[157,173,0,0,0,0,0,0,0,0,0,0,0,140,143],[157,173,0,0,0,0,0,0,0,0,0,0,0,141,157],[157,191,156,172,0,0,0,0,0,0,0,0,0,141,157],[157,157,157,173,0,0,0,0,0,0,0,0,0,141,157],[157,157,157,173,0,0,0,0,0,0,0,0,0,141,157],[157,157,157,173,0,0,0,0,0,0,0,0,0,141,157],[175,158,158,174,0,0,0,0,0,0,0,0,0,141,157],[173,0,0,0,0,0,0,0,0,0,0,0,0,141,157],[173,0,0,0,0,0,0,0,0,0,0,0,0,141,157],[173,0,0,0,0,0,0,0,0,0,0,0,0,141,157],[173,0,0,0,0,0,0,0,0,0,0,0,0,141,157],[173,0,0,0,0,0,0,0,0,0,0,0,0,141,157],[173,0,0,0,0,0,0,0,0,0,0,0,0,141,157],[173,0,0,0,0,0,0,0,0,0,0,0,0,141,157],[173,0,0,0,0,0,0,0,0,0,0,0,0,141,157],[173,0,0,0,0,0,0,0,0,0,0,0,0,141,157],[173,0,0,0,0,0,0,0,0,0,0,0,0,141,157],[173,0,0,0,0,0,0,0,0,0,0,0,0,141,157],[173,0,0,0,0,0,0,0,0,0,0,0,0,141,157],[191,156,172,0,0,0,0,0,0,0,0,0,0,141,157],[157,157,173,0,0,0,0,0,0,0,0,0,0,141,157],[157,157,173,0,0,0,0,0,0,0,0,0,0,141,157],[157,157,173,0,0,0,0,0,0,0,0,0,0,141,157],[157,157,173,0,0,0,0,0,0,0,0,0,0,141,157],[157,157,173,0,0,0,0,0,0,0,0,0,0,141,157],[157,157,173,0,0,0,0,0,0,0,0,0,0,141,157],[157,157,173,0,0,0,0,0,0,0,0,0,0,141,157],[157,157,191,172,0,0,0,0,0,0,0,0,0,141,157],[157,157,157,173,0,0,0,0,0,0,0,0,0,141,157],[157,157,157,173,0,0,0,0,0,0,0,0,0,141,157],[157,157,157,173,0,0,0,0,0,0,0,0,0,141,157],[157,157,157,173,0,0,0,0,0,0,0,0,0,141,157],[157,157,175,174,0,0,0,0,0,0,0,0,0,141,157],[157,157,173,0,0,0,0,0,0,0,0,0,0,141,157],[157,157,173,0,0,0,0,0,0,0,0,0,0,141,157],[157,157,173,0,0,0,0,0,0,0,0,0,0,141,157],[157,157,173,0,0,0,0,0,0,0,0,0,0,141,157],[157,157,173,0,0,0,0,0,0,0,0,0,0,141,157],[157,157,173,0,0,0,0,0,0,0,0,0,0,141,157],[157,157,173,0,0,0,0,0,0,0,0,0,0,141,157],[157,157,173,0,0,0,0,0,0,0,0,0,0,141,157],[157,157,173,0,0,0,0,0,0,0,0,0,0,141,157],[157,157,173,0,0,0,0,0,0,0,0,0,0,141,157],[157,157,173,0,0,0,0,0,0,0,0,0,0,141,157],[157,157,173,0,0,0,0,0,0,0,0,0,0,141,157],[157,157,173,0,0,0,0,0,0,0,0,0,0,141,157],[157,157,173,0,0,0,0,0,0,0,0,0,0,141,157],[157,157,191,172,0,0,0,0,0,0,0,0,0,141,157],[157,157,157,173,0,0,0,0,0,0,0,0,0,141,157],[157,157,157,173,0,0,0,0,0,0,0,0,0,141,157],[157,157,157,173,0,0,0,0,0,0,0,0,0,141,157],[157,157,157,173,0,0,0,0,0,0,0,0,0,141,157],[157,157,157,173,0,0,0,0,0,0,0,0,0,141,157],[157,157,157,173,0,0,0,0,0,0,0,0,0,141,157],[157,157,157,173,0,0,0,0,0,0,0,0,0,141,157],[157,157,157,173,0,0,0,0,0,0,0,0,0,141,157],[157,157,157,173,0,0,0,0,0,0,0,0,0,141,157],[157,157,157,173,0,0,0,0,0,0,0,0,0,141,157],[157,157,157,173,0,0,0,0,0,0,0,0,0,141,157],[157,157,157,173,0,0,0,0,0,0,0,0,0,141,157],[157,157,157,173,0,0,0,0,0,0,0,0,0,141,157],[157,157,157,173,0,0,0,0,0,0,0,0,0,141,157],[175,158,158,174,0,0,0,0,0,0,0,0,0,141,157],[173,0,0,0,0,0,0,0,0,0,0,0,0,141,157]],"Data":[[0,0,0,0,0,0,0,0,0,0,0,0,0,0,0],[0,0,0,0,0,0,0,0,0,0,0,0,0,0,0],[0,0,0,0,0,0,0,0,0,0,0,0,0,0,0],[0,0,0,0,0,0,0,0,0,0,0,0,0,0,0],[0,0,0,0,0,0,0,0,0,0,0,0,0,0,0],[0,0,0,0,0,0,0,0,0,0,0,0,0,0,0],[0,0,0,0,0,0,0,0,0,0,0,0,0,0,0],[0,0,0,0,0,0,0,0,0,0,0,0,0,0,0],[0,0,0,0,0,0,0,0,0,0,0,0,0,0,0],[0,0,0,0,0,0,0,0,0,0,0,0,0,0,0],[0,0,0,0,0,0,0,0,0,0,0,0,0,0,0],[0,0,0,0,0,0,0,0,0,0,0,0,0,0,0],[0,0,0,0,0,0,0,0,0,0,0,0,0,0,0],[0,0,0,0,0,0,0,0,0,0,0,0,0,0,0],[0,0,0,0,0,0,0,0,0,0,0,0,0,0,0],[0,0,0,0,0,0,0,0,0,0,0,0,0,0,0],[0,0,0,0,0,0,0,0,0,0,0,0,0,0,0],[0,0,0,0,0,0,0,0,0,0,0,0,0,0,0],[0,0,0,0,0,0,0,0,0,0,0,0,0,0,0],[0,0,0,0,0,0,0,0,0,0,0,0,0,0,0],[0,0,0,0,0,0,0,0,0,0,0,0,0,0,0],[0,0,0,0,0,0,0,0,0,0,0,0,0,0,0],[0,0,0,0,0,0,0,0,0,0,0,0,0,0,0],[0,0,0,0,0,0,0,0,0,0,0,0,0,0,0],[0,0,0,0,0,0,0,0,0,0,0,0,0,0,0],[0,0,0,0,0,0,0,0,0,0,0,0,0,0,0],[0,0,0,0,0,0,0,0,0,0,0,0,0,0,0],[0,0,0,0,0,0,0,0,0,0,0,0,0,0,0],[0,0,0,0,0,0,0,0,0,0,0,0,0,0,0],[0,0,0,0,0,0,0,0,0,0,0,0,0,0,0],[0,0,0,0,0,0,0,0,0,0,0,0,0,0,0],[0,0,0,0,0,0,0,0,0,0,0,0,0,0,0],[0,0,0,0,0,0,0,0,0,0,0,0,0,0,0],[0,0,0,0,0,0,0,0,0,0,0,0,0,0,0],[0,0,0,0,0,0,0,0,0,0,0,0,0,0,0],[0,0,0,0,0,0,0,0,0,0,0,0,0,0,0],[0,0,0,0,0,0,0,0,0,0,0,0,0,0,0],[0,0,0,0,0,0,0,0,0,0,0,0,0,0,0],[0,0,0,0,0,0,0,0,0,0,0,0,0,0,0],[0,0,0,0,0,0,0,0,0,0,0,0,0,0,0],[0,0,0,0,0,0,0,0,0,0,0,0,0,0,0],[0,0,0,0,0,0,0,0,0,0,0,0,0,0,0],[0,0,0,0,0,0,0,0,0,0,0,0,0,0,0],[0,0,0,0,0,0,0,0,0,0,0,0,0,0,0],[0,0,0,0,0,0,0,0,0,0,0,0,0,0,0],[0,0,0,0,0,0,0,0,0,0,0,0,0,0,0],[0,0,0,0,0,0,0,0,0,0,0,0,0,0,0],[0,0,0,0,0,0,0,0,0,0,0,0,0,0,0],[0,0,0,0,0,0,0,0,0,0,0,0,0,0,0],[0,0,0,0,0,0,0,0,0,0,0,0,0,0,0],[0,0,0,0,0,0,0,0,0,0,0,0,0,0,0],[0,0,0,0,0,0,0,0,0,0,0,0,0,0,0],[0,0,0,0,0,0,0,0,0,0,0,0,0,0,0],[0,0,0,0,0,0,0,0,0,0,0,0,0,0,0],[0,0,0,0,0,0,0,0,0,0,0,0,0,0,0],[0,0,0,0,0,0,0,0,0,0,0,0,0,0,0],[0,0,0,0,0,0,0,0,0,0,0,0,0,0,0],[0,0,0,0,0,0,0,0,0,0,0,0,0,0,0],[0,0,0,0,0,0,0,0,0,0,0,0,0,0,0],[0,0,0,0,0,0,0,0,0,0,0,0,0,0,0],[0,0,0,0,0,0,0,0,0,0,0,0,0,0,0],[0,0,0,0,0,0,0,0,0,0,0,0,0,0,0],[0,0,0,0,0,0,0,0,0,0,0,0,0,0,0],[0,0,0,0,0,0,0,0,0,0,0,0,0,0,0],[0,0,0,0,0,0,0,0,0,0,0,0,0,0,0],[0,0,0,0,0,0,0,0,0,0,0,0,0,0,0],[0,0,0,0,0,0,0,0,0,0,0,0,0,0,0],[0,0,0,0,0,0,0,0,0,0,0,0,0,0,0],[0,0,0,0,0,0,0,0,0,0,0,0,0,0,0],[0,0,0,0,0,0,0,0,0,0,0,0,0,0,0],[0,0,0,0,0,0,0,0,0,0,0,0,0,0,0],[0,0,0,0,0,0,0,0,0,0,0,0,0,0,0],[0,0,0,0,0,0,0,0,0,0,0,0,0,0,0],[0,0,0,0,0,0,0,0,0,0,0,0,0,0,0],[0,0,0,0,0,0,0,0,0,0,0,0,0,0,0],[0,0,0,0,0,0,0,0,0,0,0,0,0,0,0],[0,0,0,0,0,0,0,0,0,0,0,0,0,0,0],[0,0,0,0,0,0,0,0,0,0,0,0,0,0,0],[0,0,0,0,0,0,0,0,0,0,0,0,0,0,0],[0,0,0,0,0,0,0,0,0,0,0,0,0,0,0],[0,0,0,0,0,0,0,0,0,0,0,0,0,0,0],[0,0,0,0,0,0,0,0,0,0,0,0,0,0,0],[0,0,0,0,0,0,0,0,0,0,0,0,0,0,0],[0,0,0,0,0,0,0,0,0,0,0,0,0,0,0],[0,0,0,0,0,0,0,0,0,0,0,0,0,0,0],[0,0,0,0,0,0,0,0,0,0,0,0,0,0,0],[0,0,0,0,0,0,0,0,0,0,0,0,0,0,0],[0,0,0,0,0,0,0,0,0,0,0,0,0,0,0],[0,0,0,0,0,0,0,0,0,0,0,0,0,0,0],[0,0,0,0,0,0,0,0,0,0,0,0,0,0,0],[0,0,0,0,0,0,0,0,0,0,0,0,0,0,0],[0,0,0,0,0,0,0,0,0,0,0,0,0,0,0],[0,0,0,0,0,0,0,0,0,0,0,0,0,0,0],[0,0,0,0,0,0,0,0,0,0,0,0,0,0,0],[0,0,0,0,0,0,0,0,0,0,0,0,0,0,0],[0,0,0,0,0,0,0,0,0,0,0,0,0,0,0],[0,0,0,0,0,0,0,0,0,0,0,0,0,0,0],[0,0,0,0,0,0,0,0,0,0,0,0,0,0,0],[0,0,0,0,0,0,0,0,0,0,0,0,0,0,0],[0,0,0,0,0,0,0,0,0,0,0,0,0,0,0],[0,0,0,0,0,0,0,0,0,0,0,0,0,0,0],[0,0,0,0,0,0,0,0,0,0,0,0,0,0,0],[0,0,0,0,0,0,0,0,0,0,0,0,0,0,0],[0,0,0,0,0,0,0,0,0,0,0,0,0,0,0],[0,0,0,0,0,0,0,0,0,0,0,0,0,0,0],[0,0,0,0,0,0,0,0,0,0,0,0,0,0,0],[0,0,0,0,0,0,0,0,0,0,0,0,0,0,0],[0,0,0,0,0,0,0,0,0,0,0,0,0,0,0],[0,0,0,0,0,0,0,0,0,0,0,0,0,0,0],[0,0,0,0,0,0,0,0,0,0,0,0,0,0,0],[0,0,0,0,0,0,0,0,0,0,0,0,0,0,0],[0,0,0,0,0,0,0,0,0,0,0,0,0,0,0],[0,0,0,0,0,0,0,0,0,0,0,0,0,0,0],[0,0,0,0,0,0,0,0,0,0,0,0,0,0,0],[0,0,0,0,0,0,0,0,0,0,0,0,0,0,0],[0,0,0,0,0,0,0,0,0,0,0,0,0,0,0],[0,0,0,0,0,0,0,0,0,0,0,0,0,0,0],[0,0,0,0,0,0,0,0,0,0,0,0,0,0,0],[0,0,0,0,0,0,0,0,0,0,0,0,0,0,0],[0,0,0,0,0,0,0,0,0,0,0,0,0,0,0],[0,0,0,0,0,0,0,0,0,0,0,0,0,0,0],[0,0,0,0,0,0,0,0,0,0,0,0,0,0,0],[0,0,0,0,0,0,0,0,0,0,0,0,0,0,0],[0,0,0,0,0,0,0,0,0,0,0,0,0,0,0],[0,0,0,0,0,0,0,0,0,0,0,0,0,0,0],[0,0,0,0,0,0,0,0,0,0,0,0,0,0,0],[0,0,0,0,0,0,0,0,0,0,0,0,0,0,0],[0,0,0,0,0,0,0,0,0,0,0,0,0,0,0],[0,0,0,0,0,0,0,0,0,0,0,0,0,0,0],[0,0,0,0,0,0,0,0,0,0,0,0,0,0,0],[0,0,0,0,0,0,0,0,0,0,0,0,0,0,0],[0,0,0,0,0,0,0,0,0,0,0,0,0,0,0],[0,0,0,0,0,0,0,0,0,0,0,0,0,0,0],[0,0,0,0,0,0,0,0,0,0,0,0,0,0,0],[0,0,0,0,0,0,0,0,0,0,0,0,0,0,0],[0,0,0,0,0,0,0,0,0,0,0,0,0,0,0],[0,0,0,0,0,0,0,0,0,0,0,0,0,0,0],[0,0,0,0,0,0,0,0,0,0,0,0,0,0,0],[0,0,0,0,0,0,0,0,0,0,0,0,0,0,0],[0,0,0,0,0,0,0,0,0,0,0,0,0,0,0],[0,0,0,0,0,0,0,0,0,0,0,0,0,0,0],[0,0,0,0,0,0,0,0,0,0,0,0,0,0,0],[0,0,0,0,0,0,0,0,0,0,0,0,0,0,0],[0,0,0,0,0,0,0,0,0,0,0,0,0,0,0],[0,0,0,0,0,0,0,0,0,0,0,0,0,0,0],[0,0,0,0,0,0,0,0,0,0,0,0,0,0,0],[0,0,0,0,0,0,0,0,0,0,0,0,0,0,0],[0,0,0,0,0,0,0,0,0,0,0,0,0,0,0],[0,0,0,0,0,0,0,0,0,0,0,0,0,0,0],[0,0,0,0,0,0,0,0,0,0,0,0,0,0,0],[0,0,0,0,0,0,0,0,0,0,0,0,0,0,0],[0,0,0,0,0,0,0,0,0,0,0,0,0,0,0],[0,0,0,0,0,0,0,0,0,0,0,0,0,0,0],[0,0,0,0,0,0,0,0,0,0,0,0,0,0,0],[0,0,0,0,0,0,0,0,0,0,0,0,0,0,0],[0,0,0,0,0,0,0,0,0,0,0,0,0,0,0],[0,0,0,0,0,0,0,0,0,0,0,0,0,0,0],[0,0,0,0,0,0,0,0,0,0,0,0,0,0,0],[0,0,0,0,0,0,0,0,0,0,0,0,0,0,0],[0,0,0,0,0,0,0,0,0,0,0,0,0,0,0],[0,0,0,0,0,0,0,0,0,0,0,0,0,0,0],[0,0,0,0,0,0,0,0,0,0,0,0,0,0,0],[0,0,0,0,0,0,0,0,0,0,0,0,0,0,0],[0,0,0,0,0,0,0,0,0,0,0,0,0,0,0],[0,0,0,0,0,0,0,0,0,0,0,0,0,0,0],[0,0,0,0,0,0,0,0,0,0,0,0,0,0,0],[0,0,0,0,0,0,0,0,0,0,0,0,0,0,0],[0,0,0,0,0,0,0,0,0,0,0,0,0,0,0],[0,0,0,0,0,0,0,0,0,0,0,0,0,0,0],[0,0,0,0,0,0,0,0,0,0,0,0,0,0,0],[0,0,0,0,0,0,0,0,0,0,0,0,0,0,0],[0,0,0,0,0,0,0,0,0,0,0,0,0,0,0],[0,0,0,0,0,0,0,0,0,0,0,0,0,0,0],[0,0,0,0,0,0,0,0,0,0,0,0,0,0,0],[0,0,0,0,0,0,0,0,0,0,0,0,0,0,0],[0,0,0,0,0,0,0,0,0,0,0,0,0,0,0],[0,0,0,0,0,0,0,0,0,0,0,0,0,0,0],[0,0,0,0,0,0,0,0,0,0,0,0,0,0,0],[0,0,0,0,0,0,0,0,0,0,0,0,0,0,0],[0,0,0,0,0,0,0,0,0,0,0,0,0,0,0],[0,0,0,0,0,0,0,0,0,0,0,0,0,0,0],[0,0,0,0,0,0,0,0,0,0,0,0,0,0,0],[0,0,0,0,0,0,0,0,0,0,0,0,0,0,0],[0,0,0,0,0,0,0,0,0,0,0,0,0,0,0],[0,0,0,0,0,0,0,0,0,0,0,0,0,0,0],[0,0,0,0,0,0,0,0,0,0,0,0,0,0,0],[0,0,0,0,0,0,0,0,0,0,0,0,0,0,0],[0,0,0,0,0,0,0,0,0,0,0,0,0,0,0],[0,0,0,0,0,0,0,0,0,0,0,0,0,0,0],[0,0,0,0,0,0,0,0,0,0,0,0,0,0,0],[0,0,0,0,0,0,0,0,0,0,0,0,0,0,0],[0,0,0,0,0,0,0,0,0,0,0,0,0,0,0],[0,0,0,0,0,0,0,0,0,0,0,0,0,0,0],[0,0,0,0,0,0,0,0,0,0,0,0,0,0,0],[0,0,0,0,0,0,0,0,0,0,0,0,0,0,0],[0,0,0,0,0,0,0,0,0,0,0,0,0,0,0],[0,0,0,0,0,0,0,0,0,0,0,0,0,0,0],[0,0,0,0,0,0,0,0,0,0,0,0,0,0,0],[0,0,0,0,0,0,0,0,0,0,0,0,0,0,0],[0,0,0,0,0,0,0,0,0,0,0,0,0,0,0],[0,0,0,0,0,0,0,0,0,0,0,0,0,0,0],[0,0,0,0,0,0,0,0,0,0,0,0,0,0,0],[0,0,0,0,0,0,0,0,0,0,0,0,0,0,0],[0,0,0,0,0,0,0,0,0,0,0,0,0,0,0],[0,0,0,0,0,0,0,0,0,0,0,0,0,0,0],[0,0,0,0,0,0,0,0,0,0,0,0,0,0,0],[0,0,0,0,0,0,0,0,0,0,0,0,0,0,0],[0,0,0,0,0,0,0,0,0,0,0,0,0,0,0],[0,0,0,0,0,0,0,0,0,0,0,0,0,0,0],[0,0,0,0,0,0,0,0,0,0,0,0,0,0,0],[0,0,0,0,0,0,0,0,0,0,0,0,0,0,0],[0,0,0,0,0,0,0,0,0,0,0,0,0,0,0],[0,0,0,0,0,0,0,0,0,0,0,0,0,0,0],[0,0,0,0,0,0,0,0,0,0,0,0,0,0,0],[0,0,0,0,0,0,0,0,0,0,0,0,0,0,0],[0,0,0,0,0,0,0,0,0,0,0,0,0,0,0],[0,0,0,0,0,0,0,0,0,0,0,0,0,0,0],[0,0,0,0,0,0,0,0,0,0,0,0,0,0,0],[0,0,0,0,0,0,0,0,0,0,0,0,0,0,0],[0,0,0,0,0,0,0,0,0,0,0,0,0,0,0],[0,0,0,0,0,0,0,0,0,0,0,0,0,0,0],[0,0,0,0,0,0,0,0,0,0,0,0,0,0,0],[0,0,0,0,0,0,0,0,0,0,0,0,0,0,0],[0,0,0,0,0,0,0,0,0,0,0,0,0,0,0],[0,0,0,0,0,0,0,0,0,0,0,0,0,0,0],[0,0,0,0,0,0,0,0,0,0,0,0,0,0,0],[0,0,0,0,0,0,0,0,0,0,0,0,0,0,0],[0,0,0,0,0,0,0,0,0,0,0,0,0,0,0],[0,0,0,0,0,0,0,0,0,0,0,0,0,0,0],[0,0,0,0,0,0,0,0,0,0,0,0,0,0,0],[0,0,0,0,0,0,0,0,0,0,0,0,0,0,0],[0,0,0,0,0,0,0,0,0,0,0,0,0,0,0],[0,0,0,0,0,0,0,0,0,0,0,0,0,0,0],[0,0,0,0,0,0,0,0,0,0,0,0,0,0,0],[0,0,0,0,0,0,0,0,0,0,0,0,0,0,0],[0,0,0,0,0,0,0,0,0,0,0,0,0,0,0],[0,0,0,0,0,0,0,0,0,0,0,0,0,0,0],[0,0,0,0,0,0,0,0,0,0,0,0,0,0,0],[0,0,0,0,0,0,0,0,0,0,0,0,0,0,0],[0,0,0,0,0,0,0,0,0,0,0,0,0,0,0],[0,0,0,0,0,0,0,0,0,0,0,0,0,0,0],[0,0,0,0,0,0,0,0,0,0,0,0,0,0,0],[0,0,0,0,0,0,0,0,0,0,0,0,0,0,0],[0,0,0,0,0,0,0,0,0,0,0,0,0,0,0],[0,0,0,0,0,0,0,0,0,0,0,0,0,0,0],[0,0,0,0,0,0,0,0,0,0,0,0,0,0,0],[0,0,0,0,0,0,0,0,0,0,0,0,0,0,0],[0,0,0,0,0,0,0,0,0,0,0,0,0,0,0],[0,0,0,0,0,0,0,0,0,0,0,0,0,0,0],[0,0,0,0,0,0,0,0,0,0,0,0,0,0,0],[0,0,0,0,0,0,0,0,0,0,0,0,0,0,0],[0,0,0,0,0,0,0,0,0,0,0,0,0,0,0],[0,0,0,0,0,0,0,0,0,0,0,0,0,0,0],[0,0,0,0,0,0,0,0,0,0,0,0,0,0,0],[0,0,0,0,0,0,0,0,0,0,0,0,0,0,0],[0,0,0,0,0,0,0,0,0,0,0,0,0,0,0],[0,0,0,0,0,0,0,0,0,0,0,0,0,0,0],[0,0,0,0,0,0,0,0,0,0,0,0,0,0,0],[0,0,0,0,0,0,0,0,0,0,0,0,0,0,0],[0,0,0,0,0,0,0,0,0,0,0,0,0,0,0],[0,0,0,0,0,0,0,0,0,0,0,0,0,0,0],[0,0,0,0,0,0,0,0,0,0,0,0,0,0,0],[0,0,0,0,0,0,0,0,0,0,0,0,0,0,0],[0,0,0,0,0,0,0,0,0,0,0,0,0,0,0],[0,0,0,0,0,0,0,0,0,0,0,0,0,0,0],[0,0,0,0,0,0,0,0,0,0,0,0,0,0,0],[0,0,0,0,0,0,0,0,0,0,0,0,0,0,0],[0,0,0,0,0,0,0,0,0,0,0,0,0,0,0],[0,0,0,0,0,0,0,0,0,0,0,0,0,0,0],[0,0,0,0,0,0,0,0,0,0,0,0,0,0,0],[0,0,0,0,0,0,0,0,0,0,0,0,0,0,0],[0,0,0,0,0,0,0,0,0,0,0,0,0,0,0],[0,0,0,0,0,0,0,0,0,0,0,0,0,0,0],[0,0,0,0,0,0,0,0,0,0,0,0,0,0,0],[0,0,0,0,0,0,0,0,0,0,0,0,0,0,0],[0,0,0,0,0,0,0,0,0,0,0,0,0,0,0],[0,0,0,0,0,0,0,0,0,0,0,0,0,0,0],[0,0,0,0,0,0,0,0,0,0,0,0,0,0,0],[0,0,0,0,0,0,0,0,0,0,0,0,0,0,0],[0,0,0,0,0,0,0,0,0,0,0,0,0,0,0],[0,0,0,0,0,0,0,0,0,0,0,0,0,0,0],[0,0,0,0,0,0,0,0,0,0,0,0,0,0,0],[0,0,0,0,0,0,0,0,0,0,0,0,0,0,0],[0,0,0,0,0,0,0,0,0,0,0,0,0,0,0],[0,0,0,0,0,0,0,0,0,0,0,0,0,0,0],[0,0,0,0,0,0,0,0,0,0,0,0,0,0,0],[0,0,0,0,0,0,0,0,0,0,0,0,0,0,0],[0,0,0,0,0,0,0,0,0,0,0,0,0,0,0],[0,0,0,0,0,0,0,0,0,0,0,0,0,0,0],[0,0,0,0,0,0,0,0,0,0,0,0,0,0,0],[0,0,0,0,0,0,0,0,0,0,0,0,0,0,0],[0,0,0,0,0,0,0,0,0,0,0,0,0,0,0],[0,0,0,0,0,0,0,0,0,0,0,0,0,0,0],[0,0,0,0,0,0,0,0,0,0,0,0,0,0,0],[0,0,0,0,0,0,0,0,0,0,0,0,0,0,0],[0,0,0,0,0,0,0,0,0,0,0,0,0,0,0],[0,0,0,0,0,0,0,0,0,0,0,0,0,0,0],[0,0,0,0,0,0,0,0,0,0,0,0,0,0,0],[0,0,0,0,0,0,0,0,0,0,0,0,0,0,0],[0,0,0,0,0,0,0,0,0,0,0,0,0,0,0],[0,0,0,0,0,0,0,0,0,0,0,0,0,0,0],[0,0,0,0,0,0,0,0,0,0,0,0,0,0,0],[0,0,0,0,0,0,0,0,0,0,0,0,0,0,0],[0,0,0,0,0,0,0,0,0,0,0,0,0,0,0],[0,0,0,0,0,0,0,0,0,0,0,0,0,0,0],[0,0,0,0,0,0,0,0,0,0,0,0,0,0,0],[0,0,0,0,0,0,0,0,0,0,0,0,0,0,0],[0,0,0,0,0,0,0,0,0,0,0,0,0,0,0],[0,0,0,0,0,0,0,0,0,0,0,0,0,0,0],[0,0,0,0,0,0,0,0,0,0,0,0,0,0,0],[0,0,0,0,0,0,0,0,0,0,0,0,0,0,0],[0,0,0,0,0,0,0,0,0,0,0,0,0,0,0],[0,0,0,0,0,0,0,0,0,0,0,0,0,0,0],[0,0,0,0,0,0,0,0,0,0,0,0,0,0,0],[0,0,0,0,0,0,0,0,0,0,0,0,0,0,0],[0,0,0,0,0,0,0,0,0,0,0,0,0,0,0],[0,0,0,0,0,0,0,0,0,0,0,0,0,0,0],[0,0,0,0,0,0,0,0,0,0,0,0,0,0,0],[0,0,0,0,0,0,0,0,0,0,0,0,0,0,0],[0,0,0,0,0,0,0,0,0,0,0,0,0,0,0]],"SpriteTemplates":[[null,null,null,null,null,null,null,null,null,null,null,null,null,null,null],[null,null,null,null,null,null,null,null,null,null,null,null,null,null,null],[null,null,null,null,null,null,null,null,null,null,null,null,null,null,null],[null,null,null,null,null,null,null,null,null,null,null,null,null,null,null],[null,null,null,null,null,null,null,null,null,null,null,null,null,null,null],[null,null,null,null,null,null,null,null,null,null,null,null,null,null,null],[null,null,null,null,null,null,null,null,null,null,null,null,null,null,null],[null,null,null,null,null,null,null,null,null,null,null,null,null,null,null],[null,null,null,null,null,null,null,null,null,null,null,null,null,null,null],[null,null,null,null,null,null,null,null,null,null,null,null,null,null,null],[null,null,null,null,null,null,null,null,null,null,null,null,null,null,null],[null,null,null,null,null,null,null,null,null,null,null,null,null,null,null],[null,null,null,null,null,null,null,null,null,null,null,null,null,null,null],[null,null,null,null,null,null,null,null,null,null,null,null,null,null,null],[null,null,null,null,null,null,null,null,null,null,null,null,null,null,null],[null,null,null,null,null,null,null,null,null,null,null,null,null,null,null],[null,null,null,null,null,null,null,null,null,null,null,null,null,null,null],[null,null,null,null,null,null,null,null,null,null,null,null,null,null,null],[null,null,null,null,null,null,null,null,null,null,null,null,null,null,null],[null,null,null,null,null,null,null,null,null,null,null,null,null,null,null],[null,null,null,null,null,null,null,null,null,null,null,null,null,null,null],[null,null,null,null,null,null,null,null,null,null,null,null,null,null,null],[null,null,null,null,null,null,null,null,null,null,null,null,null,null,null],[null,null,null,null,null,null,null,null,null,null,null,null,null,null,null],[null,null,null,null,null,null,null,null,null,null,null,null,null,null,null],[null,null,null,null,null,null,null,null,null,null,null,null,null,null,null],[null,null,null,null,null,null,null,null,null,null,null,null,null,null,null],[null,null,null,null,null,null,null,null,null,null,null,null,null,null,null],[null,null,null,null,null,null,null,null,null,null,null,null,null,null,null],[null,null,null,null,null,null,null,null,null,null,null,null,null,null,null],[null,null,null,null,null,null,null,null,null,null,null,null,null,null,null],[null,null,null,null,null,null,null,null,null,null,null,null,null,null,null],[null,null,null,null,null,null,null,null,null,null,null,null,null,null,null],[null,null,null,null,null,null,null,null,null,null,null,null,null,null,null],[null,null,null,null,null,null,null,null,null,null,null,null,null,null,null],[null,null,null,null,null,null,null,null,null,null,null,null,null,null,null],[null,null,null,null,null,null,null,null,null,null,null,null,null,null,null],[null,null,null,null,null,null,null,null,null,null,null,null,null,null,null],[null,null,null,null,null,null,null,null,null,null,null,null,null,null,null],[null,null,null,null,null,null,null,null,null,null,null,null,null,null,null],[null,null,null,null,null,null,null,null,null,null,null,null,null,null,null],[null,null,null,null,null,null,null,null,null,null,null,null,null,null,null],[null,null,null,null,null,null,null,null,null,null,null,null,null,null,null],[null,null,null,null,null,null,null,null,null,null,null,null,null,null,null],[null,null,null,null,null,null,null,null,null,null,{"Type":2,"Winged":true,"LastVisibleTick":-1,"IsDead":false,"Sprite":null},null,null,null,null],[null,null,null,null,null,null,null,null,null,null,null,null,null,null,null],[null,null,null,null,null,null,null,null,null,null,null,null,null,null,null],[null,null,null,null,null,null,null,null,null,null,null,null,null,null,null],[null,null,null,null,null,null,null,null,null,null,null,null,null,null,null],[null,null,null,null,null,null,null,null,null,null,null,null,null,null,null],[null,null,null,null,null,null,null,null,null,null,{"Type":2,"Winged":false,"LastVisibleTick":-1,"IsDead":false,"Sprite":null},null,null,null,null],[null,null,null,null,null,null,null,null,null,null,null,null,null,null,null],[null,null,null,null,null,null,null,null,null,null,null,null,null,null,null],[null,null,null,null,null,null,null,null,null,null,null,null,null,null,null],[null,null,null,null,null,null,null,null,null,null,null,null,null,null,null],[null,null,null,null,null,null,null,null,null,null,null,null,null,null,null],[null,null,null,null,null,null,null,null,null,null,null,null,null,null,null],[null,null,null,null,null,null,null,null,null,null,null,null,null,null,null],[null,null,null,null,null,null,null,null,null,null,null,null,null,null,null],[null,null,null,null,null,null,null,null,null,null,null,null,null,null,null],[null,null,null,null,null,null,null,null,null,null,null,null,null,null,null],[null,null,null,null,null,null,null,null,null,null,null,null,null,null,null],[null,null,null,null,null,null,null,null,null,null,null,null,null,null,null],[null,null,null,null,null,null,null,null,null,null,null,null,null,null,null],[null,null,null,null,null,null,null,null,null,null,null,null,null,null,null],[null,null,null,null,null,null,null,null,null,null,null,null,null,null,null],[null,null,null,null,null,null,null,null,null,null,null,null,null,null,null],[null,null,null,null,null,null,null,null,null,null,null,null,null,null,null],[null,null,null,null,null,null,null,null,null,null,null,null,null,null,null],[null,null,null,null,null,null,null,null,null,null,null,null,null,null,null],[null,null,null,null,null,null,null,null,null,null,null,null,null,null,null],[null,null,null,null,null,null,null,null,null,null,null,null,null,null,null],[null,null,null,null,null,null,null,null,null,null,null,null,null,{"Type":1,"Winged":false,"LastVisibleTick":-1,"IsDead":false,"Sprite":null},null],[null,null,null,null,null,null,null,null,null,null,null,null,null,null,null],[null,null,null,null,null,null,null,null,null,null,null,null,null,null,null],[null,null,null,null,null,null,null,null,null,null,null,null,null,null,null],[null,null,null,null,null,null,null,null,null,null,null,null,null,null,null],[null,null,null,null,null,null,null,null,null,null,null,null,null,null,null],[null,null,null,null,null,null,null,null,null,null,null,null,null,null,null],[null,null,null,null,null,null,null,null,null,null,null,null,null,null,null],[null,null,null,null,null,null,null,null,null,null,null,null,null,null,null],[null,null,null,null,null,null,null,null,null,null,null,null,null,null,null],[null,null,null,null,null,null,null,null,null,null,null,null,null,null,null],[null,null,null,null,null,null,null,null,null,null,null,null,null,null,null],[null,null,null,null,null,null,null,null,null,null,null,null,null,null,null],[null,null,null,null,null,null,null,null,null,null,null,null,null,null,null],[null,null,null,null,null,null,null,null,null,null,null,null,null,null,null],[null,null,null,null,null,null,null,null,null,null,null,null,null,null,null],[null,null,null,null,null,null,null,null,null,null,null,null,null,null,null],[null,null,null,null,null,null,null,null,null,null,null,null,null,null,null],[null,null,null,null,null,null,null,null,null,null,null,null,null,null,null],[null,null,null,null,null,null,null,null,null,null,null,null,null,null,null],[null,null,null,null,null,null,null,null,null,null,null,null,null,null,null],[null,null,null,null,null,null,null,null,null,null,null,null,null,null,null],[null,null,null,null,null,null,null,null,null,null,null,null,null,null,null],[null,null,null,null,null,null,null,null,null,null,null,null,null,null,null],[null,null,null,null,null,null,null,null,null,null,null,null,null,null,null],[null,null,null,null,null,null,null,null,null,null,null,null,null,null,null],[null,null,null,null,null,null,null,null,null,null,null,null,null,null,null],[null,null,null,null,null,null,null,null,null,null,null,null,null,null,null],[null,null,null,null,null,null,null,null,null,null,null,null,null,null,null],[null,null,null,null,null,null,null,null,null,null,null,null,null,null,null],[null,null,null,null,null,null,null,null,null,null,null,null,null,null,null],[null,null,null,null,null,null,null,null,null,null,null,null,null,null,null],[null,null,null,null,null,null,null,null,null,null,null,null,null,null,null],[null,null,null,null,null,null,null,null,null,null,null,null,null,null,null],[null,null,null,null,null,null,null,null,null,null,null,null,null,null,null],[null,null,null,null,null,null,null,null,null,null,null,null,null,null,null],[null,null,null,null,null,null,null,null,null,null,null,null,null,null,null],[null,null,null,null,null,null,null,null,null,null,null,null,null,null,null],[null,null,null,null,null,null,null,null,null,null,null,null,null,null,null],[null,null,null,null,null,null,null,null,null,null,null,null,null,null,null],[null,null,null,null,null,null,null,null,null,null,null,null,null,null,null],[null,null,null,null,null,null,null,null,null,null,null,null,null,null,null],[null,null,null,null,null,null,null,null,null,null,null,null,null,null,null],[null,null,null,null,null,null,null,null,null,null,null,null,null,null,null],[null,null,null,null,null,null,null,null,null,null,null,null,null,null,null],[null,null,null,null,null,null,null,null,null,null,null,null,null,null,null],[null,null,null,null,null,null,null,null,null,null,null,null,null,null,null],[null,null,null,null,null,null,null,null,null,null,null,null,null,null,null],[null,null,null,null,null,null,null,null,null,null,null,null,null,null,null],[null,null,null,null,null,null,null,null,null,null,null,null,null,null,null],[null,null,null,null,null,null,null,null,null,null,null,null,null,null,null],[null,null,null,null,null,null,null,null,null,null,null,null,null,null,null],[null,null,null,null,null,null,null,null,null,null,null,null,null,null,null],[null,null,null,null,null,null,null,null,null,null,null,null,null,null,null],[null,null,null,null,null,null,null,null,null,null,null,null,null,null,null],[null,null,null,null,null,null,null,null,null,null,null,null,null,null,null],[null,null,null,null,null,null,null,null,null,null,null,null,null,null,null],[null,null,null,null,null,null,null,null,null,null,null,null,null,null,null],[null,null,null,null,null,null,null,null,null,null,null,null,null,null,null],[null,null,null,null,null,null,null,null,null,null,null,null,null,null,null],[null,null,null,null,null,null,null,null,null,null,null,null,null,null,null],[null,null,null,null,null,null,null,null,null,null,null,null,null,null,null],[null,null,null,null,null,null,null,null,null,null,null,null,null,null,null],[null,null,null,null,null,null,null,null,null,null,null,null,null,null,null],[null,null,null,null,null,null,null,null,null,null,null,null,null,null,null],[null,null,null,null,null,null,null,null,null,null,null,null,null,null,null],[null,null,null,null,null,null,null,null,null,null,null,null,null,null,null],[null,null,null,null,null,null,null,null,null,null,null,null,null,null,null],[null,null,null,null,null,null,null,null,{"Type":4,"Winged":false,"LastVisibleTick":-1,"IsDead":false,"Sprite":null},null,null,null,null,null,null],[null,null,null,null,null,null,null,null,null,null,null,null,null,null,null],[null,null,null,null,null,null,null,null,null,null,null,null,null,null,null],[null,null,null,null,null,null,null,{"Type":4,"Winged":false,"LastVisibleTick":-1,"IsDead":false,"Sprite":null},null,null,null,null,null,null,null],[null,null,null,null,null,null,null,null,null,null,null,null,null,null,null],[null,null,null,null,null,null,null,null,null,null,null,null,null,null,null],[null,null,null,null,null,null,null,null,null,null,null,null,null,null,null],[null,null,null,null,null,null,null,null,null,null,null,null,null,null,null],[null,null,null,null,null,null,null,null,null,null,null,null,null,null,null],[null,null,null,null,null,null,null,null,null,null,null,null,null,null,null],[null,null,null,null,null,null,null,null,null,null,null,null,null,null,null],[null,null,null,null,null,null,null,null,null,null,null,null,null,null,null],[null,null,null,null,null,null,null,null,null,null,null,null,null,null,null],[null,null,null,null,null,null,null,null,null,null,{"Type":2,"Winged":false,"LastVisibleTick":-1,"IsDead":false,"Sprite":null},null,null,null,null],[null,null,null,null,null,null,null,null,null,null,null,null,null,null,null],[null,null,null,null,null,null,null,null,null,null,null,null,null,null,null],[null,null,null,null,null,null,null,null,null,null,null,null,null,null,null],[null,null,null,null,null,null,null,null,null,null,null,null,null,null,null],[null,null,null,null,null,null,null,null,null,null,null,null,null,null,null],[null,null,null,null,null,null,null,null,null,null,null,null,null,null,null],[null,null,null,null,null,null,null,null,null,null,null,null,null,null,null],[null,null,null,null,null,null,null,null,null,null,null,null,null,null,null],[null,null,null,null,null,null,null,null,null,null,null,null,null,null,null],[null,null,null,null,null,null,null,null,null,null,null,null,null,null,null],[null,null,null,null,null,null,null,null,null,null,null,null,null,null,null],[null,null,null,null,null,null,null,null,null,null,null,null,null,null,null],[null,null,null,null,null,null,null,null,null,null,null,null,null,null,null],[null,null,null,null,null,null,null,null,null,null,null,null,null,null,null],[null,null,null,null,null,null,null,null,null,null,null,null,null,null,null],[null,null,null,null,null,null,null,null,null,null,null,null,null,null,null],[null,null,null,null,null,null,null,null,null,null,null,null,null,null,null],[null,null,null,null,null,null,null,null,null,null,null,null,null,null,null],[null,null,null,null,null,null,null,null,null,null,null,null,null,null,null],[null,null,null,null,null,null,null,null,null,null,null,null,null,null,null],[null,null,null,null,null,null,null,null,null,null,null,null,null,null,null],[null,null,null,null,null,null,null,null,null,null,null,null,null,null,null],[null,null,null,null,null,null,null,null,null,null,null,null,null,null,null],[null,null,null,null,null,null,null,null,null,null,null,null,null,null,null],[null,null,null,null,null,null,null,null,null,null,null,null,null,null,null],[null,null,null,null,null,null,null,null,null,null,null,null,null,null,null],[null,null,null,null,null,null,null,null,null,null,null,null,null,null,null],[null,null,null,null,null,null,null,null,null,null,null,null,null,null,null],[null,null,null,null,null,null,null,null,null,null,null,null,null,null,null],[null,null,null,null,null,null,null,null,null,null,null,null,null,null,null],[null,null,null,null,null,null,null,null,null,null,null,null,null,null,null],[null,null,null,null,null,null,null,null,null,null,null,null,null,null,null],[null,null,null,null,null,null,null,null,null,null,null,null,null,null,null],[null,null,null,null,null,null,null,null,null,null,null,null,null,null,null],[null,null,null,null,null,null,null,null,null,null,null,null,null,null,null],[null,null,null,null,null,null,null,null,null,null,null,null,null,null,null],[null,null,null,null,null,null,null,null,null,null,null,null,null,null,null],[null,null,null,null,null,null,null,null,null,null,null,null,null,null,null],[null,null,null,null,null,null,null,null,null,null,null,null,null,null,null],[null,null,null,null,null,null,null,null,null,null,null,null,null,null,null],[null,null,null,null,null,null,null,null,null,null,null,null,null,null,null],[null,null,null,null,null,null,null,null,null,null,null,null,null,null,null],[null,null,null,null,null,null,null,null,null,null,null,null,null,null,null],[null,null,null,null,null,null,null,null,null,null,null,null,null,null,null],[null,null,null,null,null,null,null,null,null,null,null,null,null,null,null],[null,null,null,null,null,null,null,null,null,null,null,null,null,null,null],[null,null,null,null,null,null,null,null,null,null,null,null,null,null,null],[null,null,null,null,null,null,null,null,null,null,null,null,null,null,null],[null,null,null,null,null,null,null,null,null,null,null,null,null,null,null],[null,null,null,null,null,null,null,null,null,null,null,{"Type":2,"Winged":false,"LastVisibleTick":-1,"IsDead":false,"Sprite":null},null,null,null],[null,null,null,null,null,null,null,null,null,null,null,null,null,null,null],[null,null,null,null,null,null,null,null,null,null,null,null,null,null,null],[null,null,null,null,null,null,null,null,null,null,null,null,null,null,null],[null,null,null,null,null,null,null,null,null,null,null,null,null,null,null],[null,null,null,null,null,null,null,null,null,null,null,null,null,null,null],[null,null,null,null,null,null,null,null,null,null,null,null,null,null,null],[null,null,null,null,null,null,null,null,null,null,null,null,null,null,null],[null,null,null,null,null,null,null,null,null,null,null,null,null,null,null],[null,null,null,null,null,null,null,null,null,null,null,null,null,null,null],[null,null,null,null,null,null,null,null,null,null,null,null,null,null,null],[null,null,null,null,null,null,null,null,null,null,null,null,null,null,null],[null,null,null,null,null,null,null,null,null,null,null,null,null,null,null],[null,null,null,null,null,null,null,null,null,null,null,null,null,null,null],[null,null,null,null,null,null,null,null,null,null,null,null,null,null,null],[null,null,null,null,null,null,null,null,null,null,null,null,null,null,null],[null,null,null,null,null,null,null,null,null,null,null,null,null,null,null],[null,null,null,null,null,null,null,null,null,null,null,null,null,null,null],[null,null,null,null,null,null,null,null,null,null,null,null,null,null,null],[null,null,null,null,null,null,null,null,null,null,null,null,null,null,null],[null,null,null,null,null,null,null,null,null,null,null,null,null,null,null],[null,null,null,null,null,null,null,null,null,null,null,null,null,null,null],[null,null,null,null,null,null,null,null,null,null,null,null,null,null,null],[null,null,null,null,null,null,null,null,null,null,null,null,null,null,null],[null,null,null,null,null,null,null,null,null,null,null,null,null,null,null],[null,null,null,null,null,null,null,null,null,null,null,null,null,null,null],[null,null,null,null,null,null,null,null,null,null,null,null,null,null,null],[null,null,null,null,null,null,null,null,null,null,null,null,null,null,null],[null,null,null,null,null,null,null,null,null,null,null,null,null,null,null],[null,null,null,null,null,null,null,null,null,null,null,null,null,null,null],[null,null,null,null,null,null,null,null,null,null,null,null,null,null,null],[null,null,null,null,null,null,null,null,null,null,null,null,null,null,null],[null,null,null,null,null,null,null,null,null,null,null,null,null,null,null],[null,null,null,null,null,null,null,null,null,null,null,null,null,null,null],[null,null,null,null,null,null,null,null,null,null,null,null,null,null,null],[null,null,null,null,null,null,null,null,null,null,null,null,null,null,null],[null,null,null,null,null,null,null,null,null,null,null,null,null,null,null],[null,null,null,null,null,null,null,null,null,null,null,null,null,null,null],[null,null,null,null,null,null,null,null,null,null,null,null,null,null,null],[null,null,null,null,null,null,null,null,null,null,null,null,null,null,null],[null,null,null,null,null,null,null,null,null,null,null,null,null,null,null],[null,null,null,null,null,null,null,null,null,null,null,null,null,null,null],[null,null,null,null,null,null,null,null,null,null,null,null,null,null,null],[null,null,null,null,null,null,null,null,null,null,null,null,null,null,null],[null,null,null,null,null,null,null,null,null,null,null,null,null,null,null],[null,null,null,null,null,null,null,null,null,null,null,null,null,null,null],[null,null,null,null,null,null,null,null,null,null,null,null,null,null,null],[null,null,null,null,null,null,null,null,null,null,null,null,null,null,null],[null,null,null,null,null,null,null,null,null,null,null,null,null,null,null],[null,null,null,null,null,null,null,null,null,null,null,null,null,null,null],[null,null,null,null,null,null,null,null,null,null,null,null,null,null,null],[null,null,null,null,null,null,null,null,null,null,null,null,null,null,null],[null,null,null,null,null,null,null,null,null,null,null,null,null,null,null],[null,null,null,null,null,null,null,null,null,null,null,null,null,null,null],[null,null,null,null,null,null,null,null,null,null,null,null,null,null,null],[null,null,null,null,null,null,null,null,null,null,null,null,null,null,null],[null,null,null,null,null,null,null,null,null,null,null,null,null,null,null],[null,null,null,null,null,null,null,null,null,null,null,null,null,null,null],[null,null,null,null,null,null,null,null,null,null,null,null,null,null,null],[null,null,null,null,null,null,null,null,null,null,null,null,null,null,null],[null,null,null,null,null,null,null,null,null,null,null,null,null,null,null],[null,null,null,null,null,null,null,null,null,null,null,null,null,null,null],[null,null,null,null,null,null,null,null,null,null,null,null,null,null,null],[null,null,null,null,null,null,null,null,null,null,null,null,null,null,null],[null,null,null,null,null,null,null,null,null,null,null,null,null,null,null],[null,null,null,null,null,null,null,null,null,null,null,null,null,null,null],[null,null,null,null,null,null,null,null,null,null,null,null,null,null,null],[null,null,null,null,null,null,null,null,null,null,null,null,null,null,null],[null,null,null,null,null,null,null,null,null,null,null,null,null,null,null],[null,null,null,null,null,null,null,null,null,null,null,null,null,null,null],[null,null,null,null,null,null,null,null,null,null,null,null,null,null,null],[null,null,null,null,null,null,null,null,null,null,null,null,null,null,null],[null,null,null,null,null,null,null,null,null,null,null,null,null,null,null],[null,null,null,null,null,null,null,null,null,null,null,null,null,null,null],[null,null,null,null,null,null,null,null,null,null,null,null,null,null,null],[null,null,null,null,null,null,null,null,null,null,null,null,null,null,null],[null,null,null,null,null,null,null,null,null,null,null,null,null,null,null],[null,null,null,null,null,null,null,null,null,null,null,null,null,null,null],[null,null,null,null,null,null,null,null,null,null,null,null,null,null,null],[null,null,null,null,null,null,null,null,null,null,null,null,null,null,null],[null,null,null,null,null,null,null,null,null,null,null,null,null,null,null],[null,null,null,null,null,null,null,null,null,null,null,null,null,null,null],[null,null,null,null,null,null,null,null,null,null,null,null,null,null,null],[null,null,null,null,null,null,null,null,null,null,null,null,null,null,null],[null,null,null,null,null,null,null,null,null,null,null,null,null,null,null],[null,null,null,null,null,null,null,null,null,null,null,null,null,null,null],[null,null,null,null,null,null,null,null,null,null,null,null,null,null,null],[null,null,null,null,null,null,null,null,null,null,null,null,null,null,null],[null,null,null,null,null,null,null,null,null,null,null,null,null,null,null],[null,null,null,null,null,null,null,null,null,null,null,null,null,null,null],[null,null,null,null,null,null,null,null,null,null,null,null,null,null,null],[null,null,null,null,null,null,null,null,null,null,null,null,null,null,null],[null,null,null,null,null,null,null,null,null,null,null,null,null,null,null],[null,null,null,null,null,null,null,null,null,null,null,null,null,null,null],[null,null,null,null,null,null,null,null,null,null,null,null,null,null,null],[null,null,null,null,null,null,null,null,null,null,null,null,null,null,null],[null,null,null,null,null,null,null,null,null,null,null,null,null,null,null],[null,null,null,null,null,null,null,null,null,null,null,null,null,null,null],[null,null,null,null,null,null,null,null,null,null,null,null,null,null,null],[null,null,null,null,null,null,null,null,null,null,null,null,null,null,null],[null,null,null,null,null,null,null,null,null,null,null,null,null,null,null],[null,null,null,null,null,null,null,null,null,null,null,null,null,null,null],[null,null,null,null,null,null,null,null,null,null,null,null,null,null,null],[null,null,null,null,null,null,null,null,null,null,null,null,null,null,null],[null,null,null,null,null,null,null,null,null,null,null,null,null,null,null],[null,null,null,null,null,null,null,null,null,null,null,null,null,null,null],[null,null,null,null,null,null,null,null,null,null,null,null,null,null,null],[null,null,null,null,null,null,null,null,null,null,null,null,null,null,null],[null,null,null,null,null,null,null,null,null,null,null,null,null,null,null],[null,null,null,null,null,null,null,null,null,null,null,null,null,null,null],[null,null,null,null,null,null,null,null,null,null,null,null,null,null,null],[null,null,null,null,null,null,null,null,null,null,null,null,null,null,null],[null,null,null,null,null,null,null,null,null,null,null,null,null,null,null],[null,null,null,null,null,null,null,null,null,null,null,null,null,null,null],[null,null,null,null,null,null,null,null,null,null,null,null,null,null,null],[null,null,null,null,null,null,null,null,null,null,null,null,null,null,null],[null,null,null,null,null,null,null,null,null,null,null,null,null,null,null]]}).CreateLevel();
-        const lvl = new PredefinedLevelGenerator({"Width":320,"Height":15,"ExitX":266,"ExitY":12,"Type":0,"Map":[[0,0,0,0,0,0,0,0,0,0,0,129,145,145,145],[0,0,0,0,0,0,0,0,0,0,0,129,145,145,145],[0,0,0,0,0,0,0,0,0,0,0,129,145,145,145],[0,0,0,0,0,0,0,0,0,0,0,129,145,145,145],[0,0,0,0,0,0,0,0,0,0,0,129,145,145,145],[0,0,0,0,0,0,0,0,0,0,0,129,145,145,145],[0,0,0,0,0,0,0,0,0,0,0,129,145,145,145],[0,0,0,0,0,0,0,0,0,0,0,129,145,145,145],[0,0,0,0,0,0,0,0,0,0,0,129,145,145,145],[0,0,0,0,0,0,0,0,0,0,0,129,145,145,145],[0,0,0,0,0,0,0,0,0,0,0,129,145,145,145],[0,0,0,0,0,0,0,0,0,0,0,129,145,145,145],[0,0,0,0,0,0,0,0,0,0,0,129,145,145,145],[0,0,0,0,0,0,0,0,0,0,0,129,145,145,145],[0,0,0,0,0,0,132,148,148,148,148,129,145,145,145],[0,0,0,0,0,0,133,149,149,149,149,129,145,145,145],[0,0,0,0,0,0,133,149,149,149,149,129,145,145,145],[0,0,0,0,0,0,133,149,149,149,149,129,145,145,145],[0,0,0,0,0,0,134,150,150,150,150,129,145,145,145],[0,0,0,0,0,0,0,0,0,0,0,129,145,145,145],[0,0,0,0,0,0,0,0,0,0,0,129,145,145,145],[0,0,0,0,0,0,0,0,0,0,0,129,145,145,145],[0,0,0,0,0,0,0,0,0,0,0,129,145,145,145],[0,0,0,0,0,0,0,0,0,0,0,129,145,145,145],[0,0,0,0,0,0,0,0,0,0,0,129,145,145,145],[0,0,0,0,0,0,0,0,0,0,0,129,145,145,145],[0,0,0,0,0,0,0,0,0,0,0,129,145,145,145],[0,0,0,0,0,0,0,0,0,0,0,129,145,145,145],[0,0,0,0,0,0,0,0,0,0,0,129,145,145,145],[0,0,0,0,0,0,0,0,0,0,0,129,145,145,145],[0,0,0,0,0,0,0,0,0,0,0,129,145,145,145],[0,0,0,0,0,0,0,0,0,0,0,129,145,145,145],[0,0,0,0,0,0,0,0,0,0,0,129,145,145,145],[0,0,0,0,0,0,0,132,148,148,148,129,145,145,145],[0,0,0,0,0,34,0,133,149,149,149,129,145,145,145],[0,0,0,0,0,34,0,133,149,149,149,129,145,145,145],[0,0,0,0,0,34,0,133,149,149,149,129,145,145,145],[0,0,0,0,0,0,0,133,149,149,149,129,145,145,145],[0,0,0,0,0,0,0,134,150,150,150,129,145,145,145],[0,0,0,0,0,0,0,0,0,0,0,129,145,145,145],[0,0,0,0,0,0,0,0,0,0,0,129,145,145,145],[0,0,0,0,0,0,0,0,0,0,0,129,145,145,145],[0,0,0,0,0,0,0,0,0,0,0,129,145,145,145],[0,0,0,0,0,0,0,0,0,0,0,129,145,145,145],[0,0,0,0,0,0,0,0,0,0,0,129,145,145,145],[0,0,0,0,0,0,0,0,0,0,0,129,145,145,145],[0,0,0,0,0,0,0,0,0,0,0,129,145,145,145],[0,0,0,0,0,0,0,0,0,0,0,129,145,145,145],[0,0,0,0,0,0,0,0,0,0,0,129,145,145,145],[0,0,0,0,0,0,0,0,132,148,148,129,145,145,145],[0,0,0,0,0,0,0,0,133,149,149,129,145,145,145],[0,0,0,0,132,148,148,148,133,149,149,129,145,145,145],[0,0,0,0,133,149,149,149,182,150,150,129,145,145,145],[0,0,0,0,133,149,149,149,149,149,149,129,145,145,145],[0,0,34,0,133,149,149,149,149,149,149,129,145,145,145],[0,0,34,0,134,150,150,150,150,150,150,129,145,145,145],[0,0,0,0,0,0,0,0,0,0,0,129,145,145,145],[0,0,0,0,0,0,0,0,0,0,0,129,145,145,145],[0,0,0,0,0,0,0,0,0,0,128,131,145,145,145],[0,0,0,0,0,0,0,0,0,0,129,145,145,145,145],[0,0,0,0,0,0,0,0,0,0,129,145,145,145,145],[0,0,0,0,0,0,0,0,0,0,129,145,145,145,145],[0,0,0,0,0,0,0,0,0,0,129,145,145,145,145],[0,0,0,0,0,0,0,0,0,0,129,145,145,145,145],[0,0,0,0,0,0,132,148,148,148,129,145,145,145,145],[0,0,0,0,0,0,133,149,149,149,129,145,145,145,145],[0,0,0,132,148,148,133,149,149,149,129,145,145,145,145],[0,0,0,133,149,149,133,149,149,149,129,145,145,145,145],[0,0,0,133,149,149,182,150,150,150,129,145,145,145,145],[0,0,0,133,149,149,149,149,149,149,129,145,145,145,145],[0,0,0,133,149,149,149,149,149,149,129,145,145,145,145],[0,0,0,133,149,149,149,149,149,149,129,145,145,145,145],[0,0,0,134,150,150,150,150,150,150,129,145,145,145,145],[0,0,0,0,0,0,0,0,0,0,129,145,145,145,145],[0,0,0,0,0,0,0,0,0,0,129,145,145,145,145],[0,0,0,0,0,0,0,0,0,0,130,147,145,145,145],[0,0,0,0,0,0,0,0,0,0,0,129,145,145,145],[0,0,0,0,0,0,0,0,0,0,0,129,145,145,145],[0,0,0,0,0,0,0,0,0,0,0,129,145,145,145],[0,0,0,0,0,0,0,0,0,0,0,129,145,145,145],[0,0,0,0,0,0,0,0,0,0,0,129,145,145,145],[0,0,0,0,0,0,0,0,0,0,0,129,145,145,145],[0,0,0,0,0,0,0,0,0,0,0,129,145,145,145],[0,0,0,0,0,0,0,0,0,0,0,129,145,145,145],[0,0,0,0,0,0,0,0,0,0,0,129,145,145,145],[0,0,0,0,0,0,132,148,148,148,148,129,145,145,145],[0,0,0,0,0,0,133,149,149,149,149,129,145,145,145],[0,0,0,0,0,0,134,150,150,150,150,129,145,145,145],[0,0,0,0,0,0,0,0,0,0,0,129,145,145,145],[0,0,0,0,0,0,0,0,0,0,0,129,145,145,145],[0,0,0,0,0,0,0,0,0,0,0,129,145,145,145],[0,0,0,0,0,0,0,0,0,0,0,129,145,145,145],[0,0,0,0,0,0,0,0,0,0,0,129,145,145,145],[0,0,0,0,0,0,0,0,0,0,0,129,145,145,145],[0,0,0,0,0,0,0,0,0,0,0,129,145,145,145],[0,0,0,0,0,0,0,0,0,0,0,129,145,145,145],[0,0,0,0,0,0,0,0,0,0,0,129,145,145,145],[0,0,0,0,0,0,0,0,0,0,0,129,145,145,145],[0,0,0,0,0,0,132,148,148,148,148,129,145,145,145],[0,0,0,0,0,0,133,149,149,149,149,129,145,145,145],[0,0,0,0,0,0,133,149,149,149,149,129,145,145,145],[0,0,16,0,0,0,133,149,149,149,149,129,145,145,145],[0,0,21,0,0,0,133,149,149,149,149,129,145,145,145],[0,0,16,0,0,0,134,150,150,150,150,129,145,145,145],[0,0,0,0,0,0,0,0,0,0,0,129,145,145,145],[0,0,0,0,0,0,0,0,0,0,0,129,145,145,145],[0,0,0,0,0,0,0,0,0,0,0,129,145,145,145],[0,0,0,0,0,0,0,0,0,0,0,129,145,145,145],[0,0,0,0,0,0,0,0,0,0,0,129,145,145,145],[0,132,148,148,148,148,148,148,148,148,148,129,145,145,145],[0,133,149,149,149,149,180,148,148,148,148,129,145,145,145],[0,133,149,149,149,149,133,149,149,149,149,129,145,145,145],[0,133,149,149,149,149,133,149,149,149,149,129,145,145,145],[0,133,149,149,149,149,133,149,149,149,149,129,145,145,145],[0,133,149,149,149,149,182,150,150,150,150,129,145,145,145],[0,134,150,150,150,150,150,150,150,150,150,129,145,145,145],[0,0,0,0,0,0,0,0,0,0,0,129,145,145,145],[0,0,0,0,0,0,0,0,0,0,0,129,145,145,145],[0,0,0,0,0,0,0,0,0,0,0,129,145,145,145],[0,0,0,0,0,0,0,0,0,0,0,129,145,145,145],[0,0,0,0,0,0,0,0,0,0,0,129,145,145,145],[0,0,0,0,0,0,0,0,0,0,0,129,145,145,145],[0,0,0,0,0,0,0,0,0,0,0,129,145,145,145],[0,0,0,0,0,0,0,0,0,0,0,129,145,145,145],[0,0,0,0,0,0,0,132,148,148,148,129,145,145,145],[0,0,0,0,0,0,0,133,149,149,149,129,145,145,145],[0,0,0,21,0,0,0,133,149,149,149,129,145,145,145],[0,0,0,17,0,34,0,133,149,149,149,129,145,145,145],[0,0,0,17,0,34,0,133,149,149,149,129,145,145,145],[0,0,0,16,0,34,0,134,150,150,150,129,145,145,145],[0,0,0,0,0,0,0,0,0,0,0,129,145,145,145],[0,0,0,0,0,0,0,0,0,0,0,129,145,145,145],[0,0,0,0,0,0,0,0,0,0,0,129,145,145,145],[0,0,0,0,0,0,0,0,0,0,0,130,146,147,145],[0,0,0,0,0,0,0,0,0,0,0,0,0,129,145],[0,0,0,0,0,0,0,0,0,0,0,0,0,129,145],[0,0,0,0,0,0,0,0,0,0,0,0,0,129,145],[0,0,0,0,0,0,0,0,0,0,0,0,0,129,145],[0,0,0,0,0,0,0,0,132,148,148,148,148,129,145],[0,0,0,0,16,0,34,0,133,149,149,149,149,129,145],[0,0,0,0,16,0,34,0,133,149,149,149,149,129,145],[0,0,0,0,16,0,34,0,133,149,149,149,149,129,145],[0,0,0,0,0,0,34,0,133,149,149,149,149,129,145],[0,0,0,0,0,0,34,0,133,149,149,149,149,129,145],[0,0,0,0,0,0,34,0,134,150,150,150,150,129,145],[0,0,0,0,0,0,0,0,0,0,0,0,0,129,145],[0,0,0,0,0,0,0,0,0,0,0,0,0,129,145],[0,0,0,0,0,0,0,0,0,0,0,0,0,129,145],[0,0,0,0,0,0,0,0,0,0,0,0,0,129,145],[0,0,0,0,0,0,0,0,0,0,0,0,0,129,145],[0,0,0,0,0,0,0,0,0,0,0,0,0,129,145],[0,0,0,132,148,148,148,148,148,148,148,148,148,129,145],[0,0,0,133,149,149,149,149,180,148,148,148,148,129,145],[0,0,0,133,149,149,149,149,133,149,149,149,149,129,145],[0,0,0,133,149,149,149,149,133,149,149,149,149,129,145],[0,0,0,133,149,149,149,149,133,149,149,149,149,129,145],[0,0,0,133,149,149,149,149,182,150,150,150,150,129,145],[0,0,0,134,150,150,150,150,150,150,150,150,150,129,145],[0,0,0,0,0,0,0,0,0,0,0,0,0,129,145],[0,0,0,0,0,0,0,0,0,0,0,0,0,129,145],[0,0,0,0,0,0,0,0,0,0,0,0,0,129,145],[0,0,0,0,0,0,0,0,0,0,0,0,0,129,145],[0,0,0,0,0,0,0,0,0,0,128,144,144,131,145],[0,0,0,0,0,0,0,0,0,0,129,145,145,145,145],[0,0,0,0,0,0,0,0,0,0,129,145,145,145,145],[0,0,0,0,0,0,0,132,148,148,129,145,145,145,145],[0,0,0,0,0,0,0,133,149,149,129,145,145,145,145],[0,0,0,0,0,0,0,133,149,149,129,145,145,145,145],[0,0,0,0,0,0,0,133,149,149,129,145,145,145,145],[0,0,0,0,0,0,0,133,149,149,129,145,145,145,145],[0,0,0,0,0,0,0,133,149,149,129,145,145,145,145],[0,0,0,0,0,0,0,134,150,150,129,145,145,145,145],[0,0,0,0,0,0,0,0,0,0,129,145,145,145,145],[0,0,0,0,0,0,0,0,0,0,129,145,145,145,145],[0,0,0,0,0,0,0,0,0,0,129,145,145,145,145],[0,0,0,0,0,0,0,0,0,0,129,145,145,145,145],[0,0,0,0,0,0,0,132,148,148,129,145,145,145,145],[0,0,0,0,0,0,0,133,149,149,129,145,145,145,145],[0,0,0,0,0,0,0,134,150,150,129,145,145,145,145],[0,0,0,0,0,0,0,0,0,0,129,145,145,145,145],[0,0,0,0,0,0,0,0,0,0,129,145,145,145,145],[0,0,0,0,0,0,0,0,0,0,129,145,145,145,145],[0,0,0,0,0,0,0,0,0,0,129,145,145,145,145],[0,0,0,0,0,0,0,0,0,0,129,145,145,145,145],[0,0,0,0,0,0,0,0,0,0,129,145,145,145,145],[0,0,0,0,0,0,0,0,0,0,130,146,147,145,145],[0,0,0,0,0,0,0,0,0,0,0,0,129,145,145],[0,0,0,0,0,0,0,0,0,0,0,0,129,145,145],[0,0,0,0,0,0,0,0,0,0,0,0,129,145,145],[0,0,0,132,148,148,148,148,148,148,148,148,129,145,145],[0,0,0,133,149,149,149,149,149,149,149,149,129,145,145],[0,0,0,133,149,149,149,149,149,149,149,149,129,145,145],[0,34,0,133,149,149,149,149,149,149,149,149,129,145,145],[0,34,0,134,150,150,150,150,150,150,150,150,129,145,145],[0,0,0,0,0,0,0,0,0,0,0,0,129,145,145],[0,0,0,0,0,0,0,0,0,0,0,0,129,145,145],[0,0,0,0,0,0,0,0,132,148,148,148,129,145,145],[0,0,0,0,0,0,0,0,133,149,149,149,129,145,145],[0,0,0,0,0,0,0,0,133,149,149,149,129,145,145],[0,0,0,0,0,0,0,0,133,149,149,149,129,145,145],[0,0,0,0,0,0,0,0,133,149,149,149,129,145,145],[0,0,0,0,0,0,0,0,134,150,150,150,129,145,145],[0,0,0,0,0,0,0,0,0,0,0,0,129,145,145],[0,0,0,0,0,0,0,0,0,0,0,0,129,145,145],[0,0,0,0,0,0,0,0,0,0,128,144,131,145,145],[0,0,0,0,0,0,0,0,0,0,129,145,145,145,145],[0,0,0,0,0,132,148,148,148,148,129,145,145,145,145],[0,0,0,0,0,133,149,149,149,149,129,145,145,145,145],[0,0,0,0,0,133,149,149,149,149,129,145,145,145,145],[0,0,0,0,0,134,150,150,150,150,129,145,145,145,145],[0,0,0,0,0,0,0,0,0,0,129,145,145,145,145],[0,0,0,0,0,0,0,0,0,0,129,145,145,145,145],[0,0,0,0,0,0,0,0,0,0,129,145,145,145,145],[0,0,0,0,0,0,0,0,0,0,129,145,145,145,145],[0,0,0,0,0,0,0,0,0,0,130,146,147,145,145],[0,0,0,0,0,0,0,0,0,0,0,0,129,145,145],[0,0,0,0,0,0,0,0,0,0,0,0,129,145,145],[0,0,0,0,0,34,0,132,148,148,148,148,129,145,145],[0,0,0,0,0,34,0,133,149,149,149,149,129,145,145],[0,0,0,21,0,34,0,133,149,149,149,149,129,145,145],[0,0,0,21,0,34,0,133,149,149,149,149,129,145,145],[0,0,0,16,0,0,0,133,149,149,149,149,129,145,145],[0,0,0,21,0,0,0,133,149,149,149,149,129,145,145],[0,0,0,16,0,0,0,134,150,150,150,150,129,145,145],[0,0,0,0,0,0,0,0,0,0,0,0,129,145,145],[0,0,0,0,0,0,0,0,0,0,0,0,129,145,145],[0,0,0,0,0,0,0,0,0,0,128,144,131,145,145],[0,0,0,0,0,0,0,0,0,0,129,145,145,145,145],[0,0,0,0,0,0,0,0,0,0,129,145,145,145,145],[0,0,0,0,0,0,0,0,0,0,129,145,145,145,145],[0,0,0,0,0,0,0,0,0,0,129,145,145,145,145],[0,0,0,0,0,0,0,0,0,0,129,145,145,145,145],[0,0,0,0,0,0,0,0,0,0,129,145,145,145,145],[0,0,0,0,0,0,0,0,0,0,129,145,145,145,145],[0,0,0,0,0,132,148,148,148,148,129,145,145,145,145],[0,0,0,0,0,133,149,149,149,149,129,145,145,145,145],[0,0,0,0,0,133,149,149,149,149,129,145,145,145,145],[0,0,0,0,0,133,149,149,149,149,129,145,145,145,145],[0,0,0,0,0,134,150,150,150,150,129,145,145,145,145],[0,0,0,0,0,0,0,0,0,0,129,145,145,145,145],[0,0,0,0,0,0,0,0,0,0,129,145,145,145,145],[0,0,0,0,0,0,0,0,0,0,129,145,145,145,145],[0,0,0,0,0,0,0,0,0,0,130,146,147,145,145],[0,0,0,0,0,0,0,0,0,0,0,0,129,145,145],[0,0,0,0,0,0,0,0,0,0,0,0,129,145,145],[0,0,0,0,0,0,0,0,0,0,0,0,129,145,145],[0,0,0,0,0,0,0,0,0,0,0,0,129,145,145],[0,0,0,0,0,0,0,0,0,0,0,0,129,145,145],[0,0,0,0,0,0,0,0,0,0,0,0,129,145,145],[0,0,0,0,0,0,0,0,0,0,0,0,129,145,145],[0,0,0,0,0,0,0,0,0,132,148,148,129,145,145],[0,0,0,0,0,0,0,0,0,133,149,149,129,145,145],[0,0,0,0,0,16,0,0,0,133,149,149,129,145,145],[0,0,0,0,0,16,0,0,0,133,149,149,129,145,145],[0,0,0,0,0,17,0,0,0,134,150,150,129,145,145],[0,0,0,0,0,0,0,0,0,0,0,0,129,145,145],[0,0,0,0,0,0,0,0,0,0,0,0,129,145,145],[0,0,0,0,0,0,0,0,0,0,0,0,129,145,145],[0,0,0,0,0,0,0,0,0,0,0,0,129,145,145],[0,0,0,0,0,0,0,0,0,0,0,0,129,145,145],[0,0,0,0,0,0,0,0,0,0,0,0,129,145,145],[0,0,0,0,0,0,0,0,0,0,0,0,129,145,145],[0,0,0,0,0,0,0,0,0,0,0,0,129,145,145],[0,0,0,0,0,0,0,0,0,0,0,0,129,145,145],[0,0,0,0,0,0,0,0,0,0,0,0,129,145,145],[0,0,0,0,0,0,0,0,0,0,0,0,129,145,145],[0,0,0,0,0,0,0,0,0,0,0,0,129,145,145],[0,0,0,0,0,0,0,0,0,0,0,0,129,145,145],[0,0,0,0,0,0,0,0,0,0,0,0,129,145,145],[0,0,0,0,0,0,0,0,0,0,0,0,129,145,145],[0,0,0,0,0,0,0,0,0,0,0,0,129,145,145],[0,0,0,0,0,0,0,0,0,0,0,0,129,145,145],[0,0,0,0,0,0,0,0,0,0,0,0,129,145,145],[0,0,0,0,0,0,0,0,0,0,0,0,129,145,145],[0,0,0,0,0,0,0,0,0,0,0,0,129,145,145],[0,0,0,0,0,0,0,0,0,0,0,0,129,145,145],[0,0,0,0,0,0,0,0,0,0,0,0,129,145,145],[0,0,0,0,0,0,0,0,0,0,0,0,129,145,145],[0,0,0,0,0,0,0,0,0,0,0,0,129,145,145],[0,0,0,0,0,0,0,0,0,0,0,0,129,145,145],[0,0,0,0,0,0,0,0,0,0,0,0,129,145,145],[0,0,0,0,0,0,0,0,0,0,0,0,129,145,145],[0,0,0,0,0,0,0,0,0,0,0,0,129,145,145],[0,0,0,0,0,0,0,0,0,0,0,0,129,145,145],[0,0,0,0,0,0,0,0,0,0,0,0,129,145,145],[0,0,0,0,0,0,0,0,0,0,0,0,129,145,145],[0,0,0,0,0,0,0,0,0,0,0,0,129,145,145],[0,0,0,0,0,0,0,0,0,0,0,0,129,145,145],[0,0,0,0,0,0,0,0,0,0,0,0,129,145,145],[0,0,0,0,0,0,0,0,0,0,0,0,129,145,145],[0,0,0,0,0,0,0,0,0,0,0,0,129,145,145],[0,0,0,0,0,0,0,0,0,0,0,0,129,145,145],[0,0,0,0,0,0,0,0,0,0,0,0,129,145,145],[0,0,0,0,0,0,0,0,0,0,0,0,129,145,145],[0,0,0,0,0,0,0,0,0,0,0,0,129,145,145],[0,0,0,0,0,0,0,0,0,0,0,0,129,145,145],[0,0,0,0,0,0,0,0,0,0,0,0,129,145,145],[0,0,0,0,0,0,0,0,0,0,0,0,129,145,145],[0,0,0,0,0,0,0,0,0,0,0,0,129,145,145],[0,0,0,0,0,0,0,0,0,0,0,0,129,145,145],[0,0,0,0,0,0,0,0,0,0,0,0,129,145,145],[0,0,0,0,0,0,0,0,0,0,0,0,129,145,145],[0,0,0,0,0,0,0,0,0,0,0,0,129,145,145],[0,0,0,0,0,0,0,0,0,0,0,0,129,145,145],[0,0,0,0,0,0,0,0,0,0,0,0,129,145,145],[0,0,0,0,0,0,0,0,0,0,0,0,129,145,145],[0,0,0,0,0,0,0,0,0,0,0,0,129,145,145],[0,0,0,0,0,0,0,0,0,0,0,0,129,145,145],[0,0,0,0,0,0,0,0,0,0,0,0,129,145,145],[0,0,0,0,0,0,0,0,0,0,0,0,129,145,145],[0,0,0,0,0,0,0,0,0,0,0,0,129,145,145],[0,0,0,0,0,0,0,0,0,0,0,0,129,145,145],[0,0,0,0,0,0,0,0,0,0,0,0,129,145,145],[0,0,0,0,0,0,0,0,0,0,0,0,129,145,145],[0,0,0,0,0,0,0,0,0,0,0,0,129,145,145],[0,0,0,0,0,0,0,0,0,0,0,0,129,145,145],[0,0,0,0,0,0,0,0,0,0,0,0,129,145,145],[0,0,0,0,0,0,0,0,0,0,0,0,129,145,145],[0,0,0,0,0,0,0,0,0,0,0,0,129,145,145],[0,0,0,0,0,0,0,0,0,0,0,0,129,145,145]],"Data":[[0,0,0,0,0,0,0,0,0,0,0,0,0,0,0],[0,0,0,0,0,0,0,0,0,0,0,0,0,0,0],[0,0,0,0,0,0,0,0,0,0,0,0,0,0,0],[0,0,0,0,0,0,0,0,0,0,0,0,0,0,0],[0,0,0,0,0,0,0,0,0,0,0,0,0,0,0],[0,0,0,0,0,0,0,0,0,0,0,0,0,0,0],[0,0,0,0,0,0,0,0,0,0,0,0,0,0,0],[0,0,0,0,0,0,0,0,0,0,0,0,0,0,0],[0,0,0,0,0,0,0,0,0,0,0,0,0,0,0],[0,0,0,0,0,0,0,0,0,0,0,0,0,0,0],[0,0,0,0,0,0,0,0,0,0,0,0,0,0,0],[0,0,0,0,0,0,0,0,0,0,0,0,0,0,0],[0,0,0,0,0,0,0,0,0,0,0,0,0,0,0],[0,0,0,0,0,0,0,0,0,0,0,0,0,0,0],[0,0,0,0,0,0,0,0,0,0,0,0,0,0,0],[0,0,0,0,0,0,0,0,0,0,0,0,0,0,0],[0,0,0,0,0,0,0,0,0,0,0,0,0,0,0],[0,0,0,0,0,0,0,0,0,0,0,0,0,0,0],[0,0,0,0,0,0,0,0,0,0,0,0,0,0,0],[0,0,0,0,0,0,0,0,0,0,0,0,0,0,0],[0,0,0,0,0,0,0,0,0,0,0,0,0,0,0],[0,0,0,0,0,0,0,0,0,0,0,0,0,0,0],[0,0,0,0,0,0,0,0,0,0,0,0,0,0,0],[0,0,0,0,0,0,0,0,0,0,0,0,0,0,0],[0,0,0,0,0,0,0,0,0,0,0,0,0,0,0],[0,0,0,0,0,0,0,0,0,0,0,0,0,0,0],[0,0,0,0,0,0,0,0,0,0,0,0,0,0,0],[0,0,0,0,0,0,0,0,0,0,0,0,0,0,0],[0,0,0,0,0,0,0,0,0,0,0,0,0,0,0],[0,0,0,0,0,0,0,0,0,0,0,0,0,0,0],[0,0,0,0,0,0,0,0,0,0,0,0,0,0,0],[0,0,0,0,0,0,0,0,0,0,0,0,0,0,0],[0,0,0,0,0,0,0,0,0,0,0,0,0,0,0],[0,0,0,0,0,0,0,0,0,0,0,0,0,0,0],[0,0,0,0,0,0,0,0,0,0,0,0,0,0,0],[0,0,0,0,0,0,0,0,0,0,0,0,0,0,0],[0,0,0,0,0,0,0,0,0,0,0,0,0,0,0],[0,0,0,0,0,0,0,0,0,0,0,0,0,0,0],[0,0,0,0,0,0,0,0,0,0,0,0,0,0,0],[0,0,0,0,0,0,0,0,0,0,0,0,0,0,0],[0,0,0,0,0,0,0,0,0,0,0,0,0,0,0],[0,0,0,0,0,0,0,0,0,0,0,0,0,0,0],[0,0,0,0,0,0,0,0,0,0,0,0,0,0,0],[0,0,0,0,0,0,0,0,0,0,0,0,0,0,0],[0,0,0,0,0,0,0,0,0,0,0,0,0,0,0],[0,0,0,0,0,0,0,0,0,0,0,0,0,0,0],[0,0,0,0,0,0,0,0,0,0,0,0,0,0,0],[0,0,0,0,0,0,0,0,0,0,0,0,0,0,0],[0,0,0,0,0,0,0,0,0,0,0,0,0,0,0],[0,0,0,0,0,0,0,0,0,0,0,0,0,0,0],[0,0,0,0,0,0,0,0,0,0,0,0,0,0,0],[0,0,0,0,0,0,0,0,0,0,0,0,0,0,0],[0,0,0,0,0,0,0,0,0,0,0,0,0,0,0],[0,0,0,0,0,0,0,0,0,0,0,0,0,0,0],[0,0,0,0,0,0,0,0,0,0,0,0,0,0,0],[0,0,0,0,0,0,0,0,0,0,0,0,0,0,0],[0,0,0,0,0,0,0,0,0,0,0,0,0,0,0],[0,0,0,0,0,0,0,0,0,0,0,0,0,0,0],[0,0,0,0,0,0,0,0,0,0,0,0,0,0,0],[0,0,0,0,0,0,0,0,0,0,0,0,0,0,0],[0,0,0,0,0,0,0,0,0,0,0,0,0,0,0],[0,0,0,0,0,0,0,0,0,0,0,0,0,0,0],[0,0,0,0,0,0,0,0,0,0,0,0,0,0,0],[0,0,0,0,0,0,0,0,0,0,0,0,0,0,0],[0,0,0,0,0,0,0,0,0,0,0,0,0,0,0],[0,0,0,0,0,0,0,0,0,0,0,0,0,0,0],[0,0,0,0,0,0,0,0,0,0,0,0,0,0,0],[0,0,0,0,0,0,0,0,0,0,0,0,0,0,0],[0,0,0,0,0,0,0,0,0,0,0,0,0,0,0],[0,0,0,0,0,0,0,0,0,0,0,0,0,0,0],[0,0,0,0,0,0,0,0,0,0,0,0,0,0,0],[0,0,0,0,0,0,0,0,0,0,0,0,0,0,0],[0,0,0,0,0,0,0,0,0,0,0,0,0,0,0],[0,0,0,0,0,0,0,0,0,0,0,0,0,0,0],[0,0,0,0,0,0,0,0,0,0,0,0,0,0,0],[0,0,0,0,0,0,0,0,0,0,0,0,0,0,0],[0,0,0,0,0,0,0,0,0,0,0,0,0,0,0],[0,0,0,0,0,0,0,0,0,0,0,0,0,0,0],[0,0,0,0,0,0,0,0,0,0,0,0,0,0,0],[0,0,0,0,0,0,0,0,0,0,0,0,0,0,0],[0,0,0,0,0,0,0,0,0,0,0,0,0,0,0],[0,0,0,0,0,0,0,0,0,0,0,0,0,0,0],[0,0,0,0,0,0,0,0,0,0,0,0,0,0,0],[0,0,0,0,0,0,0,0,0,0,0,0,0,0,0],[0,0,0,0,0,0,0,0,0,0,0,0,0,0,0],[0,0,0,0,0,0,0,0,0,0,0,0,0,0,0],[0,0,0,0,0,0,0,0,0,0,0,0,0,0,0],[0,0,0,0,0,0,0,0,0,0,0,0,0,0,0],[0,0,0,0,0,0,0,0,0,0,0,0,0,0,0],[0,0,0,0,0,0,0,0,0,0,0,0,0,0,0],[0,0,0,0,0,0,0,0,0,0,0,0,0,0,0],[0,0,0,0,0,0,0,0,0,0,0,0,0,0,0],[0,0,0,0,0,0,0,0,0,0,0,0,0,0,0],[0,0,0,0,0,0,0,0,0,0,0,0,0,0,0],[0,0,0,0,0,0,0,0,0,0,0,0,0,0,0],[0,0,0,0,0,0,0,0,0,0,0,0,0,0,0],[0,0,0,0,0,0,0,0,0,0,0,0,0,0,0],[0,0,0,0,0,0,0,0,0,0,0,0,0,0,0],[0,0,0,0,0,0,0,0,0,0,0,0,0,0,0],[0,0,0,0,0,0,0,0,0,0,0,0,0,0,0],[0,0,0,0,0,0,0,0,0,0,0,0,0,0,0],[0,0,0,0,0,0,0,0,0,0,0,0,0,0,0],[0,0,0,0,0,0,0,0,0,0,0,0,0,0,0],[0,0,0,0,0,0,0,0,0,0,0,0,0,0,0],[0,0,0,0,0,0,0,0,0,0,0,0,0,0,0],[0,0,0,0,0,0,0,0,0,0,0,0,0,0,0],[0,0,0,0,0,0,0,0,0,0,0,0,0,0,0],[0,0,0,0,0,0,0,0,0,0,0,0,0,0,0],[0,0,0,0,0,0,0,0,0,0,0,0,0,0,0],[0,0,0,0,0,0,0,0,0,0,0,0,0,0,0],[0,0,0,0,0,0,0,0,0,0,0,0,0,0,0],[0,0,0,0,0,0,0,0,0,0,0,0,0,0,0],[0,0,0,0,0,0,0,0,0,0,0,0,0,0,0],[0,0,0,0,0,0,0,0,0,0,0,0,0,0,0],[0,0,0,0,0,0,0,0,0,0,0,0,0,0,0],[0,0,0,0,0,0,0,0,0,0,0,0,0,0,0],[0,0,0,0,0,0,0,0,0,0,0,0,0,0,0],[0,0,0,0,0,0,0,0,0,0,0,0,0,0,0],[0,0,0,0,0,0,0,0,0,0,0,0,0,0,0],[0,0,0,0,0,0,0,0,0,0,0,0,0,0,0],[0,0,0,0,0,0,0,0,0,0,0,0,0,0,0],[0,0,0,0,0,0,0,0,0,0,0,0,0,0,0],[0,0,0,0,0,0,0,0,0,0,0,0,0,0,0],[0,0,0,0,0,0,0,0,0,0,0,0,0,0,0],[0,0,0,0,0,0,0,0,0,0,0,0,0,0,0],[0,0,0,0,0,0,0,0,0,0,0,0,0,0,0],[0,0,0,0,0,0,0,0,0,0,0,0,0,0,0],[0,0,0,0,0,0,0,0,0,0,0,0,0,0,0],[0,0,0,0,0,0,0,0,0,0,0,0,0,0,0],[0,0,0,0,0,0,0,0,0,0,0,0,0,0,0],[0,0,0,0,0,0,0,0,0,0,0,0,0,0,0],[0,0,0,0,0,0,0,0,0,0,0,0,0,0,0],[0,0,0,0,0,0,0,0,0,0,0,0,0,0,0],[0,0,0,0,0,0,0,0,0,0,0,0,0,0,0],[0,0,0,0,0,0,0,0,0,0,0,0,0,0,0],[0,0,0,0,0,0,0,0,0,0,0,0,0,0,0],[0,0,0,0,0,0,0,0,0,0,0,0,0,0,0],[0,0,0,0,0,0,0,0,0,0,0,0,0,0,0],[0,0,0,0,0,0,0,0,0,0,0,0,0,0,0],[0,0,0,0,0,0,0,0,0,0,0,0,0,0,0],[0,0,0,0,0,0,0,0,0,0,0,0,0,0,0],[0,0,0,0,0,0,0,0,0,0,0,0,0,0,0],[0,0,0,0,0,0,0,0,0,0,0,0,0,0,0],[0,0,0,0,0,0,0,0,0,0,0,0,0,0,0],[0,0,0,0,0,0,0,0,0,0,0,0,0,0,0],[0,0,0,0,0,0,0,0,0,0,0,0,0,0,0],[0,0,0,0,0,0,0,0,0,0,0,0,0,0,0],[0,0,0,0,0,0,0,0,0,0,0,0,0,0,0],[0,0,0,0,0,0,0,0,0,0,0,0,0,0,0],[0,0,0,0,0,0,0,0,0,0,0,0,0,0,0],[0,0,0,0,0,0,0,0,0,0,0,0,0,0,0],[0,0,0,0,0,0,0,0,0,0,0,0,0,0,0],[0,0,0,0,0,0,0,0,0,0,0,0,0,0,0],[0,0,0,0,0,0,0,0,0,0,0,0,0,0,0],[0,0,0,0,0,0,0,0,0,0,0,0,0,0,0],[0,0,0,0,0,0,0,0,0,0,0,0,0,0,0],[0,0,0,0,0,0,0,0,0,0,0,0,0,0,0],[0,0,0,0,0,0,0,0,0,0,0,0,0,0,0],[0,0,0,0,0,0,0,0,0,0,0,0,0,0,0],[0,0,0,0,0,0,0,0,0,0,0,0,0,0,0],[0,0,0,0,0,0,0,0,0,0,0,0,0,0,0],[0,0,0,0,0,0,0,0,0,0,0,0,0,0,0],[0,0,0,0,0,0,0,0,0,0,0,0,0,0,0],[0,0,0,0,0,0,0,0,0,0,0,0,0,0,0],[0,0,0,0,0,0,0,0,0,0,0,0,0,0,0],[0,0,0,0,0,0,0,0,0,0,0,0,0,0,0],[0,0,0,0,0,0,0,0,0,0,0,0,0,0,0],[0,0,0,0,0,0,0,0,0,0,0,0,0,0,0],[0,0,0,0,0,0,0,0,0,0,0,0,0,0,0],[0,0,0,0,0,0,0,0,0,0,0,0,0,0,0],[0,0,0,0,0,0,0,0,0,0,0,0,0,0,0],[0,0,0,0,0,0,0,0,0,0,0,0,0,0,0],[0,0,0,0,0,0,0,0,0,0,0,0,0,0,0],[0,0,0,0,0,0,0,0,0,0,0,0,0,0,0],[0,0,0,0,0,0,0,0,0,0,0,0,0,0,0],[0,0,0,0,0,0,0,0,0,0,0,0,0,0,0],[0,0,0,0,0,0,0,0,0,0,0,0,0,0,0],[0,0,0,0,0,0,0,0,0,0,0,0,0,0,0],[0,0,0,0,0,0,0,0,0,0,0,0,0,0,0],[0,0,0,0,0,0,0,0,0,0,0,0,0,0,0],[0,0,0,0,0,0,0,0,0,0,0,0,0,0,0],[0,0,0,0,0,0,0,0,0,0,0,0,0,0,0],[0,0,0,0,0,0,0,0,0,0,0,0,0,0,0],[0,0,0,0,0,0,0,0,0,0,0,0,0,0,0],[0,0,0,0,0,0,0,0,0,0,0,0,0,0,0],[0,0,0,0,0,0,0,0,0,0,0,0,0,0,0],[0,0,0,0,0,0,0,0,0,0,0,0,0,0,0],[0,0,0,0,0,0,0,0,0,0,0,0,0,0,0],[0,0,0,0,0,0,0,0,0,0,0,0,0,0,0],[0,0,0,0,0,0,0,0,0,0,0,0,0,0,0],[0,0,0,0,0,0,0,0,0,0,0,0,0,0,0],[0,0,0,0,0,0,0,0,0,0,0,0,0,0,0],[0,0,0,0,0,0,0,0,0,0,0,0,0,0,0],[0,0,0,0,0,0,0,0,0,0,0,0,0,0,0],[0,0,0,0,0,0,0,0,0,0,0,0,0,0,0],[0,0,0,0,0,0,0,0,0,0,0,0,0,0,0],[0,0,0,0,0,0,0,0,0,0,0,0,0,0,0],[0,0,0,0,0,0,0,0,0,0,0,0,0,0,0],[0,0,0,0,0,0,0,0,0,0,0,0,0,0,0],[0,0,0,0,0,0,0,0,0,0,0,0,0,0,0],[0,0,0,0,0,0,0,0,0,0,0,0,0,0,0],[0,0,0,0,0,0,0,0,0,0,0,0,0,0,0],[0,0,0,0,0,0,0,0,0,0,0,0,0,0,0],[0,0,0,0,0,0,0,0,0,0,0,0,0,0,0],[0,0,0,0,0,0,0,0,0,0,0,0,0,0,0],[0,0,0,0,0,0,0,0,0,0,0,0,0,0,0],[0,0,0,0,0,0,0,0,0,0,0,0,0,0,0],[0,0,0,0,0,0,0,0,0,0,0,0,0,0,0],[0,0,0,0,0,0,0,0,0,0,0,0,0,0,0],[0,0,0,0,0,0,0,0,0,0,0,0,0,0,0],[0,0,0,0,0,0,0,0,0,0,0,0,0,0,0],[0,0,0,0,0,0,0,0,0,0,0,0,0,0,0],[0,0,0,0,0,0,0,0,0,0,0,0,0,0,0],[0,0,0,0,0,0,0,0,0,0,0,0,0,0,0],[0,0,0,0,0,0,0,0,0,0,0,0,0,0,0],[0,0,0,0,0,0,0,0,0,0,0,0,0,0,0],[0,0,0,0,0,0,0,0,0,0,0,0,0,0,0],[0,0,0,0,0,0,0,0,0,0,0,0,0,0,0],[0,0,0,0,0,0,0,0,0,0,0,0,0,0,0],[0,0,0,0,0,0,0,0,0,0,0,0,0,0,0],[0,0,0,0,0,0,0,0,0,0,0,0,0,0,0],[0,0,0,0,0,0,0,0,0,0,0,0,0,0,0],[0,0,0,0,0,0,0,0,0,0,0,0,0,0,0],[0,0,0,0,0,0,0,0,0,0,0,0,0,0,0],[0,0,0,0,0,0,0,0,0,0,0,0,0,0,0],[0,0,0,0,0,0,0,0,0,0,0,0,0,0,0],[0,0,0,0,0,0,0,0,0,0,0,0,0,0,0],[0,0,0,0,0,0,0,0,0,0,0,0,0,0,0],[0,0,0,0,0,0,0,0,0,0,0,0,0,0,0],[0,0,0,0,0,0,0,0,0,0,0,0,0,0,0],[0,0,0,0,0,0,0,0,0,0,0,0,0,0,0],[0,0,0,0,0,0,0,0,0,0,0,0,0,0,0],[0,0,0,0,0,0,0,0,0,0,0,0,0,0,0],[0,0,0,0,0,0,0,0,0,0,0,0,0,0,0],[0,0,0,0,0,0,0,0,0,0,0,0,0,0,0],[0,0,0,0,0,0,0,0,0,0,0,0,0,0,0],[0,0,0,0,0,0,0,0,0,0,0,0,0,0,0],[0,0,0,0,0,0,0,0,0,0,0,0,0,0,0],[0,0,0,0,0,0,0,0,0,0,0,0,0,0,0],[0,0,0,0,0,0,0,0,0,0,0,0,0,0,0],[0,0,0,0,0,0,0,0,0,0,0,0,0,0,0],[0,0,0,0,0,0,0,0,0,0,0,0,0,0,0],[0,0,0,0,0,0,0,0,0,0,0,0,0,0,0],[0,0,0,0,0,0,0,0,0,0,0,0,0,0,0],[0,0,0,0,0,0,0,0,0,0,0,0,0,0,0],[0,0,0,0,0,0,0,0,0,0,0,0,0,0,0],[0,0,0,0,0,0,0,0,0,0,0,0,0,0,0],[0,0,0,0,0,0,0,0,0,0,0,0,0,0,0],[0,0,0,0,0,0,0,0,0,0,0,0,0,0,0],[0,0,0,0,0,0,0,0,0,0,0,0,0,0,0],[0,0,0,0,0,0,0,0,0,0,0,0,0,0,0],[0,0,0,0,0,0,0,0,0,0,0,0,0,0,0],[0,0,0,0,0,0,0,0,0,0,0,0,0,0,0],[0,0,0,0,0,0,0,0,0,0,0,0,0,0,0],[0,0,0,0,0,0,0,0,0,0,0,0,0,0,0],[0,0,0,0,0,0,0,0,0,0,0,0,0,0,0],[0,0,0,0,0,0,0,0,0,0,0,0,0,0,0],[0,0,0,0,0,0,0,0,0,0,0,0,0,0,0],[0,0,0,0,0,0,0,0,0,0,0,0,0,0,0],[0,0,0,0,0,0,0,0,0,0,0,0,0,0,0],[0,0,0,0,0,0,0,0,0,0,0,0,0,0,0],[0,0,0,0,0,0,0,0,0,0,0,0,0,0,0],[0,0,0,0,0,0,0,0,0,0,0,0,0,0,0],[0,0,0,0,0,0,0,0,0,0,0,0,0,0,0],[0,0,0,0,0,0,0,0,0,0,0,0,0,0,0],[0,0,0,0,0,0,0,0,0,0,0,0,0,0,0],[0,0,0,0,0,0,0,0,0,0,0,0,0,0,0],[0,0,0,0,0,0,0,0,0,0,0,0,0,0,0],[0,0,0,0,0,0,0,0,0,0,0,0,0,0,0],[0,0,0,0,0,0,0,0,0,0,0,0,0,0,0],[0,0,0,0,0,0,0,0,0,0,0,0,0,0,0],[0,0,0,0,0,0,0,0,0,0,0,0,0,0,0],[0,0,0,0,0,0,0,0,0,0,0,0,0,0,0],[0,0,0,0,0,0,0,0,0,0,0,0,0,0,0],[0,0,0,0,0,0,0,0,0,0,0,0,0,0,0],[0,0,0,0,0,0,0,0,0,0,0,0,0,0,0],[0,0,0,0,0,0,0,0,0,0,0,0,0,0,0],[0,0,0,0,0,0,0,0,0,0,0,0,0,0,0],[0,0,0,0,0,0,0,0,0,0,0,0,0,0,0],[0,0,0,0,0,0,0,0,0,0,0,0,0,0,0],[0,0,0,0,0,0,0,0,0,0,0,0,0,0,0],[0,0,0,0,0,0,0,0,0,0,0,0,0,0,0],[0,0,0,0,0,0,0,0,0,0,0,0,0,0,0],[0,0,0,0,0,0,0,0,0,0,0,0,0,0,0],[0,0,0,0,0,0,0,0,0,0,0,0,0,0,0],[0,0,0,0,0,0,0,0,0,0,0,0,0,0,0],[0,0,0,0,0,0,0,0,0,0,0,0,0,0,0],[0,0,0,0,0,0,0,0,0,0,0,0,0,0,0],[0,0,0,0,0,0,0,0,0,0,0,0,0,0,0],[0,0,0,0,0,0,0,0,0,0,0,0,0,0,0],[0,0,0,0,0,0,0,0,0,0,0,0,0,0,0],[0,0,0,0,0,0,0,0,0,0,0,0,0,0,0],[0,0,0,0,0,0,0,0,0,0,0,0,0,0,0],[0,0,0,0,0,0,0,0,0,0,0,0,0,0,0],[0,0,0,0,0,0,0,0,0,0,0,0,0,0,0],[0,0,0,0,0,0,0,0,0,0,0,0,0,0,0],[0,0,0,0,0,0,0,0,0,0,0,0,0,0,0],[0,0,0,0,0,0,0,0,0,0,0,0,0,0,0],[0,0,0,0,0,0,0,0,0,0,0,0,0,0,0],[0,0,0,0,0,0,0,0,0,0,0,0,0,0,0],[0,0,0,0,0,0,0,0,0,0,0,0,0,0,0],[0,0,0,0,0,0,0,0,0,0,0,0,0,0,0],[0,0,0,0,0,0,0,0,0,0,0,0,0,0,0],[0,0,0,0,0,0,0,0,0,0,0,0,0,0,0],[0,0,0,0,0,0,0,0,0,0,0,0,0,0,0],[0,0,0,0,0,0,0,0,0,0,0,0,0,0,0],[0,0,0,0,0,0,0,0,0,0,0,0,0,0,0],[0,0,0,0,0,0,0,0,0,0,0,0,0,0,0],[0,0,0,0,0,0,0,0,0,0,0,0,0,0,0],[0,0,0,0,0,0,0,0,0,0,0,0,0,0,0],[0,0,0,0,0,0,0,0,0,0,0,0,0,0,0],[0,0,0,0,0,0,0,0,0,0,0,0,0,0,0],[0,0,0,0,0,0,0,0,0,0,0,0,0,0,0],[0,0,0,0,0,0,0,0,0,0,0,0,0,0,0],[0,0,0,0,0,0,0,0,0,0,0,0,0,0,0],[0,0,0,0,0,0,0,0,0,0,0,0,0,0,0],[0,0,0,0,0,0,0,0,0,0,0,0,0,0,0],[0,0,0,0,0,0,0,0,0,0,0,0,0,0,0],[0,0,0,0,0,0,0,0,0,0,0,0,0,0,0],[0,0,0,0,0,0,0,0,0,0,0,0,0,0,0]],"SpriteTemplates":[[null,null,null,null,null,null,null,null,null,null,null,null,null,null,null],[null,null,null,null,null,null,null,null,null,null,null,null,null,null,null],[null,null,null,null,null,null,null,null,null,null,null,null,null,null,null],[null,null,null,null,null,null,null,null,null,null,null,null,null,null,null],[null,null,null,null,null,null,null,null,null,null,null,null,null,null,null],[null,null,null,null,null,null,null,null,null,null,null,null,null,null,null],[null,null,null,null,null,null,null,null,null,null,null,null,null,null,null],[null,null,null,null,null,null,null,null,null,null,null,null,null,null,null],[null,null,null,null,null,null,null,null,null,null,null,null,null,null,null],[null,null,null,null,null,null,null,null,null,null,null,null,null,null,null],[null,null,null,null,null,null,null,null,null,null,null,null,null,null,null],[null,null,null,null,null,null,null,null,null,null,null,null,null,null,null],[null,null,null,null,null,null,null,null,null,null,null,null,null,null,null],[null,null,null,null,null,null,null,null,null,null,null,null,null,null,null],[null,null,null,null,null,null,null,null,null,null,null,null,null,null,null],[null,null,null,null,null,null,null,null,null,null,null,null,null,null,null],[null,null,null,null,null,null,null,null,null,null,null,null,null,null,null],[null,null,null,null,null,null,null,null,null,null,null,null,null,null,null],[null,null,null,null,null,null,null,null,null,null,null,null,null,null,null],[null,null,null,null,null,null,null,null,null,null,null,null,null,null,null],[null,null,null,null,null,null,null,null,null,null,null,null,null,null,null],[null,null,null,null,null,null,null,null,null,null,null,null,null,null,null],[null,null,null,null,null,null,null,null,null,null,null,null,null,null,null],[null,null,null,null,null,null,null,null,null,null,null,null,null,null,null],[null,null,null,null,null,null,null,null,null,null,{"Type":2,"Winged":false,"LastVisibleTick":-1,"IsDead":false,"Sprite":null},null,null,null,null],[null,null,null,null,null,null,null,null,null,null,null,null,null,null,null],[null,null,null,null,null,null,null,null,null,null,null,null,null,null,null],[null,null,null,null,null,null,null,null,null,null,null,null,null,null,null],[null,null,null,null,null,null,null,null,null,null,null,null,null,null,null],[null,null,null,null,null,null,null,null,null,null,null,null,null,null,null],[null,null,null,null,null,null,null,null,null,null,null,null,null,null,null],[null,null,null,null,null,null,null,null,null,null,null,null,null,null,null],[null,null,null,null,null,null,null,null,null,null,null,null,null,null,null],[null,null,null,null,null,null,null,null,null,null,null,null,null,null,null],[null,null,null,null,null,null,null,null,null,null,null,null,null,null,null],[null,null,null,null,null,null,null,null,null,null,null,null,null,null,null],[null,null,null,null,null,null,{"Type":2,"Winged":false,"LastVisibleTick":-1,"IsDead":false,"Sprite":null},null,null,null,null,null,null,null,null],[null,null,null,null,null,null,null,null,null,null,null,null,null,null,null],[null,null,null,null,null,null,null,null,null,null,null,null,null,null,null],[null,null,null,null,null,null,null,null,null,null,null,null,null,null,null],[null,null,null,null,null,null,null,null,null,null,null,null,null,null,null],[null,null,null,null,null,null,null,null,null,null,null,null,null,null,null],[null,null,null,null,null,null,null,null,null,null,null,null,null,null,null],[null,null,null,null,null,null,null,null,null,null,null,null,null,null,null],[null,null,null,null,null,null,null,null,null,null,null,null,null,null,null],[null,null,null,null,null,null,null,null,null,null,null,null,null,null,null],[null,null,null,null,null,null,null,null,null,null,null,null,null,null,null],[null,null,null,null,null,null,null,null,null,null,null,null,null,null,null],[null,null,null,null,null,null,null,null,null,null,null,null,null,null,null],[null,null,null,null,null,null,null,{"Type":2,"Winged":false,"LastVisibleTick":-1,"IsDead":false,"Sprite":null},null,null,{"Type":2,"Winged":false,"LastVisibleTick":-1,"IsDead":false,"Sprite":null},null,null,null,null],[null,null,null,null,null,null,null,null,null,null,null,null,null,null,null],[null,null,null,null,null,null,null,null,null,null,null,null,null,null,null],[null,null,null,null,null,null,null,null,null,null,null,null,null,null,null],[null,null,null,null,null,null,null,null,null,null,{"Type":2,"Winged":false,"LastVisibleTick":-1,"IsDead":false,"Sprite":null},null,null,null,null],[null,null,null,null,null,null,null,null,null,null,null,null,null,null,null],[null,null,null,null,null,null,null,null,null,null,null,null,null,null,null],[null,null,null,null,null,null,null,null,null,null,null,null,null,null,null],[null,null,null,null,null,null,null,null,null,null,null,null,null,null,null],[null,null,null,null,null,null,null,null,null,null,null,null,null,null,null],[null,null,null,null,null,null,null,null,null,null,null,null,null,null,null],[null,null,null,null,null,null,null,null,null,null,null,null,null,null,null],[null,null,null,null,null,null,null,null,null,null,null,null,null,null,null],[null,null,null,null,null,null,null,null,null,null,null,null,null,null,null],[null,null,null,null,null,null,null,null,null,{"Type":2,"Winged":false,"LastVisibleTick":-1,"IsDead":false,"Sprite":null},null,null,null,null,null],[null,null,null,null,null,null,null,null,null,null,null,null,null,null,null],[null,null,null,null,null,null,null,null,null,null,null,null,null,null,null],[null,null,null,null,null,null,null,null,null,null,null,null,null,null,null],[null,null,null,null,null,null,null,null,null,{"Type":2,"Winged":false,"LastVisibleTick":-1,"IsDead":false,"Sprite":null},null,null,null,null,null],[null,null,null,null,null,null,null,null,null,null,null,null,null,null,null],[null,null,null,null,null,null,null,null,null,null,null,null,null,null,null],[null,null,null,null,null,null,null,null,null,null,null,null,null,null,null],[null,null,null,null,null,null,null,null,null,null,null,null,null,null,null],[null,null,null,null,null,null,null,null,null,null,null,null,null,null,null],[null,null,null,null,null,null,null,null,null,null,null,null,null,null,null],[null,null,null,null,null,null,null,null,null,null,null,null,null,null,null],[null,null,null,null,null,null,null,null,null,null,null,null,null,null,null],[null,null,null,null,null,null,null,null,null,null,null,null,null,null,null],[null,null,null,null,null,null,null,null,null,null,null,null,null,null,null],[null,null,null,null,null,null,null,null,null,null,null,null,null,null,null],[null,null,null,null,null,null,null,null,null,null,null,null,null,null,null],[null,null,null,null,null,null,null,null,null,null,null,null,null,null,null],[null,null,null,null,null,null,null,null,null,null,null,null,null,null,null],[null,null,null,null,null,null,null,null,null,null,null,null,null,null,null],[null,null,null,null,null,null,null,null,null,null,null,null,null,null,null],[null,null,null,null,null,null,null,null,null,null,null,null,null,null,null],[null,null,null,null,null,null,null,null,null,null,null,null,null,null,null],[null,null,null,null,null,null,null,null,null,null,null,null,null,null,null],[null,null,null,null,null,null,null,null,null,null,null,null,null,null,null],[null,null,null,null,null,null,null,null,null,null,null,null,null,null,null],[null,null,null,null,null,null,null,null,null,null,null,null,null,null,null],[null,null,null,null,null,null,null,null,null,null,null,null,null,null,null],[null,null,null,null,null,null,null,null,null,null,null,null,null,null,null],[null,null,null,null,null,null,null,null,null,null,null,null,null,null,null],[null,null,null,null,null,null,null,null,null,null,null,null,null,null,null],[null,null,null,null,null,null,null,null,null,null,null,null,null,null,null],[null,null,null,null,null,null,null,null,null,null,null,null,null,null,null],[null,null,null,null,null,null,null,null,null,null,null,null,null,null,null],[null,null,null,null,null,null,null,null,null,null,null,null,null,null,null],[null,null,null,null,null,null,null,null,null,null,null,null,null,null,null],[null,null,null,null,null,null,null,null,null,null,null,null,null,null,null],[null,null,null,null,null,null,null,null,null,null,null,null,null,null,null],[null,null,null,null,null,null,null,null,null,null,null,null,null,null,null],[null,null,null,null,null,null,null,null,null,null,null,null,null,null,null],[null,null,null,null,null,null,null,null,null,null,null,null,null,null,null],[null,null,null,null,null,null,null,null,null,null,null,null,null,null,null],[null,null,null,null,null,null,null,null,null,null,null,null,null,null,null],[null,null,null,null,null,null,null,null,null,null,null,null,null,null,null],[null,null,null,null,null,null,null,null,null,null,null,null,null,null,null],[null,null,null,null,null,null,null,null,null,null,null,null,null,null,null],[null,null,null,null,null,null,null,null,null,null,null,null,null,null,null],[null,null,null,null,null,null,null,null,null,null,null,null,null,null,null],[null,null,null,null,null,null,null,null,null,null,null,null,null,null,null],[null,null,null,null,null,null,null,null,null,null,null,null,null,null,null],[null,null,null,null,null,null,null,null,null,null,null,null,null,null,null],[null,null,null,null,null,null,null,null,null,null,null,null,null,null,null],[null,null,null,null,null,null,null,null,null,null,null,null,null,null,null],[null,null,null,null,null,null,null,null,null,null,null,null,null,null,null],[null,null,null,null,null,null,null,null,null,null,null,null,null,null,null],[null,null,null,null,null,null,null,null,null,null,null,null,null,null,null],[null,null,null,null,null,null,null,null,null,null,{"Type":2,"Winged":false,"LastVisibleTick":-1,"IsDead":false,"Sprite":null},null,null,null,null],[null,null,null,null,null,null,null,null,null,null,null,null,null,null,null],[null,null,null,null,null,null,null,null,null,null,null,null,null,null,null],[null,null,null,null,null,null,null,null,null,null,null,null,null,null,null],[null,null,null,null,null,null,null,null,null,null,null,null,null,null,null],[null,null,null,null,null,null,null,null,null,null,null,null,null,null,null],[null,null,null,null,null,null,null,null,null,null,null,null,null,null,null],[null,null,null,null,null,null,null,null,null,null,null,null,null,null,null],[null,null,null,null,null,null,null,null,null,null,null,null,null,null,null],[null,null,null,null,null,null,null,null,null,null,null,null,null,null,null],[null,null,null,null,null,null,null,null,null,null,null,null,null,null,null],[null,null,null,null,null,null,null,null,null,null,null,null,null,null,null],[null,null,null,null,null,null,null,null,null,null,null,null,null,null,null],[null,null,null,null,null,null,null,null,null,null,null,null,null,null,null],[null,null,null,null,null,null,null,null,null,null,null,null,null,null,null],[null,null,null,null,null,null,null,null,null,null,null,null,null,null,null],[null,null,null,null,null,null,null,null,null,null,null,null,null,null,null],[null,null,null,null,null,null,null,null,null,null,null,null,null,null,null],[null,null,null,null,null,null,null,null,null,null,null,null,null,null,null],[null,null,null,null,null,null,null,null,null,null,null,null,null,null,null],[null,null,null,null,null,null,null,null,null,null,null,null,null,null,null],[null,null,null,null,null,null,null,null,null,null,null,null,null,null,null],[null,null,null,null,null,null,null,null,null,null,null,null,null,null,null],[null,null,null,null,null,null,null,null,null,null,null,null,null,null,null],[null,null,null,null,null,null,null,null,null,null,null,null,null,null,null],[null,null,null,null,null,null,null,null,null,null,null,null,null,null,null],[null,null,null,null,null,null,null,null,null,null,null,null,null,null,null],[null,null,null,null,null,null,null,null,null,null,null,null,null,null,null],[null,null,null,null,null,null,null,null,null,null,null,null,null,null,null],[null,null,null,null,null,null,null,null,null,null,null,null,null,null,null],[null,null,null,null,null,null,null,null,null,null,null,null,null,null,null],[null,null,null,null,null,null,null,null,null,null,null,null,null,null,null],[null,null,{"Type":2,"Winged":false,"LastVisibleTick":-1,"IsDead":false,"Sprite":null},null,null,null,null,null,null,null,null,null,null,null,null],[null,null,null,null,null,null,null,null,null,null,null,null,{"Type":2,"Winged":false,"LastVisibleTick":-1,"IsDead":false,"Sprite":null},null,null],[null,null,null,null,null,null,null,null,null,null,null,null,null,null,null],[null,null,null,null,null,null,null,null,null,null,null,null,null,null,null],[null,null,null,null,null,null,null,null,null,null,null,null,null,null,null],[null,null,null,null,null,null,null,null,null,null,null,null,null,null,null],[null,null,null,null,null,null,null,null,null,null,null,null,null,null,null],[null,null,null,null,null,null,null,null,null,null,null,null,null,null,null],[null,null,null,null,null,null,null,null,null,null,null,null,null,null,null],[null,null,null,null,null,null,null,null,null,null,null,null,null,null,null],[null,null,null,null,null,null,null,null,null,null,null,null,null,null,null],[null,null,null,null,null,null,null,null,null,null,null,null,null,null,null],[null,null,null,null,null,null,null,null,null,null,null,null,null,null,null],[null,null,null,null,null,null,null,null,null,null,null,null,null,null,null],[null,null,null,null,null,null,null,null,null,null,null,null,null,null,null],[null,null,null,null,null,null,null,null,null,null,null,null,null,null,null],[null,null,null,null,null,null,{"Type":2,"Winged":false,"LastVisibleTick":-1,"IsDead":false,"Sprite":null},null,null,null,null,null,null,null,null],[null,null,null,null,null,null,null,null,null,null,null,null,null,null,null],[null,null,null,null,null,null,null,null,null,null,null,null,null,null,null],[null,null,null,null,null,null,null,null,null,{"Type":2,"Winged":false,"LastVisibleTick":-1,"IsDead":false,"Sprite":null},null,null,null,null,null],[null,null,null,null,null,null,null,null,null,null,null,null,null,null,null],[null,null,null,null,null,null,null,null,null,null,null,null,null,null,null],[null,null,null,null,null,null,null,null,null,null,null,null,null,null,null],[null,null,null,null,null,null,null,null,null,null,null,null,null,null,null],[null,null,null,null,null,null,null,null,null,null,null,null,null,null,null],[null,null,null,null,null,null,null,null,null,null,null,null,null,null,null],[null,null,null,null,null,null,null,null,null,null,null,null,null,null,null],[null,null,null,null,null,null,null,null,null,null,null,null,null,null,null],[null,null,null,null,null,null,null,null,null,null,null,null,null,null,null],[null,null,null,null,null,null,null,null,null,null,null,null,null,null,null],[null,null,null,null,null,null,null,null,null,null,null,null,null,null,null],[null,null,null,null,null,null,null,null,null,null,null,null,null,null,null],[null,null,null,null,null,null,null,null,null,null,null,null,null,null,null],[null,null,null,null,null,null,null,null,null,null,null,null,null,null,null],[null,null,null,null,null,null,null,null,null,null,null,null,null,null,null],[null,null,null,null,null,null,null,null,null,null,null,null,null,null,null],[null,null,null,null,null,null,null,null,null,null,null,{"Type":2,"Winged":false,"LastVisibleTick":-1,"IsDead":false,"Sprite":null},null,null,null],[null,null,null,null,null,null,null,null,null,null,null,null,null,null,null],[null,null,null,null,null,null,null,null,null,null,null,null,null,null,null],[null,null,null,null,null,null,null,null,null,null,null,null,null,null,null],[null,null,null,null,null,null,null,null,null,null,null,null,null,null,null],[null,null,null,null,null,null,null,null,null,null,null,null,null,null,null],[null,null,null,null,null,null,null,null,null,null,null,null,null,null,null],[null,null,null,null,null,null,null,null,null,null,null,null,null,null,null],[null,null,null,null,null,null,null,null,null,null,null,null,null,null,null],[null,null,null,null,null,null,null,null,null,null,null,null,null,null,null],[null,null,null,null,null,null,null,null,null,null,null,null,null,null,null],[null,null,null,null,null,null,null,null,null,null,null,null,null,null,null],[null,null,null,null,null,null,null,null,null,null,null,null,null,null,null],[null,null,null,null,null,null,null,null,null,null,null,null,null,null,null],[null,null,null,null,null,null,null,null,null,null,null,null,null,null,null],[null,null,null,null,null,null,null,null,null,null,null,null,null,null,null],[null,null,null,null,null,null,null,null,null,null,null,null,null,null,null],[null,null,null,null,null,null,null,null,null,null,null,null,null,null,null],[null,null,null,null,null,null,null,null,null,null,null,null,null,null,null],[null,null,null,null,null,null,null,null,null,null,null,null,null,null,null],[null,null,null,null,null,null,null,null,null,null,null,null,null,null,null],[null,null,null,null,null,null,null,null,null,null,null,null,null,null,null],[null,null,null,null,null,null,null,null,null,null,null,null,null,null,null],[null,null,null,null,null,null,null,null,null,null,null,null,null,null,null],[null,null,null,null,null,null,null,null,null,null,null,null,null,null,null],[null,null,null,null,null,null,null,null,null,null,null,null,null,null,null],[null,null,null,null,null,null,null,null,null,null,null,null,null,null,null],[null,null,null,null,null,null,null,null,null,null,null,null,null,null,null],[null,null,null,null,null,null,null,null,null,null,null,null,null,null,null],[null,null,null,null,null,null,null,null,null,null,null,null,null,null,null],[null,null,null,null,null,null,null,null,null,null,null,null,null,null,null],[null,null,null,null,null,null,null,null,null,null,null,null,null,null,null],[null,null,null,null,null,null,null,null,null,null,null,null,null,null,null],[null,null,null,null,null,null,{"Type":2,"Winged":false,"LastVisibleTick":-1,"IsDead":false,"Sprite":null},null,null,null,null,null,null,null,null],[null,null,null,null,null,null,null,null,null,null,null,null,null,null,null],[null,null,null,null,null,null,null,null,null,null,null,null,null,null,null],[null,null,null,null,null,null,null,null,null,null,null,null,null,null,null],[null,null,null,null,null,null,null,null,null,null,null,null,null,null,null],[null,null,null,null,null,null,null,null,null,null,null,null,null,null,null],[null,null,null,null,null,null,null,null,null,null,null,null,null,null,null],[null,null,null,null,null,null,null,null,null,null,null,null,null,null,null],[null,null,null,null,null,null,null,null,null,null,null,null,null,null,null],[null,null,null,null,null,null,null,null,null,null,null,null,null,null,null],[null,null,null,null,null,null,null,null,null,null,null,null,null,null,null],[null,null,null,null,null,null,null,null,null,null,null,null,null,null,null],[null,null,null,null,null,null,null,null,null,null,null,null,null,null,null],[null,null,null,null,null,null,null,null,null,null,null,null,null,null,null],[null,null,null,null,null,null,null,null,null,null,null,null,null,null,null],[null,null,null,null,null,null,null,null,null,null,null,null,null,null,null],[null,null,null,null,null,null,null,null,null,null,null,null,null,null,null],[null,null,null,null,null,null,null,null,null,null,null,null,null,null,null],[null,null,null,null,null,null,null,null,null,null,null,null,null,null,null],[null,null,null,null,null,null,null,null,null,null,null,null,null,null,null],[null,null,null,null,null,null,null,null,null,null,null,null,null,null,null],[null,null,null,null,null,null,null,null,null,null,null,null,null,null,null],[null,null,null,null,null,null,null,null,null,null,null,null,null,null,null],[null,null,null,null,null,null,null,null,null,null,null,null,null,null,null],[null,null,null,null,null,null,null,null,null,null,null,null,null,null,null],[null,null,null,null,null,null,null,null,null,null,null,null,null,null,null],[null,null,null,null,null,null,null,null,null,null,null,null,null,null,null],[null,null,null,null,null,null,null,null,null,null,null,null,null,null,null],[null,null,null,null,null,null,null,null,null,null,null,null,null,null,null],[null,null,null,null,null,null,null,null,null,null,null,null,null,null,null],[null,null,null,null,null,null,null,null,null,null,null,null,null,null,null],[null,null,null,null,null,null,null,null,null,null,null,null,null,null,null],[null,null,null,null,null,null,null,null,null,null,null,null,null,null,null],[null,null,null,null,null,null,null,null,null,null,null,null,null,null,null],[null,null,null,null,null,null,null,null,null,null,null,null,null,null,null],[null,null,null,null,null,null,null,null,null,null,null,null,null,null,null],[null,null,null,null,null,null,null,null,null,null,null,null,null,null,null],[null,null,null,null,null,null,null,null,null,null,null,null,null,null,null],[null,null,null,null,null,null,null,null,null,null,null,null,null,null,null],[null,null,null,null,null,null,null,null,null,null,null,null,null,null,null],[null,null,null,null,null,null,null,null,null,null,null,null,null,null,null],[null,null,null,null,null,null,null,null,null,null,null,null,null,null,null],[null,null,null,null,null,null,null,null,null,null,null,null,null,null,null],[null,null,null,null,null,null,null,null,null,null,null,null,null,null,null],[null,null,null,null,null,null,null,null,null,null,null,null,null,null,null],[null,null,null,null,null,null,null,null,null,null,null,null,null,null,null],[null,null,null,null,null,null,null,null,null,null,null,null,null,null,null],[null,null,null,null,null,null,null,null,null,null,null,null,null,null,null],[null,null,null,null,null,null,null,null,null,null,null,null,null,null,null],[null,null,null,null,null,null,null,null,null,null,null,null,null,null,null],[null,null,null,null,null,null,null,null,null,null,null,null,null,null,null],[null,null,null,null,null,null,null,null,null,null,null,null,null,null,null],[null,null,null,null,null,null,null,null,null,null,null,null,null,null,null],[null,null,null,null,null,null,null,null,null,null,null,null,null,null,null],[null,null,null,null,null,null,null,null,null,null,null,null,null,null,null],[null,null,null,null,null,null,null,null,null,null,null,null,null,null,null],[null,null,null,null,null,null,null,null,null,null,null,null,null,null,null],[null,null,null,null,null,null,null,null,null,null,null,null,null,null,null],[null,null,null,null,null,null,null,null,null,null,null,null,null,null,null],[null,null,null,null,null,null,null,null,null,null,null,null,null,null,null],[null,null,null,null,null,null,null,null,null,null,null,null,null,null,null],[null,null,null,null,null,null,null,null,null,null,null,null,null,null,null],[null,null,null,null,null,null,null,null,null,null,null,null,null,null,null],[null,null,null,null,null,null,null,null,null,null,null,null,null,null,null],[null,null,null,null,null,null,null,null,null,null,null,null,null,null,null],[null,null,null,null,null,null,null,null,null,null,null,null,null,null,null],[null,null,null,null,null,null,null,null,null,null,null,null,null,null,null],[null,null,null,null,null,null,null,null,null,null,null,null,null,null,null],[null,null,null,null,null,null,null,null,null,null,null,null,null,null,null],[null,null,null,null,null,null,null,null,null,null,null,null,null,null,null],[null,null,null,null,null,null,null,null,null,null,null,null,null,null,null],[null,null,null,null,null,null,null,null,null,null,null,null,null,null,null],[null,null,null,null,null,null,null,null,null,null,null,null,null,null,null],[null,null,null,null,null,null,null,null,null,null,null,null,null,null,null],[null,null,null,null,null,null,null,null,null,null,null,null,null,null,null],[null,null,null,null,null,null,null,null,null,null,null,null,null,null,null],[null,null,null,null,null,null,null,null,null,null,null,null,null,null,null],[null,null,null,null,null,null,null,null,null,null,null,null,null,null,null],[null,null,null,null,null,null,null,null,null,null,null,null,null,null,null],[null,null,null,null,null,null,null,null,null,null,null,null,null,null,null],[null,null,null,null,null,null,null,null,null,null,null,null,null,null,null],[null,null,null,null,null,null,null,null,null,null,null,null,null,null,null],[null,null,null,null,null,null,null,null,null,null,null,null,null,null,null],[null,null,null,null,null,null,null,null,null,null,null,null,null,null,null],[null,null,null,null,null,null,null,null,null,null,null,null,null,null,null],[null,null,null,null,null,null,null,null,null,null,null,null,null,null,null],[null,null,null,null,null,null,null,null,null,null,null,null,null,null,null],[null,null,null,null,null,null,null,null,null,null,null,null,null,null,null],[null,null,null,null,null,null,null,null,null,null,null,null,null,null,null],[null,null,null,null,null,null,null,null,null,null,null,null,null,null,null],[null,null,null,null,null,null,null,null,null,null,null,null,null,null,null],[null,null,null,null,null,null,null,null,null,null,null,null,null,null,null],[null,null,null,null,null,null,null,null,null,null,null,null,null,null,null],[null,null,null,null,null,null,null,null,null,null,null,null,null,null,null],[null,null,null,null,null,null,null,null,null,null,null,null,null,null,null],[null,null,null,null,null,null,null,null,null,null,null,null,null,null,null],[null,null,null,null,null,null,null,null,null,null,null,null,null,null,null],[null,null,null,null,null,null,null,null,null,null,null,null,null,null,null],[null,null,null,null,null,null,null,null,null,null,null,null,null,null,null],[null,null,null,null,null,null,null,null,null,null,null,null,null,null,null]],"JumpSections":[],"TubeSections":[],"StraightSections":[{"X0":0,"Length":13,"Floor":11,"Decorate":null}],"HillStraightSections":[{"X0":13,"Length":17,"Floor":11,"Hrnd":[6,2],"Lrnd":[5,3],"XXOrnd":[14,16],"Blocks":[[0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0]],"DecorateIteration":-1,"Decorate":null},{"X0":30,"Length":18,"Floor":11,"Hrnd":[7],"Lrnd":[6],"XXOrnd":[33],"Blocks":[[0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0]],"DecorateIteration":0,"Decorate":{"X0":32,"X1":40,"Floor":7,"EEnd":3,"EBegin":2,"SEnd":3,"SBegin":1,"Rnd4":[],"Rnd3":[],"Rnd2":[],"Rnd1":[]}},{"X0":48,"Length":10,"Floor":11,"Hrnd":[8,4],"Lrnd":[4,5],"XXOrnd":[49,51],"Blocks":[[0,0,0,0,0,0,0,0,0,0,0,0],[0,0,0,0,133,149,149,0,0,0,0,134,150,150,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0]],"DecorateIteration":1,"Decorate":{"X0":50,"X1":57,"Floor":4,"EEnd":0,"EBegin":0,"SEnd":1,"SBegin":3,"Rnd4":[],"Rnd3":[],"Rnd2":[],"Rnd1":[]}},{"X0":58,"Length":18,"Floor":10,"Hrnd":[6,3,0],"Lrnd":[5,7],"XXOrnd":[64,66],"Blocks":[[0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0],[0,0,0,133,149,149,149,0,0,0,133,149,149,149,0,0,0,134,150,150,150,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0]],"DecorateIteration":-1,"Decorate":null},{"X0":76,"Length":15,"Floor":11,"Hrnd":[6,1],"Lrnd":[3,3],"XXOrnd":[85,81],"Blocks":[[0,0,0,0,0,0,0,0,0,0,0,0,0,0,0]],"DecorateIteration":-1,"Decorate":null},{"X0":91,"Length":17,"Floor":11,"Hrnd":[6],"Lrnd":[6],"XXOrnd":[98],"Blocks":[[0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0]],"DecorateIteration":0,"Decorate":{"X0":97,"X1":105,"Floor":6,"EEnd":0,"EBegin":3,"SEnd":3,"SBegin":3,"Rnd4":[1,2,3,1,0,1,1,3,0,2,2,0],"Rnd3":[1,2,3,1,0,1,1,3,0,2,2,0],"Rnd2":[1,2,3,1,0,1,1,3,0,2,2,0],"Rnd1":[1,2,3,1,0,1,1,3,0,2,2,0]}},{"X0":108,"Length":10,"Floor":11,"Hrnd":[6,1],"Lrnd":[5,7],"XXOrnd":[110,109],"Blocks":[[0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0],[0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,132,148,148,148,148,0,0,0,0,0,133,149,149,149,149,0,0,0,0,0,133,149,149,149,149,0,0,0,0,0,133,149,149,149,149,0,0,0,0,0,134,150,150,150,150,0,0,0,0,0,0,0,0,0,0]],"DecorateIteration":1,"Decorate":{"X0":108,"X1":117,"Floor":1,"EEnd":0,"EBegin":1,"SEnd":1,"SBegin":3,"Rnd4":[],"Rnd3":[],"Rnd2":[],"Rnd1":[]}},{"X0":118,"Length":16,"Floor":11,"Hrnd":[7],"Lrnd":[6],"XXOrnd":[124],"Blocks":[[0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0]],"DecorateIteration":0,"Decorate":{"X0":123,"X1":131,"Floor":7,"EEnd":0,"EBegin":0,"SEnd":2,"SBegin":3,"Rnd4":[0,2,1,2,1,1,0,2,2,0,0,3,2,0,2,3],"Rnd3":[0,2,1,2,1,1,0,2,2,0,0,3,2,0,2,3],"Rnd2":[0,2,1,2,1,1,0,2,2,0,0,3,2,0,2,3],"Rnd1":[0,2,1,2,1,1,0,2,2,0,0,3,2,0,2,3]}},{"X0":134,"Length":16,"Floor":13,"Hrnd":[8],"Lrnd":[7],"XXOrnd":[138],"Blocks":[[0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0]],"DecorateIteration":0,"Decorate":{"X0":137,"X1":146,"Floor":8,"EEnd":3,"EBegin":0,"SEnd":1,"SBegin":1,"Rnd4":[1,3,1,1,2,0,3,1,2,2,1,1],"Rnd3":[1,3,1,1,2,0,3,1,2,2,1,1],"Rnd2":[1,3,1,1,2,0,3,1,2,2,1,1],"Rnd1":[1,3,1,1,2,0,3,1,2,2,1,1]}},{"X0":150,"Length":12,"Floor":13,"Hrnd":[8,3,0],"Lrnd":[5,7],"XXOrnd":[152,151],"Blocks":[[0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0],[0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,132,148,148,148,148,0,0,0,0,0,133,149,149,149,149,0,0,0,0,0,133,149,149,149,149,0,0,0,0,0,133,149,149,149,149,0,0,0,0,0,134,150,150,150,150,0,0,0,0,0,0,0,0,0,0]],"DecorateIteration":-1,"Decorate":null},{"X0":162,"Length":12,"Floor":10,"Hrnd":[7,3],"Lrnd":[7,7],"XXOrnd":[165,165],"Blocks":[[0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0]],"DecorateIteration":-1,"Decorate":null},{"X0":174,"Length":12,"Floor":10,"Hrnd":[7,2],"Lrnd":[3,3],"XXOrnd":[176,177],"Blocks":[[0,0,0,0,0,0,0,0,0]],"DecorateIteration":-1,"Decorate":null},{"X0":186,"Length":18,"Floor":12,"Hrnd":[8,3],"Lrnd":[6,5],"XXOrnd":[196,189],"Blocks":[[0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0],[0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0]],"DecorateIteration":1,"Decorate":{"X0":188,"X1":195,"Floor":3,"EEnd":2,"EBegin":0,"SEnd":0,"SBegin":3,"Rnd4":[],"Rnd3":[],"Rnd2":[],"Rnd1":[]}},{"X0":204,"Length":11,"Floor":10,"Hrnd":[5],"Lrnd":[4],"XXOrnd":[206],"Blocks":[[0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0]],"DecorateIteration":0,"Decorate":{"X0":205,"X1":211,"Floor":5,"EEnd":2,"EBegin":0,"SEnd":2,"SBegin":3,"Rnd4":[],"Rnd3":[],"Rnd2":[],"Rnd1":[]}},{"X0":215,"Length":11,"Floor":12,"Hrnd":[7],"Lrnd":[7],"XXOrnd":[217],"Blocks":[[0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0]],"DecorateIteration":0,"Decorate":{"X0":216,"X1":225,"Floor":7,"EEnd":0,"EBegin":3,"SEnd":2,"SBegin":0,"Rnd4":[0,2,3,1,0,3,0,3,2,3,1,3,0,1,0,3,2,0,3,1],"Rnd3":[0,2,3,1,0,3,0,3,2,3,1,3,0,1,0,3,2,0,3,1],"Rnd2":[0,2,3,1,0,3,0,3,2,3,1,3,0,1,0,3,2,0,3,1],"Rnd1":[0,2,3,1,0,3,0,3,2,3,1,3,0,1,0,3,2,0,3,1]}},{"X0":226,"Length":17,"Floor":10,"Hrnd":[5,1],"Lrnd":[5,6],"XXOrnd":[234,232],"Blocks":[[0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0]],"DecorateIteration":-1,"Decorate":null},{"X0":243,"Length":15,"Floor":12,"Hrnd":[9],"Lrnd":[5],"XXOrnd":[250],"Blocks":[[0,0,0,0,0,0,0,0,0,0,0,0,0,0,0]],"DecorateIteration":0,"Decorate":{"X0":249,"X1":256,"Floor":9,"EEnd":0,"EBegin":3,"SEnd":2,"SBegin":1,"Rnd4":[1,3,3,2,1,0,3,2,2,2,0,1],"Rnd3":[1,3,3,2,1,0,3,2,2,2,0,1],"Rnd2":[1,3,3,2,1,0,3,2,2,2,0,1],"Rnd1":[1,3,3,2,1,0,3,2,2,2,0,1]}}]}).CreateLevel();
-        this.LevelType = lvl.Type;
-        return lvl
+        //const lvl = new LevelGenerator(320, 15).CreateLevel(0, 1);
+        const lvl = new PredefinedLevelGenerator(levels[levelsOrder[currentLevel]]).CreateLevel();
+        console.log(levelsOrder[currentLevel]);
+        currentLevel++; // Defined in index.js
+        return lvl;
     }
 
     Enter() {
@@ -4506,7 +4852,7 @@ class PredefinedLevelState extends LevelState {
 
     CheckForChange(context) {
         if (this.GotoLoseState || this.NextLevel) {
-            console.log(Mario.MarioCharacter.gameplayMetrics.printMetrics());
+            // TODO console.log(Mario.MarioCharacter.gameplayMetrics.PrintMetrics());
 
             this.agent.StoreActions(); // Store player actions
 
@@ -4540,51 +4886,144 @@ class PredefinedLevelState extends LevelState {
     }
 };
 
-/** Gameplay Metrics **/
-
 class GameplayMetrics {
     constructor() {
-        this.noJumps = 0;
+        this.jumps = [];
+        this.landings = [];
+        
+        this.coins = [];
+        this.noCoins = -1;
+
+        this.powerups = [];
+        this.noPowerups = -1;
+
+        // TODO Implement enemy death detection
+        this.enemies = [];
+        this.noEnemies = -1;
+
+        this.timeLeft = -1;
 
         this.levelState = null;
     }
 
-    setLevelState(levelState) {
+    SetLevelState(levelState) {
         if (levelState.GetName === undefined || levelState.GetName() !== "LevelState") {
-            console.error("setLevelState should receive an instance of LevelState");
+            console.error("SetLevelState should receive an instance of LevelState");
             return;
         }
 
         this.levelState = levelState;
     }
 
-    registerJump() {
-        this.noJumps++;
+    RegisterJump() {
+        this.jumps.push(this.GetNearestGap());
     }
 
-    registerDeathTime() {
+    RegisterLanding() {
+        this.landings.push(this.GetNearestGap());
+    }
+
+    RegisterNoCoins(no) {
+        this.noCoins = no; 
+    }
+
+    RegisterNoPowerups(no) {
+        this.noPowerups = no; 
+    }
+
+    RegisterNoEnemies(no) {
+        this.noEnemies = no; 
+    }
+
+    CollectedCoin(x, y) {
+        const lvl = this.levelState.Level;
+        if (!(lvl instanceof PredefinedLevel)) return;
+        
+        const ID = lvl.GetCoinID(x, y);
+        if (ID === null) {
+            console.error("ERROR: Coin doesn't exist!");
+            return;
+        }
+
+        this.coins.push(ID);
+    }
+
+    CollectedPowerup(x, y) {
+        const lvl = this.levelState.Level;
+        if (!(lvl instanceof PredefinedLevel)) return;
+        
+        const ID = lvl.GetPowerupID(x, y);
+        if (ID === null) {
+            console.error("ERROR: Powerup doesn't exist!");
+            return;
+        }
+
+        this.powerups.push(ID);
+    }
+
+    KilledEnemy(ID) {
+        this.enemies.push(ID);
+    }
+
+    GetNearestGap() {
+        const xPos = (Mario.MarioCharacter.X - 8) / 16, facing = Mario.MarioCharacter.Facing;
+        const jumps = this.levelState.Level.JumpSections;
+
+        let minDist = Infinity;
+        for (let i = 0; i < jumps.length; i++) {
+            if (xPos < jumps[i].GetHoleStartX()) {
+                const dist = jumps[i].GetHoleStartX() - xPos;
+                if (dist > minDist) break;
+
+                minDist = dist;
+            } else if (xPos > jumps[i].GetHoleEndX()) {
+                const dist = xPos - jumps[i].GetHoleEndX();
+                if (dist > minDist) break;
+
+                minDist = dist;
+            } else {
+                console.log("Inside gap: Jumping on walls");
+            }
+        }
+
+        return minDist;
+    }
+
+    RegisterEndingTime() {
         if (this.levelState == null) return;
 
         const t = this.levelState.GetTimeLeft();
         this.timeLeft = t < 0 ? 0 : t;
     }
 
-    printMetrics() {
+    PrintMetrics() {
         return {
-            "noJumps": this.noJumps,
+            "jumps": this.jumps,
+            "landings": this.landings,
             "timeLeft": this.timeLeft,
+            "noCoins": this.noCoins,
+            "collectedCoins": this.coins,
+            "noPowerups": this.noPowerups,
+            "collectedPowerups": this.powerups,
         };
     }
 };
 
-/** PREDEFINED TITLE STATE **/
+/**
+    Displays the title screen.
+    Code by Pedro Esteves, 2022.
+**/
+
 class PredefinedTitleState extends TitleState {
     CheckForChange(context) {
         if (Engine.KeyboardInput.IsKeyDown(Engine.Keys.S)) context.ChangeState(new PredefinedLevelState(1, 0));
     }
 };
 
-/** AGENT **/
+/**
+    Represents a Mario agent.
+    Code by Pedro Esteves, 2022.
+**/
 
 class Agent extends NotchSprite {
     constructor(actions) {
@@ -4603,9 +5042,14 @@ class Agent extends NotchSprite {
     }
 
     StoreActions() {
-        console.log(this.ticks);
+        // TODO console.log(this.ticks);
     }
 };
+
+/**
+    Represents a Mario agent, controlled by the player. Allows to store the player actions
+    Code by Pedro Esteves, 2022.
+**/
 
 class PlayerAgent extends Agent {
     constructor() {
@@ -4620,16 +5064,21 @@ class PlayerAgent extends Agent {
         if (evt.keyCode !== Engine.Keys.A && evt.keyCode !== Engine.Keys.S && evt.keyCode !== Engine.Keys.Left && evt.keyCode !== Engine.Keys.Right) return;
 
         this.actions.push({
-            'ticks': this.ticks,
-            'keycode': evt.keyCode, // TODO fix because it is deprecated?
-            'event': evt.type
+            't': this.ticks, // Ticks
+            'k': evt.keyCode, // Key Code
+            'e': evt.type // Event Type
         });
     }
 
     StoreActions() {
-        console.log(JSON.stringify(this.actions)); // TODO Store in JSON file or send to server ?
+        // TODO console.log(JSON.stringify(this.actions)); // TODO Store in JSON file or send to server ?
     }
 };
+
+/**
+    Represents a Mario agent, controlled by AI. Allows to play a sequecen of player actions
+    Code by Pedro Esteves, 2022.
+**/
 
 class AIAgent extends Agent {
     constructor(actions) {
@@ -4641,11 +5090,12 @@ class AIAgent extends Agent {
 
         while (true) {
             const evt = this.actions[this.currentEvent]
-            if (!(this.currentEvent < this.actions.length && evt.ticks <= this.ticks)) break;
+            if (!(this.currentEvent < this.actions.length && evt.t <= this.ticks)) break;
 
-            document.dispatchEvent(new KeyboardEvent(evt.event, { 'keyCode': evt.keycode }));
+            document.dispatchEvent(new KeyboardEvent(evt.e, { 'keyCode': evt.k }));
 
             this.currentEvent++;
         }
     }
 };
+

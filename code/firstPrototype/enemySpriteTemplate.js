@@ -4,4 +4,4 @@ class EnemySpriteTemplate {
         this.Y = y;
         this.SpriteTemplate = sprite;
     }
-}
+};

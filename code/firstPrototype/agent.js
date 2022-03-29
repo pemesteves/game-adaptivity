@@ -20,6 +20,6 @@ class Agent extends NotchSprite {
     }
 
     StoreActions() {
-        console.log(this.ticks);
+        // TODO console.log(this.ticks);
     }
 };
