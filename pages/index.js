@@ -1,27 +1,25 @@
 Survey.StylesManager.applyTheme("modern");
 
-var surveyJSON, levels, levelsOrder, currentLevel = 0;
+fetch('levels/levels.json').then(rsp => { return rsp.json(); }).then(jsonData => {
+  localStorage.setItem("levels", JSON.stringify(jsonData));
+  localStorage.setItem("levelsOrder", JSON.stringify(Array.from(Array(jsonData.length).keys()).sort(() => Math.random() - 0.5)));
+  localStorage.setItem("currentLevel", 0);
 
-const gamePage = {"name": "game","elements": [{"type": "html","name": "Game","html": "<canvas id=\"canvas\" width=\"640\" height=\"480\"> \n\t\t\t <p>Your browser does not support the canvas element.</p>\n\t\t</canvas>\n<script>$(document).ready(function (){new Engine.Application().Initialize(new LoadingState(), 320, 240);});</script>"}]};
+  fetch('questionnaire/main.json').then(rsp => { return rsp.json(); }).then(jsonData => {
+    const surveyJSON = jsonData;
 
-fetch('levels/levels.json').then(rsp => { return rsp.json(); }).then(jsonData => { 
-  levels = jsonData; 
-  levelsOrder = Array.from(Array(jsonData.length).keys()).sort(() => Math.random() - 0.5);
-
-  fetch('questionnaire/pages.json').then(rsp => { return rsp.json(); }).then(jsonData => { 
-    surveyJSON = jsonData;
-    
-    for (let i = 0; i < levels.length; i++)  {
-      let page = Object.assign({}, gamePage);
-      page.name = `Game_${i}`;
-      surveyJSON.pages.push(page);
-    }
-
-    console.log(surveyJSON);
     const survey = new Survey.Model(surveyJSON);
     $("#surveyContainer").Survey({
       model: survey,
-      onComplete: sendDataToServer
+      goNextPageAutomatic: false,
+      showNavigationButtons: true,
+      showCompletedPage: false,
+      onCompleting: (e) => {
+        e.allowComplete = false;
+        localStorage.setItem("questionnaire", JSON.stringify(e.data));
+        window.location.href = "/mario.html";
+      },
+      completeText: "Play",
     });
   });
 });

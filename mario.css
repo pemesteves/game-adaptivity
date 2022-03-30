@@ -1,15 +1,9 @@
 canvas {
     padding: 0;
     margin: auto;
-    display: block;
     position: absolute;
     top: 0;
     bottom: 0;
     left: 0;
     right: 0;
-}
-
-/* TODO Delete sv-footer__prev-btn to hide complete button */
-.sv-header__text, .sv-logo__image, .sv-btn.sv-footer__prev-btn {
-    display: none;
 }

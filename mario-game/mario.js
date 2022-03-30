@@ -4840,8 +4840,6 @@ class PredefinedLevelState extends LevelState {
     GetLevel() {
         //const lvl = new LevelGenerator(320, 15).CreateLevel(0, 1);
         const lvl = new PredefinedLevelGenerator(levels[levelsOrder[currentLevel]]).CreateLevel();
-        console.log(levelsOrder[currentLevel]);
-        currentLevel++; // Defined in index.js
         return lvl;
     }
 
@@ -4852,11 +4850,12 @@ class PredefinedLevelState extends LevelState {
 
     CheckForChange(context) {
         if (this.GotoLoseState || this.NextLevel) {
-            // TODO console.log(Mario.MarioCharacter.gameplayMetrics.PrintMetrics());
+            localStorage.setItem(`level_${levelsOrder[currentLevel]}_game`, JSON.stringify({"metrics": Mario.MarioCharacter.gameplayMetrics.PrintMetrics(), "actions": this.agent.GetActions()}));
 
-            this.agent.StoreActions(); // Store player actions
-
-            context.ChangeState(new PredefinedLevelState(1, 0)); // TODO Count Number os Losses
+            survey.nextPage();
+            survey.showNavigationButtons = true;
+            context.ChangeState(new LoadingState());
+            //context.ChangeState(new PredefinedLevelState(1, 0)); // TODO Count Number os Losses
         }
     }
 
@@ -5041,9 +5040,7 @@ class Agent extends NotchSprite {
         this.ticks++;
     }
 
-    StoreActions() {
-        // TODO console.log(this.ticks);
-    }
+    GetActions() { }
 };
 
 /**
@@ -5070,9 +5067,7 @@ class PlayerAgent extends Agent {
         });
     }
 
-    StoreActions() {
-        // TODO console.log(JSON.stringify(this.actions)); // TODO Store in JSON file or send to server ?
-    }
+    GetActions() { return this.actions; }
 };
 
 /**
