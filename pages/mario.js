@@ -4,8 +4,8 @@ var levels = JSON.parse(localStorage.getItem("levels"));
 var levelsOrder = JSON.parse(localStorage.getItem("levelsOrder"));
 var currentLevel = localStorage.getItem("currentLevel");
 
-if (levels === null || levelsOrder === null || currentLevel === null) {
-    window.location.href = '/';
+if (levels === null || levelsOrder === null || currentLevel === null || currentLevel >= levels.length) {
+    window.location.replace('./');
     throw '';
 }
 
@@ -25,7 +25,7 @@ fetch('questionnaire/level.json').then(rsp => { return rsp.json(); }).then(jsonD
             currentLevel++;
             localStorage.setItem("currentLevel", currentLevel);
 
-            window.location.href = currentLevel >= levels.length ? "/comments.html" : "/mario.html";
+            window.location.replace(currentLevel >= levels.length ? "./comments.html" : "./mario.html");
         },
         completeText: "Next",
     });

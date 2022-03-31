@@ -17,7 +17,7 @@ fetch('levels/levels.json').then(rsp => { return rsp.json(); }).then(jsonData =>
       onCompleting: (e) => {
         e.allowComplete = false;
         localStorage.setItem("questionnaire", JSON.stringify(e.data));
-        window.location.href = "/mario.html";
+        window.location.replace("./mario.html");
       },
       completeText: "Play",
     });
