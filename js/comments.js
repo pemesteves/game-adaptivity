@@ -53,8 +53,8 @@ fetch('questionnaire/comments.json').then(rsp => { return rsp.json(); }).then(js
         const level_data = JSON.parse(localStorage.getItem(`level_${level}_game`));
         Object.keys(level_data.metrics).forEach(key => {
           const data = level_data.metrics[key];
-          if (typeof data === 'object' && !Array.isArray(data) && data !== null) Object.keys(data).forEach(key => { parameters[key] = data; });
-          else parameters[key] = data;
+          if (typeof data === 'object' && !Array.isArray(data) && data !== null) Object.keys(data).forEach(key => { parameters[key] = JSON.stringify(data); });
+          else parameters[key] = JSON.stringify(data);
         });
 
         parameters.actions = JSON.stringify(level_data.actions);
