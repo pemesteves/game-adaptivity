@@ -46,7 +46,7 @@ fetch('questionnaire/comments.json').then(rsp => { return rsp.json(); }).then(js
 
       for (let i = 0; i < levelsOrder.length; i++) {
         const level = levelsOrder[i];
-        
+
         url = sheetScriptURL;
         let parameters = { Sheet: `Level_${(level + 1)}`, Order: (i + 1) };
 
@@ -60,9 +60,9 @@ fetch('questionnaire/comments.json').then(rsp => { return rsp.json(); }).then(js
         parameters.actions = JSON.stringify(level_data.actions);
 
         const level_questionnaire = JSON.parse(localStorage.getItem(`level_${level}_questionnaire`));
-        // TODO CHANGE NAME
-        Object.keys(level_questionnaire.EnemyNumber).forEach(key => {
-          const data = level_questionnaire.EnemyNumber[key];
+
+        Object.keys(level_questionnaire.LevelQuestionnaire).forEach(key => {
+          const data = level_questionnaire.LevelQuestionnaire[key];
           if (typeof data === 'object' && !Array.isArray(data) && data !== null) Object.keys(data).forEach(key => { parameters[key] = data; });
           else parameters[key] = data;
         });

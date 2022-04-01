@@ -13,7 +13,7 @@
             ]
         },
         {
-            "name": "Level!uestionnaire",
+            "name": "LevelQuestionnaire",
             "elements": [
                 {
                     "type": "matrix",
@@ -23,7 +23,7 @@
                     "columns": [
                         {
                             "value": "Not applicable to the previous level",
-                            "text": "Not appliable to the previous level"
+                            "text": "Not applicable to the previous level"
                         },
                         "Very dissatisfied",
                         "Dissatisfied",
