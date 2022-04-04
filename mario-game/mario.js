@@ -4850,7 +4850,8 @@ class PredefinedLevelState extends LevelState {
 
     CheckForChange(context) {
         if (this.GotoLoseState || this.NextLevel) {
-            localStorage.setItem(`level_${levelsOrder[currentLevel]}_game`, JSON.stringify({"metrics": Mario.MarioCharacter.gameplayMetrics.PrintMetrics(), "actions": this.agent.GetActions()}));
+            Mario.MarioCharacter.gameplayMetrics.SetActions(this.agent.GetActions());
+            levelData = Mario.MarioCharacter.gameplayMetrics.PrintMetrics(); // Store Metrics
 
             survey.nextPage();
             survey.showNavigationButtons = true;
@@ -4900,6 +4901,8 @@ class GameplayMetrics {
         this.timeLeft = -1;
 
         this.levelState = null;
+
+        this.actions = [];
     }
 
     SetLevelState(levelState) {
@@ -5001,7 +5004,12 @@ class GameplayMetrics {
             "collectedCoins": this.coins,
             "noPowerups": this.noPowerups,
             "collectedPowerups": this.powerups,
+            "actions": this.actions,
         };
+    }
+
+    SetActions(a) {
+        this.actions = Object.assign([], a);
     }
 };
 

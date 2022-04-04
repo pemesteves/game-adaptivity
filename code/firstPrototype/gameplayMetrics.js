@@ -16,6 +16,8 @@ class GameplayMetrics {
         this.timeLeft = -1;
 
         this.levelState = null;
+
+        this.actions = [];
     }
 
     SetLevelState(levelState) {
@@ -117,6 +119,11 @@ class GameplayMetrics {
             "collectedCoins": this.coins,
             "noPowerups": this.noPowerups,
             "collectedPowerups": this.powerups,
+            "actions": this.actions,
         };
+    }
+
+    SetActions(a) {
+        this.actions = Object.assign([], a);
     }
 };
