@@ -11,7 +11,7 @@ class Character extends NotchSprite {
         this.Large = false;
         this.Fire = false;
         this.Coins = 0;
-        this.Lives = 3;
+        this.Lives = 1;
         this.LevelString = "none";
         this.GroundInertia = 0.89;
         this.AirInertia = 0.89;

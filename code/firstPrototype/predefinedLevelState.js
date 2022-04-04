@@ -44,11 +44,8 @@ class PredefinedLevelState extends LevelState {
 
     DrawUI(context) {
         this.DrawStringShadow(context, "MARIO " + Mario.MarioCharacter.Lives, 0, 0);
-        this.DrawStringShadow(context, "00000000", 0, 1);
         this.DrawStringShadow(context, "COIN", 14, 0);
         this.DrawStringShadow(context, " " + Mario.MarioCharacter.Coins, 14, 1);
-        this.DrawStringShadow(context, "WORLD", 24, 0);
-        this.DrawStringShadow(context, " TBD", 24, 1);
         this.DrawStringShadow(context, "TIME", 34, 0);
 
         let time = this.TimeLeft | 0;
