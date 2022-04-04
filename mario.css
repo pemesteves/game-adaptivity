@@ -7,3 +7,11 @@ canvas {
     left: 0;
     right: 0;
 }
+
+.progress {
+    margin: auto;
+    position: absolute;
+    top: 90px;
+    left: 28rem;
+    right: 28rem;
+}

@@ -2,12 +2,17 @@ Survey.StylesManager.applyTheme("modern");
 
 var levels = JSON.parse(localStorage.getItem("levels"));
 var levelsOrder = JSON.parse(localStorage.getItem("levelsOrder"));
-var currentLevel = localStorage.getItem("currentLevel");
+var currentLevel = parseInt(localStorage.getItem("currentLevel"));
 
 if (levels === null || levelsOrder === null || currentLevel === null || currentLevel >= levels.length) {
     window.location.replace('./');
     throw '';
 }
+
+let progress = (currentLevel + 1) * 100 / levels.length;
+const progressBar = document.getElementsByClassName("progress-bar")[0];
+progressBar.style.width = `${progress}%`;
+progressBar.innerHTML = `${currentLevel + 1}/${levels.length}`;
 
 var survey;
 
