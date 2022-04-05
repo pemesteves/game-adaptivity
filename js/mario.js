@@ -29,7 +29,7 @@ fetch('questionnaire/level.json').then(rsp => { return rsp.json(); }).then(jsonD
         onCompleting: (e) => {
             e.allowComplete = false;
 
-            let parameters = { GUID: guid, Sheet: `Level_${(levelsOrder[currentLevel])}`, Order: (currentLevel + 1) };
+            let parameters = { GUID: guid, Sheet: `Level_${(parseInt(levelsOrder[currentLevel]) + 1)}`, Order: (currentLevel + 1) };
 
             console.log(levelData);
             Object.keys(levelData).forEach(key => {
