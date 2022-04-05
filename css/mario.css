@@ -15,3 +15,8 @@ canvas {
     left: 28rem;
     right: 28rem;
 }
+
+div#level-intro {
+    padding: 1rem 2rem 0.25rem 2rem;
+    background-color: rgba(159, 159, 159, 0.1);
+}

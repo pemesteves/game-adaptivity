@@ -16,9 +16,14 @@
             "name": "LevelQuestionnaire",
             "elements": [
                 {
+                    "type": "html",
+                    "name": "LevelIntro",
+                    "html": "<div id=\"level-intro\">\n<p>As mentioned before, you only need to say if the elements improved or not the overall experience in the level by stating your <b>level of satisfaction</b>. If you did not see the said element, either because you lost before seeing it or won without seeing it, please state that <b>it does not apply to the previous level</b>.</p>\n\n<p>Please answer as honestly as possible.</p>\n</div>"
+                },
+                {
                     "type": "matrix",
                     "name": "LevelQuestionnaire",
-                    "title": "In the previous level, how did you feel about ...",
+                    "title": "In the previous level, how did you feel about...",
                     "isRequired": true,
                     "columns": [
                         "Not applicable to the previous level",
