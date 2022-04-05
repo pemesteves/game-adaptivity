@@ -23,3 +23,27 @@
 #intro p {
     margin-bottom: 0.75rem;
 }
+
+#intro #instructions div.row {
+    max-width: 65%;
+    margin: 0 auto;
+    padding-top: .25rem;
+    padding-bottom: .25rem;
+    background-color: rgba(39,41,43,0.03);
+    border: 1px solid rgba(39,41,43,0.1);
+    border-collapse: collapse;
+}
+
+#intro #instructions div.row div.instructions-text {
+    flex-grow: 2;
+    display: flex;
+    align-items: center;
+}
+
+#intro #instructions div.row div.instructions-text:not(:last-child) {
+    border-right: 2px solid rgba(39,41,43,0.1);
+}
+
+#intro #instructions div.row div img {
+    max-width: 4rem;
+}
