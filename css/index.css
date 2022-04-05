@@ -1,0 +1,25 @@
+#intro #images {
+    text-align: center;
+}
+
+#intro #images figure.figure {
+    text-align: center;
+    margin: .5rem 2.5rem;
+}
+
+#intro #images figure.figure figcaption {
+    font-weight: bolder;
+}
+
+#intro h1 {
+    font-size: 1.5rem;
+    margin-bottom: 1rem;
+}
+
+#intro h1:not(:first-child) {
+    margin-top: 1.25rem;
+}
+
+#intro p {
+    margin-bottom: 0.75rem;
+}

@@ -4,7 +4,16 @@
     "logoPosition": "right",
     "pages": [
         {
-            "name": "page1",
+            "name": "Introduction",
+            "elements": [
+                {
+                    "type": "html",
+                    "html": "<div id=\"intro\"><h1>About this survey</h1><p>In the context of my<b>master's dissertation</b>, I am collecting data to better understand how to<b>improve the players' experience</b>through<b>game adaptivity</b>.</p><p>To that end, you need to answer a few questions about yourself, which are divided into 3 categories:<b>demographics</b>(age, gender, and level of education),<b>personality</b>(how do you see yourself in certain situations), and<b>gaming experience</b>(how many times did you play platforming games).</p><p>After this questionnaire, you will be presented with<b>levels where some elements might be missing</b>. After playing each level, you will be given a set of questions regarding these elements, so please pay attention to the following game elements:</p><div id=\"images\"><figure class=\"figure\"><img src=\"questionnaire/images/coin.png\" class=\"figure-img img-fluid rounded\" alt=\"Coin\"><figcaption class=\"figure-caption\">Coins</figcaption></figure><figure class=\"figure\"><img src=\"questionnaire/images/enemy_1.png\" class=\"figure-img img-fluid rounded\" alt=\"Goomba\"> <img src=\"questionnaire/images/enemy_2.png\" class=\"figure-img img-fluid rounded\" alt=\"Koopa Troopa\"> <img src=\"questionnaire/images/enemy_3.png\" class=\"figure-img img-fluid rounded\" alt=\"Spirry\"> <img src=\"questionnaire/images/enemy_4.png\" class=\"figure-img img-fluid rounded\" alt=\"Piranha Plant\"><figcaption class=\"figure-caption\">Enemies</figcaption></figure><figure class=\"figure\"><img src=\"questionnaire/images/gap.png\" class=\"figure-img img-fluid rounded\" alt=\"Gap\"><figcaption class=\"figure-caption\">Gaps</figcaption></figure><figure class=\"figure\"><img src=\"questionnaire/images/powerup_2.png\" class=\"figure-img img-fluid rounded\" alt=\"Mushroom\"> <img src=\"questionnaire/images/powerup_1.png\" class=\"figure-img img-fluid rounded\" alt=\"Flower\"><figcaption class=\"figure-caption\">Powerups</figcaption></figure></div><p>After playing and answering the questionnaires, you have the opportunity to give us some feedback regarding the<b>overall experience</b>. This survey should not take more than<b>15 minutes</b>to complete.</p><h1>Disclaimer</h1><p>The data collected in this survey will be used only for<b>statistics</b>. There are no questions or types of tracking that can identify who you are.</p><p>All the data collected will be taken care of responsibly for the<b>sole purpose of this master's dissertation</b>. By proceeding with this questionnaire, you<b>acknowledge the collection and analysis of your data.</b></p><p>Any questions can be sent to<a href=\"mailto:up201705160@edu.fe.up.pt\">up201705160@edu.fe.up.pt</a>.</p></div>"
+                }
+            ]
+        },
+        {
+            "name": "Demographics",
             "elements": [
                 {
                     "type": "radiogroup",
@@ -72,12 +81,12 @@
             "description": "Demographics Questionnaire"
         },
         {
-            "name": "page2",
+            "name": "Personality",
             "elements": [
                 {
                     "type": "matrix",
                     "name": "personality-questionnaire",
-                    "title": "Please answer every question",
+                    "title": "I see myself as someone who...",
                     "isRequired": true,
                     "columns": [
                         {
@@ -104,47 +113,47 @@
                     "rows": [
                         {
                             "value": "BFI10-1",
-                            "text": "I see myself as someone who is reserved."
+                            "text": "...is reserved."
                         },
                         {
                             "value": "BFI10-2",
-                            "text": "I see myself as someone who is generally trusting."
+                            "text": "...is generally trusting."
                         },
                         {
                             "value": "BFI10-3",
-                            "text": "I see myself as someone who tends to be lazy."
+                            "text": "...tends to be lazy."
                         },
                         {
                             "value": "BFI10-4",
-                            "text": "I see myself as someone who is relaxed, handles stress well."
+                            "text": "...is relaxed, handles stress well."
                         },
                         {
                             "value": "BFI10-5",
-                            "text": "I see myself as someone who has few artistic interests."
+                            "text": "...has few artistic interests."
                         },
                         {
                             "value": "BFI10-6",
-                            "text": "I see myself as someone who is outgoing, sociable."
+                            "text": "...is outgoing, sociable."
                         },
                         {
                             "value": "BFI10-7",
-                            "text": "I see myself as someone who tends to find fault with others."
+                            "text": "...tends to find fault with others."
                         },
                         {
                             "value": "BFI10-8",
-                            "text": "I see myself as someone who does a thorough job."
+                            "text": "...does a thorough job."
                         },
                         {
                             "value": "BFI10-9",
-                            "text": "I see myself as someone who gets nervous easily."
+                            "text": "...gets nervous easily."
                         },
                         {
                             "value": "BFI10-10",
-                            "text": "I see myself as someone who has an active imagination."
+                            "text": "...has an active imagination."
                         },
                         {
                             "value": "BFI10-11",
-                            "text": "I see myself as someone who is considerate and kind to almost everyone."
+                            "text": "...is considerate and kind to almost everyone."
                         }
                     ],
                     "isAllRowRequired": true
@@ -154,7 +163,7 @@
             "description": "Personality Questionnaire"
         },
         {
-            "name": "page3",
+            "name": "Game Experience",
             "elements": [
                 {
                     "type": "matrix",
@@ -185,19 +194,19 @@
                     "rows": [
                         {
                             "value": "1",
-                            "text": "Do you have experience with video games (in general)?"
+                            "text": "I have experience with video games (in general)"
                         },
                         {
                             "value": "2",
-                            "text": "Do you have experience with the platform game genre?"
+                            "text": "I have experience with the platform game genre"
                         },
                         {
                             "value": "3",
-                            "text": "Have you played Super Mario Bros. before?"
+                            "text": "I have played Super Mario Bros. before"
                         },
                         {
                             "value": "4",
-                            "text": "Are you acquainted with Super Mario Bros. mechanics?"
+                            "text": "I am acquainted with Super Mario Bros. mechanics"
                         }
                     ],
                     "isAllRowRequired": true

@@ -21,10 +21,7 @@
                     "title": "In the previous level, how did you feel about ...",
                     "isRequired": true,
                     "columns": [
-                        {
-                            "value": "Not applicable to the previous level",
-                            "text": "Not applicable to the previous level"
-                        },
+                        "Not applicable to the previous level",
                         "Very dissatisfied",
                         "Dissatisfied",
                         "Neutral",
