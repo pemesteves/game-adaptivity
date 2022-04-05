@@ -31,7 +31,6 @@ fetch('questionnaire/level.json').then(rsp => { return rsp.json(); }).then(jsonD
 
             let parameters = { GUID: guid, Sheet: `Level_${(parseInt(levelsOrder[currentLevel]) + 1)}`, Order: (currentLevel + 1) };
 
-            console.log(levelData);
             Object.keys(levelData).forEach(key => {
               const data = levelData[key];
               if (typeof data === 'object' && !Array.isArray(data) && data !== null) Object.keys(data).forEach(key => { parameters[key] = JSON.stringify(data); });

@@ -1,4 +1,6 @@
 class GameplayMetrics {
+    static MinRegisterDistance = 10;
+
     constructor() {
         this.jumps = [];
         this.landings = [];
@@ -30,11 +32,19 @@ class GameplayMetrics {
     }
 
     RegisterJump() {
-        this.jumps.push(this.GetNearestGap());
+        const gap = this.GetNearestGap();
+        if (gap === null || gap > GameplayMetrics.MinRegisterDistance) return;
+
+        this.jumps.push(this.GetNextGap());
     }
 
     RegisterLanding() {
-        this.landings.push(this.GetNearestGap());
+        const gap = this.GetNearestGap();
+        if (gap === null) return;
+        
+        if (this.landings.length === this.jumps.length) return;
+        
+        this.landings.push(this.GetPreviousGap());
     }
 
     RegisterNoCoins(no) {
@@ -80,8 +90,11 @@ class GameplayMetrics {
     }
 
     GetNearestGap() {
-        const xPos = (Mario.MarioCharacter.X - 8) / 16, facing = Mario.MarioCharacter.Facing;
         const jumps = this.levelState.Level.JumpSections;
+        
+        if (jumps.length === 0) return null;
+
+        const xPos = (Mario.MarioCharacter.X - 8) / 16;
 
         let minDist = Infinity;
         for (let i = 0; i < jumps.length; i++) {
@@ -98,6 +111,46 @@ class GameplayMetrics {
             } else {
                 console.log("Inside gap: Jumping on walls");
             }
+        }
+
+        return minDist;
+    }
+
+    GetPreviousGap() {
+        const jumps = this.levelState.Level.JumpSections;
+        
+        if (jumps.length === 0) return null;
+
+        const xPos = (Mario.MarioCharacter.X - 8) / 16;
+
+        let minDist = Infinity;
+        for (let i = 0; i < jumps.length; i++) {
+            if (xPos <= jumps[i].GetHoleEndX()) continue;
+
+            const dist = xPos - jumps[i].GetHoleEndX();
+            if (dist > minDist) break;
+
+            minDist = dist;
+        }
+
+        return minDist;
+    }
+
+    GetNextGap() {
+        const jumps = this.levelState.Level.JumpSections;
+        
+        if (jumps.length === 0) return null;
+
+        const xPos = (Mario.MarioCharacter.X - 8) / 16;
+
+        let minDist = Infinity;
+        for (let i = 0; i < jumps.length; i++) {
+            if (xPos >= jumps[i].GetHoleStartX()) continue;
+
+            const dist = jumps[i].GetHoleStartX() - xPos;
+            if (dist > minDist) break;
+
+            minDist = dist;
         }
 
         return minDist;
