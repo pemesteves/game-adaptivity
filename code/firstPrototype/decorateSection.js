@@ -4,6 +4,8 @@ class DecorateSection {
         this.X1 = x1;
         this.Floor = floor;
 
+        this.GenerateCoinLine = true;
+
         this.SBegin = 0;
         this.SEnd = 0;
         this.EBegin = 0;
@@ -29,5 +31,9 @@ class DecorateSection {
         this.Rnd2.push(rnd2);
         this.Rnd3.push(rnd3);
         this.Rnd4.push(rnd4);
+    }
+
+    SetGenerateCoinLine(g) {
+        this.GenerateCoinLine = g;
     }
 };

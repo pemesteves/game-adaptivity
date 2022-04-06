@@ -203,7 +203,9 @@ class PredefinedLevelGenerator extends LevelGenerator {
         let s = section.SBegin, e = section.EBegin;
         const x0 = section.X0, x1 = section.X1, floor = section.Floor;
 
-        if (floor - 2 > 0 && (x1 - 1 - e) - (x0 + 1 + s) > 1) {
+        const generateCoinLine = section.GenerateCoinLine === undefined ? true : section.GenerateCoinLine;
+
+        if (generateCoinLine && floor - 2 > 0 && (x1 - 1 - e) - (x0 + 1 + s) > 1) {
             for (let x = x0 + 1 + s; x < x1 - 1 - e; x++) {
                 lvl.SetBlock(x, floor - 2, 2 + 2 * 16);
             }

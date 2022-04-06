@@ -302,8 +302,11 @@ class LevelGenerator {
 
         this.AddEnemyLine(level, x0 + 1, x1 - 1, floor - 1);
 
+        let generateCoinLine = false; // Disable to prevent coin generation
+        decorate.SetGenerateCoinLine(generateCoinLine);
+
         // Set coin lines
-        if (floor - 2 > 0 && (x1 - 1 - e) - (x0 + 1 + s) > 1) {
+        if (generateCoinLine && floor - 2 > 0 && (x1 - 1 - e) - (x0 + 1 + s) > 1) {
             for (let x = x0 + 1 + s; x < x1 - 1 - e; x++) {
                 level.SetBlock(x, floor - 2, 34); // Set Coin
             }
