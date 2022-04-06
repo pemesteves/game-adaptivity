@@ -302,7 +302,7 @@ class LevelGenerator {
 
         this.AddEnemyLine(level, x0 + 1, x1 - 1, floor - 1);
 
-        let generateCoinLine = false; // Disable to prevent coin generation
+        let generateCoinLine = true; // Disable to prevent coin generation
         decorate.SetGenerateCoinLine(generateCoinLine);
 
         // Set coin lines
