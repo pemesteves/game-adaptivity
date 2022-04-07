@@ -27,3 +27,40 @@ div#level-intro {
     padding-bottom: .25rem;
     border-bottom: 1px solid rgba(68, 68, 68, 0.1);
 }
+
+#instructions {
+    margin: auto;
+    position: absolute;
+    max-width: 25rem;
+    max-height: 100vh;
+    height: 100%;
+}
+
+#instructions > div.container {
+    vertical-align: middle;
+    margin: auto;
+}
+
+#instructions h1 {
+    font-size: 2rem;
+    padding: 0;
+    padding-left: .5rem;
+}
+
+#instructions .row {
+    margin: 0.5rem 0;
+}
+
+#instructions .col {
+    padding: 1px 5px;
+}
+
+#instructions .instructions-text {
+    padding-top: 0;
+    padding-bottom: 0;
+    margin: auto;
+}
+
+#instructions img {
+    max-width: 100%;
+}
