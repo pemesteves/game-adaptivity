@@ -1,3 +1,9 @@
+#intro {
+    max-width: 65%;
+    margin: 0 auto;
+    text-align: justify;
+}
+
 #intro #images {
     text-align: center;
 }

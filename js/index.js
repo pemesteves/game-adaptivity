@@ -20,6 +20,9 @@ fetch('levels/levels.json').then(rsp => { return rsp.json(); }).then(jsonData =>
       goNextPageAutomatic: false,
       showNavigationButtons: true,
       showCompletedPage: false,
+      onCurrentPageChanging: e => {
+        $('html, body').animate({ scrollTop: 0 }, 'fast');
+      },
       onCompleting: (e) => {
         e.allowComplete = false;
 
