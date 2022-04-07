@@ -115,7 +115,10 @@ class LevelState extends Engine.GameState {
         this.Delta = delta;
 
         this.TimeLeft -= delta;
-        if ((this.TimeLeft | 0) === 0) Mario.MarioCharacter.Die();
+        if ((this.TimeLeft | 0) === 0) {
+            Mario.MarioCharacter.gameplayMetrics.RegisterCauseOfDeath(CauseOfDeath.Time);
+            Mario.MarioCharacter.Die();
+        }
 
         if (this.StartTime > 0) this.StartTime++;
 

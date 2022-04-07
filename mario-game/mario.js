@@ -793,6 +793,7 @@ class NotchSprite extends Engine.Drawable {
 class CauseOfDeath {
     static Hole = 1;
     static Enemy = 2;
+    static Time = 3;
 };
 
 /**
@@ -1052,6 +1053,7 @@ class Character extends NotchSprite {
 
         // Fall into hole
         if (this.Y > this.World.Level.Height * 16 + 16) {
+            this.gameplayMetrics.RegisterCauseOfDeath(CauseOfDeath.Hole);
             this.Die();
         }
 
@@ -1289,8 +1291,10 @@ class Character extends NotchSprite {
             this.SetLarge(this.Fire, false);
 
             this.InvulnerableTime = 32;
+        } else {
+            this.gameplayMetrics.RegisterCauseOfDeath(CauseOfDeath.Enemy);
+            this.Die();
         }
-        else this.Die();
     }
 
     Win() {
@@ -4522,7 +4526,10 @@ class LevelState extends Engine.GameState {
         this.Delta = delta;
 
         this.TimeLeft -= delta;
-        if ((this.TimeLeft | 0) === 0) Mario.MarioCharacter.Die();
+        if ((this.TimeLeft | 0) === 0) {
+            Mario.MarioCharacter.gameplayMetrics.RegisterCauseOfDeath(CauseOfDeath.Time);
+            Mario.MarioCharacter.Die();
+        }
 
         if (this.StartTime > 0) this.StartTime++;
 
@@ -4901,12 +4908,14 @@ class GameplayMetrics {
         this.jumps = [];
         this.wallJumps = [];
         this.landings = [];
-        
+
         this.coins = [];
         this.noCoins = -1;
 
         this.powerups = [];
         this.noPowerups = -1;
+
+        this.causeOfDeath = -1;
 
         // TODO Implement enemy death detection
         this.enemies = [];
@@ -4928,6 +4937,10 @@ class GameplayMetrics {
         this.levelState = levelState;
     }
 
+    RegisterCauseOfDeath(c) {
+        this.causeOfDeath = c;
+    }
+
     RegisterJump() {
         const gap = this.GetNearestGap();
         if (gap === null || gap > GameplayMetrics.MinRegisterDistance) return;
@@ -4936,35 +4949,35 @@ class GameplayMetrics {
     }
 
     RegisterWallJump() {
-        this.wallJumps.push({"X": (Mario.MarioCharacter.X - 8) / 16, "Y": (Mario.MarioCharacter.Y - 8) / 16});
-        console.log(this.wallJumps[this.wallJumps.length - 1]);
+        this.wallJumps.push({ "X": (Mario.MarioCharacter.X - 8) / 16, "Y": (Mario.MarioCharacter.Y - 8) / 16 });
+        this.RegisterJump();
     }
 
     RegisterLanding() {
         const gap = this.GetNearestGap();
         if (gap === null) return;
-        
+
         if (this.landings.length === this.jumps.length) return;
-        
+
         this.landings.push(this.GetPreviousGap());
     }
 
     RegisterNoCoins(no) {
-        this.noCoins = no; 
+        this.noCoins = no;
     }
 
     RegisterNoPowerups(no) {
-        this.noPowerups = no; 
+        this.noPowerups = no;
     }
 
     RegisterNoEnemies(no) {
-        this.noEnemies = no; 
+        this.noEnemies = no;
     }
 
     CollectedCoin(x, y) {
         const lvl = this.levelState.Level;
         if (!(lvl instanceof PredefinedLevel)) return;
-        
+
         const ID = lvl.GetCoinID(x, y);
         if (ID === null) {
             console.error("ERROR: Coin doesn't exist!");
@@ -4977,7 +4990,7 @@ class GameplayMetrics {
     CollectedPowerup(x, y) {
         const lvl = this.levelState.Level;
         if (!(lvl instanceof PredefinedLevel)) return;
-        
+
         const ID = lvl.GetPowerupID(x, y);
         if (ID === null) {
             console.error("ERROR: Powerup doesn't exist!");
@@ -4993,7 +5006,7 @@ class GameplayMetrics {
 
     GetNearestGap() {
         const jumps = this.levelState.Level.JumpSections;
-        
+
         if (jumps.length === 0) return null;
 
         const xPos = (Mario.MarioCharacter.X - 8) / 16;
@@ -5020,7 +5033,7 @@ class GameplayMetrics {
 
     GetPreviousGap() {
         const jumps = this.levelState.Level.JumpSections;
-        
+
         if (jumps.length === 0) return null;
 
         const xPos = (Mario.MarioCharacter.X - 8) / 16;
@@ -5040,7 +5053,7 @@ class GameplayMetrics {
 
     GetNextGap() {
         const jumps = this.levelState.Level.JumpSections;
-        
+
         if (jumps.length === 0) return null;
 
         const xPos = (Mario.MarioCharacter.X - 8) / 16;
@@ -5067,7 +5080,9 @@ class GameplayMetrics {
 
     PrintMetrics() {
         return {
+            "causeOfDeath": this.causeOfDeath,
             "jumps": this.jumps,
+            "wallJumps": this.wallJumps,
             "landings": this.landings,
             "timeLeft": this.timeLeft,
             "noCoins": this.noCoins,

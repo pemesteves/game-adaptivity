@@ -255,6 +255,7 @@ class Character extends NotchSprite {
 
         // Fall into hole
         if (this.Y > this.World.Level.Height * 16 + 16) {
+            this.gameplayMetrics.RegisterCauseOfDeath(CauseOfDeath.Hole);
             this.Die();
         }
 
@@ -492,8 +493,10 @@ class Character extends NotchSprite {
             this.SetLarge(this.Fire, false);
 
             this.InvulnerableTime = 32;
+        } else {
+            this.gameplayMetrics.RegisterCauseOfDeath(CauseOfDeath.Enemy);
+            this.Die();
         }
-        else this.Die();
     }
 
     Win() {

@@ -5,12 +5,14 @@ class GameplayMetrics {
         this.jumps = [];
         this.wallJumps = [];
         this.landings = [];
-        
+
         this.coins = [];
         this.noCoins = -1;
 
         this.powerups = [];
         this.noPowerups = -1;
+
+        this.causeOfDeath = -1;
 
         // TODO Implement enemy death detection
         this.enemies = [];
@@ -32,6 +34,10 @@ class GameplayMetrics {
         this.levelState = levelState;
     }
 
+    RegisterCauseOfDeath(c) {
+        this.causeOfDeath = c;
+    }
+
     RegisterJump() {
         const gap = this.GetNearestGap();
         if (gap === null || gap > GameplayMetrics.MinRegisterDistance) return;
@@ -40,35 +46,35 @@ class GameplayMetrics {
     }
 
     RegisterWallJump() {
-        this.wallJumps.push({"X": (Mario.MarioCharacter.X - 8) / 16, "Y": (Mario.MarioCharacter.Y - 8) / 16});
-        console.log(this.wallJumps[this.wallJumps.length - 1]);
+        this.wallJumps.push({ "X": (Mario.MarioCharacter.X - 8) / 16, "Y": (Mario.MarioCharacter.Y - 8) / 16 });
+        this.RegisterJump();
     }
 
     RegisterLanding() {
         const gap = this.GetNearestGap();
         if (gap === null) return;
-        
+
         if (this.landings.length === this.jumps.length) return;
-        
+
         this.landings.push(this.GetPreviousGap());
     }
 
     RegisterNoCoins(no) {
-        this.noCoins = no; 
+        this.noCoins = no;
     }
 
     RegisterNoPowerups(no) {
-        this.noPowerups = no; 
+        this.noPowerups = no;
     }
 
     RegisterNoEnemies(no) {
-        this.noEnemies = no; 
+        this.noEnemies = no;
     }
 
     CollectedCoin(x, y) {
         const lvl = this.levelState.Level;
         if (!(lvl instanceof PredefinedLevel)) return;
-        
+
         const ID = lvl.GetCoinID(x, y);
         if (ID === null) {
             console.error("ERROR: Coin doesn't exist!");
@@ -81,7 +87,7 @@ class GameplayMetrics {
     CollectedPowerup(x, y) {
         const lvl = this.levelState.Level;
         if (!(lvl instanceof PredefinedLevel)) return;
-        
+
         const ID = lvl.GetPowerupID(x, y);
         if (ID === null) {
             console.error("ERROR: Powerup doesn't exist!");
@@ -97,7 +103,7 @@ class GameplayMetrics {
 
     GetNearestGap() {
         const jumps = this.levelState.Level.JumpSections;
-        
+
         if (jumps.length === 0) return null;
 
         const xPos = (Mario.MarioCharacter.X - 8) / 16;
@@ -124,7 +130,7 @@ class GameplayMetrics {
 
     GetPreviousGap() {
         const jumps = this.levelState.Level.JumpSections;
-        
+
         if (jumps.length === 0) return null;
 
         const xPos = (Mario.MarioCharacter.X - 8) / 16;
@@ -144,7 +150,7 @@ class GameplayMetrics {
 
     GetNextGap() {
         const jumps = this.levelState.Level.JumpSections;
-        
+
         if (jumps.length === 0) return null;
 
         const xPos = (Mario.MarioCharacter.X - 8) / 16;
@@ -171,6 +177,7 @@ class GameplayMetrics {
 
     PrintMetrics() {
         return {
+            "causeOfDeath": this.causeOfDeath,
             "jumps": this.jumps,
             "wallJumps": this.wallJumps,
             "landings": this.landings,
