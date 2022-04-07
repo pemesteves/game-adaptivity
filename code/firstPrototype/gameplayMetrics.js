@@ -3,6 +3,7 @@ class GameplayMetrics {
 
     constructor() {
         this.jumps = [];
+        this.wallJumps = [];
         this.landings = [];
         
         this.coins = [];
@@ -36,6 +37,11 @@ class GameplayMetrics {
         if (gap === null || gap > GameplayMetrics.MinRegisterDistance) return;
 
         this.jumps.push(this.GetNextGap());
+    }
+
+    RegisterWallJump() {
+        this.wallJumps.push({"X": (Mario.MarioCharacter.X - 8) / 16, "Y": (Mario.MarioCharacter.Y - 8) / 16});
+        console.log(this.wallJumps[this.wallJumps.length - 1]);
     }
 
     RegisterLanding() {
@@ -166,6 +172,7 @@ class GameplayMetrics {
     PrintMetrics() {
         return {
             "jumps": this.jumps,
+            "wallJumps": this.wallJumps,
             "landings": this.landings,
             "timeLeft": this.timeLeft,
             "noCoins": this.noCoins,

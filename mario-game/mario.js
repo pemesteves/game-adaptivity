@@ -987,7 +987,6 @@ class Character extends NotchSprite {
                 this.Sliding = false;
                 this.gameplayMetrics.RegisterJump();
             } else if (this.Sliding && this.MayJump) {
-                console.log("Wall Jump")
                 Engine.Resources.PlaySound("jump");
                 this.XJumpSpeed = -this.Facing * 6;
                 this.YJumpSpeed = -2;
@@ -997,7 +996,7 @@ class Character extends NotchSprite {
                 this.OnGround = false;
                 this.Sliding = false;
                 this.Facing = -this.Facing;
-                this.gameplayMetrics.RegisterJump();
+                this.gameplayMetrics.RegisterWallJump();
             } else if (this.JumpTime > 0) {
                 this.Xa += this.XJumpSpeed;
                 this.Ya = this.JumpTime * this.YJumpSpeed;
@@ -4900,6 +4899,7 @@ class GameplayMetrics {
 
     constructor() {
         this.jumps = [];
+        this.wallJumps = [];
         this.landings = [];
         
         this.coins = [];
@@ -4933,6 +4933,11 @@ class GameplayMetrics {
         if (gap === null || gap > GameplayMetrics.MinRegisterDistance) return;
 
         this.jumps.push(this.GetNextGap());
+    }
+
+    RegisterWallJump() {
+        this.wallJumps.push({"X": (Mario.MarioCharacter.X - 8) / 16, "Y": (Mario.MarioCharacter.Y - 8) / 16});
+        console.log(this.wallJumps[this.wallJumps.length - 1]);
     }
 
     RegisterLanding() {

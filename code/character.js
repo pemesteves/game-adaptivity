@@ -190,7 +190,6 @@ class Character extends NotchSprite {
                 this.Sliding = false;
                 this.gameplayMetrics.RegisterJump();
             } else if (this.Sliding && this.MayJump) {
-                console.log("Wall Jump")
                 Engine.Resources.PlaySound("jump");
                 this.XJumpSpeed = -this.Facing * 6;
                 this.YJumpSpeed = -2;
@@ -200,7 +199,7 @@ class Character extends NotchSprite {
                 this.OnGround = false;
                 this.Sliding = false;
                 this.Facing = -this.Facing;
-                this.gameplayMetrics.RegisterJump();
+                this.gameplayMetrics.RegisterWallJump();
             } else if (this.JumpTime > 0) {
                 this.Xa += this.XJumpSpeed;
                 this.Ya = this.JumpTime * this.YJumpSpeed;
