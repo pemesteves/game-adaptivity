@@ -74,7 +74,7 @@ class Enemy extends NotchSprite {
                 this.YPicO = 31 - (32 - 8);
                 this.PicHeight = 8;
 
-                if (this.SpriteTemplate !== null) this.SpriteTemplate.IsDead = true;
+                if (this.SpriteTemplate !== null) this.SpriteTemplate.SetDead();
 
                 this.DeadTime = 10;
                 this.Winged = false;
@@ -228,7 +228,7 @@ class Enemy extends NotchSprite {
             this.Xa = shell.Facing * 2;
             this.Ya = -5;
             this.FlyDeath = true;
-            if (this.SpriteTemplate !== null) this.SpriteTemplate.IsDead = true;
+            if (this.SpriteTemplate !== null) this.SpriteTemplate.SetDead();
             this.DeadTime = 100;
             this.Winged = false;
             this.YFlip = true;
@@ -249,7 +249,7 @@ class Enemy extends NotchSprite {
             this.Xa = fireball.Facing * 2;
             this.Ya = -5;
             this.FlyDeath = true;
-            if (this.SpriteTemplate !== null) this.SpriteTemplate.IsDead = true;
+            if (this.SpriteTemplate !== null) this.SpriteTemplate.SetDead();
             this.DeadTime = 100;
             this.Winged = false;
             this.YFlip = true;
@@ -266,7 +266,7 @@ class Enemy extends NotchSprite {
             this.Xa = -Mario.MarioCharacter.Facing * 2;
             this.Ya = -5;
             this.FlyDeath = true;
-            if (this.SpriteTemplate !== null) this.SpriteTemplate.IsDead = true;
+            if (this.SpriteTemplate !== null) this.SpriteTemplate.SetDead();
 
             this.DeadTime = 100;
             this.Winged = false;

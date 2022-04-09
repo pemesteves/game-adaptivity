@@ -44,7 +44,7 @@ class Shell extends NotchSprite {
 
             this.Xa = fireball.Facing * 2;
             this.Ya = -5;
-            if (this.SpriteTemplate !== null) this.SpriteTemplate.IsDead = true;
+            if (this.SpriteTemplate !== null) this.SpriteTemplate.SetDead();
 
             this.DeadTime = 100;
             this.YFlip = true;

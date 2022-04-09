@@ -70,6 +70,19 @@ class GameplayMetrics {
     RegisterNoEnemies(no) {
         this.noEnemies = no;
     }
+    
+    KilledEnemy(template) {
+        const lvl = this.levelState.Level;
+        if (!(lvl instanceof PredefinedLevel)) return;
+
+        const ID = lvl.GetEnemyID(template);
+        if (ID === null) {
+            console.error("ERROR: Enemy doesn't exist!");
+            return;
+        }
+
+        this.enemies.push(ID);
+    }
 
     CollectedCoin(x, y) {
         const lvl = this.levelState.Level;
@@ -95,10 +108,6 @@ class GameplayMetrics {
         }
 
         this.powerups.push(ID);
-    }
-
-    KilledEnemy(ID) {
-        this.enemies.push(ID);
     }
 
     GetNearestGap() {
@@ -186,6 +195,8 @@ class GameplayMetrics {
             "collectedCoins": this.coins,
             "noPowerups": this.noPowerups,
             "collectedPowerups": this.powerups,
+            "noEnemies": this.noEnemies,
+            "killedEnemies": this.enemies,
             "actions": this.actions,
         };
     }

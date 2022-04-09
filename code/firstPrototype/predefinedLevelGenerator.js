@@ -76,6 +76,7 @@ class PredefinedLevelGenerator extends LevelGenerator {
         this.FixWalls(lvl);
 
         // Register Gameplay Metrics
+        Mario.MarioCharacter.gameplayMetrics.RegisterNoEnemies(tmp.length);
         Mario.MarioCharacter.gameplayMetrics.RegisterNoCoins(lvl.coins.length);
         Mario.MarioCharacter.gameplayMetrics.RegisterNoPowerups(lvl.powerups.length);
 

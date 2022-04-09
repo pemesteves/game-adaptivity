@@ -382,9 +382,11 @@ class PredefinedLevel extends Level {
 
         this.coinID = 0;
         this.powerupID = 0;
+        this.enemyID = 0;
 
         this.coins = [];
         this.powerups = [];
+        this.enemies = [];
     }
 
     SetBlock(x, y, block) {
@@ -408,6 +410,16 @@ class PredefinedLevel extends Level {
         }
     }
 
+    SetSpriteTemplate(x, y, template) {
+        if (this.IsOutsideBoundaries(x, y)) return;
+
+        super.SetSpriteTemplate(x, y, template);
+        this.enemies.push({
+            "ID": ++this.enemyID,
+            "Template": template
+        });
+    }
+
     GetCoinID(x, y) {
         for (let i = 0; i < this.coins.length; i++) {
             if (this.coins[i].X === x && this.coins[i].Y === y) return this.coins[i].ID;
@@ -419,6 +431,14 @@ class PredefinedLevel extends Level {
     GetPowerupID(x, y) {
         for (let i = 0; i < this.powerups.length; i++) {
             if (this.powerups[i].X === x && this.powerups[i].Y === y) return this.powerups[i].ID;
+        }
+
+        return null;
+    }
+
+    GetEnemyID(template) {
+        for (let i = 0; i < this.enemies.length; i++) {
+            if (this.enemies[i].Template === template) return this.enemies[i].ID;
         }
 
         return null;
@@ -2159,6 +2179,7 @@ class PredefinedLevelGenerator extends LevelGenerator {
         this.FixWalls(lvl);
 
         // Register Gameplay Metrics
+        Mario.MarioCharacter.gameplayMetrics.RegisterNoEnemies(tmp.length);
         Mario.MarioCharacter.gameplayMetrics.RegisterNoCoins(lvl.coins.length);
         Mario.MarioCharacter.gameplayMetrics.RegisterNoPowerups(lvl.powerups.length);
 
@@ -2331,6 +2352,11 @@ class SpriteTemplate {
         this.Sprite = null;
     }
 
+    SetDead() {
+        this.IsDead = true;
+        Mario.MarioCharacter.gameplayMetrics.KilledEnemy(this);
+    }
+
     Spawn(world, x, y, dir) {
         if (this.IsDead) return;
 
@@ -2418,7 +2444,7 @@ class Enemy extends NotchSprite {
                 this.YPicO = 31 - (32 - 8);
                 this.PicHeight = 8;
 
-                if (this.SpriteTemplate !== null) this.SpriteTemplate.IsDead = true;
+                if (this.SpriteTemplate !== null) this.SpriteTemplate.SetDead();
 
                 this.DeadTime = 10;
                 this.Winged = false;
@@ -2572,7 +2598,7 @@ class Enemy extends NotchSprite {
             this.Xa = shell.Facing * 2;
             this.Ya = -5;
             this.FlyDeath = true;
-            if (this.SpriteTemplate !== null) this.SpriteTemplate.IsDead = true;
+            if (this.SpriteTemplate !== null) this.SpriteTemplate.SetDead();
             this.DeadTime = 100;
             this.Winged = false;
             this.YFlip = true;
@@ -2593,7 +2619,7 @@ class Enemy extends NotchSprite {
             this.Xa = fireball.Facing * 2;
             this.Ya = -5;
             this.FlyDeath = true;
-            if (this.SpriteTemplate !== null) this.SpriteTemplate.IsDead = true;
+            if (this.SpriteTemplate !== null) this.SpriteTemplate.SetDead();
             this.DeadTime = 100;
             this.Winged = false;
             this.YFlip = true;
@@ -2610,7 +2636,7 @@ class Enemy extends NotchSprite {
             this.Xa = -Mario.MarioCharacter.Facing * 2;
             this.Ya = -5;
             this.FlyDeath = true;
-            if (this.SpriteTemplate !== null) this.SpriteTemplate.IsDead = true;
+            if (this.SpriteTemplate !== null) this.SpriteTemplate.SetDead();
 
             this.DeadTime = 100;
             this.Winged = false;
@@ -3343,7 +3369,7 @@ class Shell extends NotchSprite {
 
             this.Xa = fireball.Facing * 2;
             this.Ya = -5;
-            if (this.SpriteTemplate !== null) this.SpriteTemplate.IsDead = true;
+            if (this.SpriteTemplate !== null) this.SpriteTemplate.SetDead();
 
             this.DeadTime = 100;
             this.YFlip = true;
@@ -4973,6 +4999,19 @@ class GameplayMetrics {
     RegisterNoEnemies(no) {
         this.noEnemies = no;
     }
+    
+    KilledEnemy(template) {
+        const lvl = this.levelState.Level;
+        if (!(lvl instanceof PredefinedLevel)) return;
+
+        const ID = lvl.GetEnemyID(template);
+        if (ID === null) {
+            console.error("ERROR: Enemy doesn't exist!");
+            return;
+        }
+
+        this.enemies.push(ID);
+    }
 
     CollectedCoin(x, y) {
         const lvl = this.levelState.Level;
@@ -4998,10 +5037,6 @@ class GameplayMetrics {
         }
 
         this.powerups.push(ID);
-    }
-
-    KilledEnemy(ID) {
-        this.enemies.push(ID);
     }
 
     GetNearestGap() {
@@ -5089,6 +5124,8 @@ class GameplayMetrics {
             "collectedCoins": this.coins,
             "noPowerups": this.noPowerups,
             "collectedPowerups": this.powerups,
+            "noEnemies": this.noEnemies,
+            "killedEnemies": this.enemies,
             "actions": this.actions,
         };
     }

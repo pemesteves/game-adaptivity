@@ -13,6 +13,11 @@ class SpriteTemplate {
         this.Sprite = null;
     }
 
+    SetDead() {
+        this.IsDead = true;
+        Mario.MarioCharacter.gameplayMetrics.KilledEnemy(this);
+    }
+
     Spawn(world, x, y, dir) {
         if (this.IsDead) return;
 
