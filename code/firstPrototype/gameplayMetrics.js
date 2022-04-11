@@ -130,7 +130,7 @@ class GameplayMetrics {
 
                 minDist = dist;
             } else {
-                console.log("Inside gap: Jumping on walls");
+                // Inside Gap
             }
         }
 

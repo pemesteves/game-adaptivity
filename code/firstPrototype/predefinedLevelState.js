@@ -17,7 +17,6 @@ class PredefinedLevelState extends LevelState {
     GetLevel() {
         //const lvl = new LevelGenerator(320, 15).CreateLevel(0, 1);
         const lvl = new PredefinedLevelGenerator(levels[levelsOrder[currentLevel]]).CreateLevel();
-        console.log(JSON.stringify(lvl.PrintLevel()));
         return lvl;
     }
 
@@ -34,7 +33,6 @@ class PredefinedLevelState extends LevelState {
             survey.nextPage();
             survey.showNavigationButtons = true;
             context.ChangeState(new LoadingState());
-            //context.ChangeState(new PredefinedLevelState(1, 0)); // TODO Count Number os Losses
         }
     }
 
