@@ -194,19 +194,19 @@
                     "rows": [
                         {
                             "value": "1",
-                            "text": "I have experience with video games (in general)"
+                            "text": "I have experience with video games (in general)."
                         },
                         {
                             "value": "2",
-                            "text": "I have experience with the platform game genre"
+                            "text": "I have experience with the platform game genre."
                         },
                         {
                             "value": "3",
-                            "text": "I have played Super Mario Bros. before"
+                            "text": "I have played Super Mario Bros. before."
                         },
                         {
                             "value": "4",
-                            "text": "I am acquainted with Super Mario Bros. mechanics"
+                            "text": "I am acquainted with Super Mario Bros. mechanics."
                         }
                     ],
                     "isAllRowRequired": true
