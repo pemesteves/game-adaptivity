@@ -14,7 +14,6 @@ class GameplayMetrics {
 
         this.causeOfDeath = -1;
 
-        // TODO Implement enemy death detection
         this.enemies = [];
         this.noEnemies = -1;
 
@@ -191,11 +190,11 @@ class GameplayMetrics {
             "wallJumps": this.wallJumps,
             "landings": this.landings,
             "timeLeft": this.timeLeft,
-            "noCoins": this.noCoins,
+            "noCoins": this.coins.length,
             "collectedCoins": this.coins,
-            "noPowerups": this.noPowerups,
+            "noPowerups": this.powerups.length,
             "collectedPowerups": this.powerups,
-            "noEnemies": this.noEnemies,
+            "noEnemies": this.enemies.length,
             "killedEnemies": this.enemies,
             "actions": this.actions,
         };
