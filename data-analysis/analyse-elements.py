@@ -2,7 +2,7 @@ import pandas as pd
 from matplotlib import pyplot as plt
 import numpy as np
 from ast import literal_eval
-from scipy.stats import pearsonr
+from scipy.stats import pearsonr, spearmanr
 from personality import Personality
 
 CoinsPerLevel = [77, 0, 51, 41, 70, 21, 54, 0, 0, 41, 52, 0]
@@ -33,11 +33,15 @@ def plot(df, elem_col, num_elems, plot_title, x_label):
     for i in range(1, num_elems + 1):
         bins += [i]
 
-    _, ax = plt.subplots(figsize =(20, 8))
+    fig, ax = plt.subplots(figsize =(20, 8))
     ax.hist(np.array(element), bins = bins, rwidth=0.75, align='left')
     ax.set_title(plot_title)
     ax.set_xlabel(x_label)
     ax.set_ylabel('Number of Players')
+
+    fig.savefig('./images/{}'.format(plot_title))
+
+    plt.close(fig)
 
     return element
 
@@ -62,13 +66,23 @@ def correlateElementsAndTraits(df, Level, elem_col, noElems, personality):
             elements[j].append(1 if (j in elems) else 0)
 
     for i in range(0, noElems):
-        corrE, _ = pearsonr(personality.extraversion, elements[i])
-        corrA, _ = pearsonr(personality.aggreableness, elements[i])
-        corrC, _ = pearsonr(personality.conscientiousness, elements[i])
-        corrN, _ = pearsonr(personality.neuroticism, elements[i])
-        corrO, _ = pearsonr(personality.openness, elements[i])
+        corrE_P, _ = pearsonr(personality.extraversion, elements[i])
+        corrA_P, _ = pearsonr(personality.aggreableness, elements[i])
+        corrC_P, _ = pearsonr(personality.conscientiousness, elements[i])
+        corrN_P, _ = pearsonr(personality.neuroticism, elements[i])
+        corrO_P, _ = pearsonr(personality.openness, elements[i])
 
-        print("Level-{} {}-{}: {}; {}; {}; {}; {}".format(Level, elem_col, i, corrE, corrA, corrC, corrN, corrO))
+        if corrE_P >= 0.5 or corrA_P >= 0.5 or corrC_P >= 0.5 or corrN_P >= 0.5 or corrO_P >= 0.5:
+            print("PEARSONR: Level-{} {}-{}: {}; {}; {}; {}; {}".format(Level, elem_col, i, corrE_P, corrA_P, corrC_P, corrN_P, corrO_P))
+
+        corrE_S, _ = spearmanr(personality.extraversion, elements[i])
+        corrA_S, _ = spearmanr(personality.aggreableness, elements[i])
+        corrC_S, _ = spearmanr(personality.conscientiousness, elements[i])
+        corrN_S, _ = spearmanr(personality.neuroticism, elements[i])
+        corrO_S, _ = spearmanr(personality.openness, elements[i])
+
+        if corrE_S >= 0.5 or corrA_S >= 0.5 or corrC_S >= 0.5 or corrN_S >= 0.5 or corrO_S >= 0.5:
+            print("SPEARMAN: Level-{} {}-{}: {}; {}; {}; {}; {}".format(Level, elem_col, i, corrE_S, corrA_S, corrC_S, corrN_S, corrO_S))
 
 demographics = pd.read_excel(r'First Prototype.xlsx', sheet_name='Demographics').drop_duplicates(['GUID'], keep='last')
 
@@ -90,4 +104,4 @@ for Level in range(1, 13):
 
 
 # Show plot
-plt.show()
+# plt.show()
