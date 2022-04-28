@@ -85,14 +85,28 @@ def correlateElementsAndTraits(df, Level, elem_col, noElems, personality):
 
     frame = pd.DataFrame(df, columns=[elem_col]).values
 
+    # Array with percentage (%) of elements for each person
     people = []
-
     for elem in frame:
         elems = literal_eval(elem[0])
         for j in range(0, noElems):
             elements[j].append(1 if (j in elems) else 0)
         people.append(len(elems) / noElems)
 
+    # Correlation between personalities and percentage (%) of elements
+    peopleE_P, peopleA_P, peopleC_P, peopleN_P, peopleO_P = pearsonrPersonality(personality, people)
+    if peopleE_P != None:
+        print("PEARSONR: Level-{} {}: {}; {}; {}; {}; {}".format(Level, elem_col, peopleE_P, peopleA_P, peopleC_P, peopleN_P, peopleO_P))
+
+    peopleE_S, peopleA_S, peopleC_S, peopleN_S, peopleO_S = spearmanrPersonality(personality, people)
+    if peopleE_S != None:
+        print("SPEARMANR: Level-{} {}: {}; {}; {}; {}; {}".format(Level, elem_col, peopleE_S, peopleA_S, peopleC_S, peopleN_S, peopleO_S))
+
+    peopleE_K, peopleA_K, peopleC_K, peopleN_K, peopleO_K = kendalltauPersonality(personality, people)
+    if peopleE_K != None:
+        print("KENDALLTAU: Level-{} {}: {}; {}; {}; {}; {}".format(Level, elem_col, peopleE_K, peopleA_K, peopleC_K, peopleN_K, peopleO_K))
+
+    # Correlate collection of each element with personalities
     for i in range(0, noElems):
         corrE_P, corrA_P, corrC_P, corrN_P, corrO_P = pearsonrPersonality(personality, elements[i])
         
