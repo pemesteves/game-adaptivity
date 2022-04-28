@@ -33,7 +33,7 @@ def plot(df, elem_col, num_elems, plot_title, x_label):
         plot_bins.append(i)
 
     fig, ax = plt.subplots(figsize =(20, 8))
-    ax.hist(np.array(elements), bins = plot_bins, rwidth=0.75, align='left')
+    ax.hist(np.array(elements), bins = plot_bins, rwidth=0.5, align='left')
     ax.set_title(plot_title)
     ax.set_xlabel(x_label)
     ax.set_ylabel('Number of Players')
@@ -51,58 +51,69 @@ def createPersonality(df):
 
     return Personality(extraversion, aggreableness, conscientiousness, neuroticism, openness)
 
+def pearsonrPersonality(personality, data):
+    corrE_P, _ = pearsonr(personality.extraversion, data)
+    corrA_P, _ = pearsonr(personality.aggreableness, data)
+    corrC_P, _ = pearsonr(personality.conscientiousness, data)
+    corrN_P, _ = pearsonr(personality.neuroticism, data)
+    corrO_P, _ = pearsonr(personality.openness, data)
+
+    return (corrE_P, corrA_P, corrC_P, corrN_P, corrO_P) if corrE_P >= 0.5 or corrA_P >= 0.5 or corrC_P >= 0.5 or corrN_P >= 0.5 or corrO_P >= 0.5 else (None, None, None, None, None)
+
+def spearmanrPersonality(personality, data):
+    corrE_P, _ = spearmanr(personality.extraversion, data)
+    corrA_P, _ = spearmanr(personality.aggreableness, data)
+    corrC_P, _ = spearmanr(personality.conscientiousness, data)
+    corrN_P, _ = spearmanr(personality.neuroticism, data)
+    corrO_P, _ = spearmanr(personality.openness, data)
+
+    return (corrE_P, corrA_P, corrC_P, corrN_P, corrO_P) if corrE_P >= 0.5 or corrA_P >= 0.5 or corrC_P >= 0.5 or corrN_P >= 0.5 or corrO_P >= 0.5 else (None, None, None, None, None)
+    
+def kendalltauPersonality(personality, data):
+    corrE_P, _ = kendalltau(personality.extraversion, data)
+    corrA_P, _ = kendalltau(personality.aggreableness, data)
+    corrC_P, _ = kendalltau(personality.conscientiousness, data)
+    corrN_P, _ = kendalltau(personality.neuroticism, data)
+    corrO_P, _ = kendalltau(personality.openness, data)
+
+    return (corrE_P, corrA_P, corrC_P, corrN_P, corrO_P) if corrE_P >= 0.5 or corrA_P >= 0.5 or corrC_P >= 0.5 or corrN_P >= 0.5 or corrO_P >= 0.5 else (None, None, None, None, None)
+
 def correlateElementsAndTraits(df, Level, elem_col, noElems, personality):
     elements = []
     for i in range(0, noElems):
         elements.append([])
 
     frame = pd.DataFrame(df, columns=[elem_col]).values
+
+    people = []
+
     for elem in frame:
         elems = literal_eval(elem[0])
         for j in range(0, noElems):
             elements[j].append(1 if (j in elems) else 0)
+        people.append(len(elems) / noElems)
 
     for i in range(0, noElems):
-        corrE_P, _ = pearsonr(personality.extraversion, elements[i])
-        corrA_P, _ = pearsonr(personality.aggreableness, elements[i])
-        corrC_P, _ = pearsonr(personality.conscientiousness, elements[i])
-        corrN_P, _ = pearsonr(personality.neuroticism, elements[i])
-        corrO_P, _ = pearsonr(personality.openness, elements[i])
-
-        if corrE_P >= 0.5 or corrA_P >= 0.5 or corrC_P >= 0.5 or corrN_P >= 0.5 or corrO_P >= 0.5:
+        corrE_P, corrA_P, corrC_P, corrN_P, corrO_P = pearsonrPersonality(personality, elements[i])
+        
+        if corrE_P != None:
             print("PEARSONR: Level-{} {}-{}: {}; {}; {}; {}; {}".format(Level, elem_col, i, corrE_P, corrA_P, corrC_P, corrN_P, corrO_P))
 
-        corrE_S, _ = spearmanr(personality.extraversion, elements[i])
-        corrA_S, _ = spearmanr(personality.aggreableness, elements[i])
-        corrC_S, _ = spearmanr(personality.conscientiousness, elements[i])
-        corrN_S, _ = spearmanr(personality.neuroticism, elements[i])
-        corrO_S, _ = spearmanr(personality.openness, elements[i])
+        corrE_S, corrA_S, corrC_S, corrN_S, corrO_S = spearmanrPersonality(personality, elements[i])
 
-        if corrE_S >= 0.5 or corrA_S >= 0.5 or corrC_S >= 0.5 or corrN_S >= 0.5 or corrO_S >= 0.5:
-            print("SPEARMAN: Level-{} {}-{}: {}; {}; {}; {}; {}".format(Level, elem_col, i, corrE_S, corrA_S, corrC_S, corrN_S, corrO_S))
+        if corrE_S != None:
+            print("SPEARMANR: Level-{} {}-{}: {}; {}; {}; {}; {}".format(Level, elem_col, i, corrE_S, corrA_S, corrC_S, corrN_S, corrO_S))
 
-        corrE_K, _ = kendalltau(personality.extraversion, elements[i])
-        corrA_K, _ = kendalltau(personality.aggreableness, elements[i])
-        corrC_K, _ = kendalltau(personality.conscientiousness, elements[i])
-        corrN_K, _ = kendalltau(personality.neuroticism, elements[i])
-        corrO_K, _ = kendalltau(personality.openness, elements[i])
-
-        if corrE_K >= 0.5 or corrA_K >= 0.5 or corrC_K >= 0.5 or corrN_K >= 0.5 or corrO_K >= 0.5:
-            print("SPEARMAN: Level-{} {}-{}: {}; {}; {}; {}; {}".format(Level, elem_col, i, corrE_K, corrA_K, corrC_K, corrN_K, corrO_K))
+        corrE_K, corrA_K, corrC_K, corrN_K, corrO_K = kendalltauPersonality(personality, elements[i])
+        
+        if corrE_K != None:
+            print("KENDALLTAU: Level-{} {}-{}: {}; {}; {}; {}; {}".format(Level, elem_col, i, corrE_K, corrA_K, corrC_K, corrN_K, corrO_K))
 
 demographics = pd.read_excel(r'First Prototype.xlsx', sheet_name='Demographics').drop_duplicates(['GUID'], keep='last')
 
 for Level in range(1, 13):
     level_data = pd.read_excel(r'First Prototype.xlsx', sheet_name='Level_{}'.format(Level)).drop_duplicates(['GUID'], keep='last')
     df = demographics.merge(level_data)
-
-    if Level == 3:
-        it = 0
-        for elem in pd.DataFrame(df, columns=['collectedCoins']).values:
-            for e in literal_eval(elem[0]):
-                if e == 1:
-                    it += 1
-        print('{} - {} - {}'.format(len(pd.DataFrame(df, columns=['collectedCoins']).values), it, CoinsPerLevel[Level - 1]))
 
     p = createPersonality(df) # Personality Traits
  
@@ -112,9 +123,12 @@ for Level in range(1, 13):
 
     if PowerupsPerLevel[Level - 1] != 0:
         plot(df, 'collectedPowerups', PowerupsPerLevel[Level - 1], 'Powerups - Level {}'.format(Level), 'Powerup ID')
-        
+        correlateElementsAndTraits(df, Level, 'collectedPowerups', PowerupsPerLevel[Level - 1], p)
+
+
     if EnemiesPerLevel[Level - 1] != 0:
         plot(df, 'killedEnemies', EnemiesPerLevel[Level - 1], 'Enemies - Level {}'.format(Level), 'Enemy ID')
+        correlateElementsAndTraits(df, Level, 'killedEnemies', EnemiesPerLevel[Level - 1], p)
 
 # Show plot
 # plt.show()
