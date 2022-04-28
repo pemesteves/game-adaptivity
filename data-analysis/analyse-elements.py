@@ -2,7 +2,7 @@ import pandas as pd
 from matplotlib import pyplot as plt
 import numpy as np
 from ast import literal_eval
-from scipy.stats import pearsonr, spearmanr
+from scipy.stats import pearsonr, spearmanr, kendalltau
 from personality import Personality
 
 CoinsPerLevel = [77, 0, 51, 41, 70, 21, 54, 0, 0, 41, 52, 0]
@@ -17,7 +17,6 @@ def getPersonalityElementsFromDataFrame(df, elem_col):
 
     return elements
 
-    
 def getElementsFromDataFrame(df, elem_col):
     elements = []
 
@@ -27,14 +26,14 @@ def getElementsFromDataFrame(df, elem_col):
     return elements
 
 def plot(df, elem_col, num_elems, plot_title, x_label):
-    element = getElementsFromDataFrame(df, elem_col)
+    elements = getElementsFromDataFrame(df, elem_col)
 
-    bins = []
-    for i in range(1, num_elems + 1):
-        bins += [i]
+    plot_bins = []
+    for i in range(1, num_elems + 2):
+        plot_bins.append(i)
 
     fig, ax = plt.subplots(figsize =(20, 8))
-    ax.hist(np.array(element), bins = bins, rwidth=0.75, align='left')
+    ax.hist(np.array(elements), bins = plot_bins, rwidth=0.75, align='left')
     ax.set_title(plot_title)
     ax.set_xlabel(x_label)
     ax.set_ylabel('Number of Players')
@@ -42,8 +41,6 @@ def plot(df, elem_col, num_elems, plot_title, x_label):
     fig.savefig('./images/{}'.format(plot_title))
 
     plt.close(fig)
-
-    return element
 
 def createPersonality(df):
     extraversion = getPersonalityElementsFromDataFrame(df, 'Extraversion') 
@@ -84,11 +81,28 @@ def correlateElementsAndTraits(df, Level, elem_col, noElems, personality):
         if corrE_S >= 0.5 or corrA_S >= 0.5 or corrC_S >= 0.5 or corrN_S >= 0.5 or corrO_S >= 0.5:
             print("SPEARMAN: Level-{} {}-{}: {}; {}; {}; {}; {}".format(Level, elem_col, i, corrE_S, corrA_S, corrC_S, corrN_S, corrO_S))
 
+        corrE_K, _ = kendalltau(personality.extraversion, elements[i])
+        corrA_K, _ = kendalltau(personality.aggreableness, elements[i])
+        corrC_K, _ = kendalltau(personality.conscientiousness, elements[i])
+        corrN_K, _ = kendalltau(personality.neuroticism, elements[i])
+        corrO_K, _ = kendalltau(personality.openness, elements[i])
+
+        if corrE_K >= 0.5 or corrA_K >= 0.5 or corrC_K >= 0.5 or corrN_K >= 0.5 or corrO_K >= 0.5:
+            print("SPEARMAN: Level-{} {}-{}: {}; {}; {}; {}; {}".format(Level, elem_col, i, corrE_K, corrA_K, corrC_K, corrN_K, corrO_K))
+
 demographics = pd.read_excel(r'First Prototype.xlsx', sheet_name='Demographics').drop_duplicates(['GUID'], keep='last')
 
 for Level in range(1, 13):
     level_data = pd.read_excel(r'First Prototype.xlsx', sheet_name='Level_{}'.format(Level)).drop_duplicates(['GUID'], keep='last')
     df = demographics.merge(level_data)
+
+    if Level == 3:
+        it = 0
+        for elem in pd.DataFrame(df, columns=['collectedCoins']).values:
+            for e in literal_eval(elem[0]):
+                if e == 1:
+                    it += 1
+        print('{} - {} - {}'.format(len(pd.DataFrame(df, columns=['collectedCoins']).values), it, CoinsPerLevel[Level - 1]))
 
     p = createPersonality(df) # Personality Traits
  
@@ -101,7 +115,6 @@ for Level in range(1, 13):
         
     if EnemiesPerLevel[Level - 1] != 0:
         plot(df, 'killedEnemies', EnemiesPerLevel[Level - 1], 'Enemies - Level {}'.format(Level), 'Enemy ID')
-
 
 # Show plot
 # plt.show()
