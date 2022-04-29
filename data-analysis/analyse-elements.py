@@ -123,6 +123,43 @@ def correlateElementsAndTraits(df, Level, elem_col, noElems, personality):
         if corrE_K != None:
             print("KENDALLTAU: Level-{} {}-{}: {}; {}; {}; {}; {}".format(Level, elem_col, i, corrE_K, corrA_K, corrC_K, corrN_K, corrO_K))
 
+def correlateTimeLeftOnWinning(df, Level, p):
+    causeOfDeath = pd.DataFrame(df, columns=['causeOfDeath']).values
+    timeLeft = pd.DataFrame(df, columns=['timeLeft']).values
+
+    _extraversion = []
+    _aggreableness = []
+    _conscientiousness = []
+    _neuroticism = []
+    _openness = []
+    _timeLeft = []
+
+    for i in range(0, len(causeOfDeath)):
+        if causeOfDeath[i] == -1:
+            _extraversion.append(p.extraversion[i])
+            _aggreableness.append(p.aggreableness[i])
+            _conscientiousness.append(p.conscientiousness[i])
+            _neuroticism.append(p.neuroticism[i])
+            _openness.append(p.openness[i])
+            _timeLeft.append(timeLeft[i][0])
+
+    if len(_timeLeft) < 2:
+        return
+
+    new_p = Personality(_extraversion, _aggreableness, _conscientiousness, _neuroticism, _openness)
+    _e, _a, _c, _n, _p = pearsonrPersonality(new_p, _timeLeft)
+    if _e != None:
+        print('PEARSONR Time Left, Level {}: {} {} {} {} {}'.format(Level, _e, _a, _c, _n, _p))
+    
+    _e, _a, _c, _n, _p = spearmanrPersonality(new_p, _timeLeft)
+    if _e != None:
+        print('SPEARMANR Time Left, Level {}: {} {} {} {} {}'.format(Level, _e, _a, _c, _n, _p))
+    
+    _e, _a, _c, _n, _p = kendalltauPersonality(new_p, _timeLeft)
+    if _e != None:
+        print('KENDALLTAU Time Left, Level {}: {} {} {} {} {}'.format(Level, _e, _a, _c, _n, _p))
+
+
 demographics = pd.read_excel(r'First Prototype.xlsx', sheet_name='Demographics').drop_duplicates(['GUID'], keep='last')
 
 for Level in range(1, 13):
@@ -139,10 +176,11 @@ for Level in range(1, 13):
         plot(df, 'collectedPowerups', PowerupsPerLevel[Level - 1], 'Powerups - Level {}'.format(Level), 'Powerup ID')
         correlateElementsAndTraits(df, Level, 'collectedPowerups', PowerupsPerLevel[Level - 1], p)
 
-
     if EnemiesPerLevel[Level - 1] != 0:
         plot(df, 'killedEnemies', EnemiesPerLevel[Level - 1], 'Enemies - Level {}'.format(Level), 'Enemy ID')
         correlateElementsAndTraits(df, Level, 'killedEnemies', EnemiesPerLevel[Level - 1], p)
+
+    correlateTimeLeftOnWinning(df, Level, p)
 
 # Show plot
 # plt.show()
