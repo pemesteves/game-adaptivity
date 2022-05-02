@@ -159,12 +159,28 @@ def correlateTimeLeftOnWinning(df, Level, p):
     if _e != None:
         print('KENDALLTAU Time Left, Level {}: {} {} {} {} {}'.format(Level, _e, _a, _c, _n, _p))
 
+def removeOutliers(level_data, hasCoins, hasPowerups, hasEnemies):
+    if not hasCoins:
+        level_data = level_data[level_data.Coins == "Not applicable to the previous level"]
+
+    if not hasPowerups:
+        level_data = level_data[level_data.Powerups == "Not applicable to the previous level"]
+
+    if not hasEnemies:
+        level_data = level_data[level_data.EnemiesNumber == "Not applicable to the previous level"]
+        level_data = level_data[level_data.EnemiesTypes == "Not applicable to the previous level"]
+
+    return level_data
 
 demographics = pd.read_excel(r'First Prototype.xlsx', sheet_name='Demographics').drop_duplicates(['GUID'], keep='last')
 
 for Level in range(1, 13):
     level_data = pd.read_excel(r'First Prototype.xlsx', sheet_name='Level_{}'.format(Level)).drop_duplicates(['GUID'], keep='last')
+
+    level_data_without_outliers = removeOutliers(level_data, CoinsPerLevel[Level - 1] != 0, PowerupsPerLevel[Level - 1] != 0, EnemiesPerLevel[Level - 1] != 0)
+
     df = demographics.merge(level_data)
+    df1 = demographics.merge(level_data_without_outliers)
 
     p = createPersonality(df) # Personality Traits
  
@@ -180,7 +196,7 @@ for Level in range(1, 13):
         plot(df, 'killedEnemies', EnemiesPerLevel[Level - 1], 'Enemies - Level {}'.format(Level), 'Enemy ID')
         correlateElementsAndTraits(df, Level, 'killedEnemies', EnemiesPerLevel[Level - 1], p)
 
-    correlateTimeLeftOnWinning(df, Level, p)
+    correlateTimeLeftOnWinning(df1, Level, p)
 
 # Show plot
 # plt.show()
