@@ -27,7 +27,6 @@ def getElementsFromDataFrame(df, elem_col):
 
 def plot(df, elem_col, num_elems, plot_title, x_label):
     elements = getElementsFromDataFrame(df, elem_col)
-
     plot_bins = []
     for i in range(1, num_elems + 2):
         plot_bins.append(i)
