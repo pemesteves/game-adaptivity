@@ -4888,7 +4888,6 @@ class LevelState extends Engine.GameState {
     State for actually playing a pseudo-randomly generated level.
     Code by Pedro Esteves, 2022.
 **/
-
 class PredefinedLevelState extends LevelState {
     constructor(difficulty, type) {
         super(difficulty, type);
@@ -4901,26 +4900,39 @@ class PredefinedLevelState extends LevelState {
     }
 
     GetLevel() {
-        //const lvl = new LevelGenerator(320, 15).CreateLevel(0, 1);
-
-        let _level = levels[levelsOrder[currentLevel]];
- /*       const l = _level.EnemySpriteTemplates.length;
-        while(_level.EnemySpriteTemplates.length > l / 3){
-            const random = Math.floor(Math.random() * _level.EnemySpriteTemplates.length);
-            _level.EnemySpriteTemplates.splice(random, 1)[0];
+        let level = localStorage.getItem('level');
+        if (level === null) {
+            level = new LevelGenerator(320, 15).CreateLevel(0, 1);
+            localStorage.setItem('level', JSON.stringify(level));
+        } else {
+            level = JSON.parse(level);
         }
-        */
-        const lvl = new PredefinedLevelGenerator(_level).CreateLevel();
-/*
+
+        const ID = localStorage.getItem('id');
+
+        // Only odd IDs change the level (A/B testing, changing the order between subjects)
+        if (ID % 2 === currentLevel) return new PredefinedLevelGenerator(level).CreateLevel();
+
+        // Delete 1/3 of the enemies
+        const l = level.EnemySpriteTemplates.length;
+        while (level.EnemySpriteTemplates.length > l / 3) {
+            const random = Math.floor(Math.random() * level.EnemySpriteTemplates.length);
+            level.EnemySpriteTemplates.splice(random, 1)[0];
+        }
+
+        const lvl = new PredefinedLevelGenerator(level).CreateLevel();
+
+        // Increase the number of coins
         for (let i = 0; i < lvl.Map.length; i++) {
             for (let j = 0; j < lvl.Map[i].length; j++) {
                 if (lvl.Map[i][j] === 16) {
-                    lvl.Map[i][j] = Math.random() % 2 === 0 ? 17 : Math.random() % 2 === 0 ? 18 : Math.random() % 2 === 0 ? 21 : 22; 
+                    if (Math.random() * 3 < 1) continue;
+
+                    lvl.Map[i][j] = Math.random() * 2 < 1 ? 17 : Math.random() * 2 < 1 ? 18 : Math.random() * 2 < 1 ? 21 : 22;
                 }
             }
         }
-*/
-        
+
         return lvl;
     }
 
@@ -4933,6 +4945,22 @@ class PredefinedLevelState extends LevelState {
         if (this.GotoLoseState || this.NextLevel) {
             Mario.MarioCharacter.gameplayMetrics.SetActions(this.agent.GetActions());
             levelData = Mario.MarioCharacter.gameplayMetrics.PrintMetrics(); // Store Metrics
+
+            const lvl = this.Level;
+
+            // Count Enemies
+            levelData.noEnemies = lvl.EnemySpriteTemplates.length;
+
+            // Count Collectibles
+            let noCoins = 0, noPowerups = 0;
+            for (let i = 0; i < lvl.Map.length; i++) {
+                for (let j = 0; j < lvl.Map[i].length; j++) {
+                    if (lvl.Map[i][j] === 17 || lvl.Map[i][j] === 21) noCoins++;
+                    else if (lvl.Map[i][j] === 18 || lvl.Map[i][j] === 22) noPowerups++;
+                }
+            }
+            levelData.noCoins = noCoins;
+            levelData.noPowerups = noPowerups;
 
             survey.nextPage();
             survey.showNavigationButtons = true;
@@ -4967,20 +4995,7 @@ class GameplayMetrics {
     static MinRegisterDistance = 10;
 
     constructor() {
-        this.jumps = [];
-        this.wallJumps = [];
-        this.landings = [];
-
-        this.coins = [];
-        this.noCoins = -1;
-
-        this.powerups = [];
-        this.noPowerups = -1;
-
         this.causeOfDeath = -1;
-
-        this.enemies = [];
-        this.noEnemies = -1;
 
         this.timeLeft = -1;
 
@@ -5002,144 +5017,23 @@ class GameplayMetrics {
         this.causeOfDeath = c;
     }
 
-    RegisterJump() {
-        const gap = this.GetNearestGap();
-        if (gap === null || gap > GameplayMetrics.MinRegisterDistance) return;
+    RegisterJump() { }
 
-        this.jumps.push(this.GetNextGap());
-    }
+    RegisterWallJump() { }
 
-    RegisterWallJump() {
-        this.wallJumps.push({ "X": (Mario.MarioCharacter.X - 8) / 16, "Y": (Mario.MarioCharacter.Y - 8) / 16 });
-        this.RegisterJump();
-    }
+    RegisterLanding() { }
 
-    RegisterLanding() {
-        const gap = this.GetNearestGap();
-        if (gap === null) return;
+    RegisterNoCoins(no) { }
 
-        if (this.landings.length === this.jumps.length) return;
+    RegisterNoPowerups(no) { }
 
-        this.landings.push(this.GetPreviousGap());
-    }
-
-    RegisterNoCoins(no) {
-        this.noCoins = no;
-    }
-
-    RegisterNoPowerups(no) {
-        this.noPowerups = no;
-    }
-
-    RegisterNoEnemies(no) {
-        this.noEnemies = no;
-    }
+    RegisterNoEnemies(no) { }
     
-    KilledEnemy(template) {
-        const lvl = this.levelState.Level;
-        if (!(lvl instanceof PredefinedLevel)) return;
+    KilledEnemy(template) { }
 
-        const ID = lvl.GetEnemyID(template);
-        if (ID === null) {
-            console.error("ERROR: Enemy doesn't exist!");
-            return;
-        }
+    CollectedCoin(x, y) { }
 
-        this.enemies.push(ID);
-    }
-
-    CollectedCoin(x, y) {
-        const lvl = this.levelState.Level;
-        if (!(lvl instanceof PredefinedLevel)) return;
-
-        const ID = lvl.GetCoinID(x, y);
-        if (ID === null) {
-            console.error("ERROR: Coin doesn't exist!");
-            return;
-        }
-
-        this.coins.push(ID);
-    }
-
-    CollectedPowerup(x, y) {
-        const lvl = this.levelState.Level;
-        if (!(lvl instanceof PredefinedLevel)) return;
-
-        const ID = lvl.GetPowerupID(x, y);
-        if (ID === null) {
-            console.error("ERROR: Powerup doesn't exist!");
-            return;
-        }
-
-        this.powerups.push(ID);
-    }
-
-    GetNearestGap() {
-        const jumps = this.levelState.Level.JumpSections;
-
-        if (jumps.length === 0) return null;
-
-        const xPos = (Mario.MarioCharacter.X - 8) / 16;
-
-        let minDist = Infinity;
-        for (let i = 0; i < jumps.length; i++) {
-            if (xPos < jumps[i].GetHoleStartX()) {
-                const dist = jumps[i].GetHoleStartX() - xPos;
-                if (dist > minDist) break;
-
-                minDist = dist;
-            } else if (xPos > jumps[i].GetHoleEndX()) {
-                const dist = xPos - jumps[i].GetHoleEndX();
-                if (dist > minDist) break;
-
-                minDist = dist;
-            } else {
-                // Inside Gap
-            }
-        }
-
-        return minDist;
-    }
-
-    GetPreviousGap() {
-        const jumps = this.levelState.Level.JumpSections;
-
-        if (jumps.length === 0) return null;
-
-        const xPos = (Mario.MarioCharacter.X - 8) / 16;
-
-        let minDist = Infinity;
-        for (let i = 0; i < jumps.length; i++) {
-            if (xPos <= jumps[i].GetHoleEndX()) continue;
-
-            const dist = xPos - jumps[i].GetHoleEndX();
-            if (dist > minDist) break;
-
-            minDist = dist;
-        }
-
-        return minDist;
-    }
-
-    GetNextGap() {
-        const jumps = this.levelState.Level.JumpSections;
-
-        if (jumps.length === 0) return null;
-
-        const xPos = (Mario.MarioCharacter.X - 8) / 16;
-
-        let minDist = Infinity;
-        for (let i = 0; i < jumps.length; i++) {
-            if (xPos >= jumps[i].GetHoleStartX()) continue;
-
-            const dist = jumps[i].GetHoleStartX() - xPos;
-            if (dist > minDist) break;
-
-            minDist = dist;
-        }
-
-        return minDist;
-    }
+    CollectedPowerup(x, y) { }
 
     RegisterEndingTime() {
         if (this.levelState == null) return;
@@ -5151,16 +5045,7 @@ class GameplayMetrics {
     PrintMetrics() {
         return {
             "causeOfDeath": this.causeOfDeath,
-            "jumps": this.jumps,
-            "wallJumps": this.wallJumps,
-            "landings": this.landings,
             "timeLeft": this.timeLeft,
-            "noCoins": this.coins.length,
-            "collectedCoins": this.coins,
-            "noPowerups": this.powerups.length,
-            "collectedPowerups": this.powerups,
-            "noEnemies": this.enemies.length,
-            "killedEnemies": this.enemies,
             "actions": this.actions,
         };
     }
