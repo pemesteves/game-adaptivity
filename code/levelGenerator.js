@@ -4,6 +4,26 @@
     Code by Pedro Esteves, 2022.
 **/
 
+/**
+ * Probability of Creating an Enemy = this.Difficulty / ENEMY_PROB 
+ * 
+ * Default Value = 35
+ * 
+ * Increasing ENEMY_PROB leads to less enemies in the level
+ * 
+ **/
+const ENEMY_PROB = 35; 
+
+/**
+ * Probabilities of Creating Blocks with Collectibles
+ * 
+ * Default Values = 3, 4, 4, 4
+ * 
+ * Increasing these values leads to less collectibles in the level
+ * 
+ **/
+const SPECIAL_BLOCK_PROB = 3, SPECIAL_POWERUP_PROB = 4, NORMAL_BLOCK_PROB = 4, NORMAL_POWERUP_PROB = 4;
+
 class LevelGenerator {
     constructor(width, height) {
         this.Width = width;
@@ -220,7 +240,7 @@ class LevelGenerator {
     AddEnemyLine(level, x0, x1, y) {
         let x = 0, type = 0;
         for (x = x0; x < x1; x++) {
-            if (((Math.random() * 35) | 0) < this.Difficulty + 1) {
+            if (((Math.random() * ENEMY_PROB) | 0) < this.Difficulty + 1) {
                 type = (Math.random() * 4) | 0;
                 if (this.Difficulty < 1) type = Enemy.Goomba;
                 else if (this.Difficulty < 3) type = (Math.random() * 3) | 0;
@@ -319,8 +339,8 @@ class LevelGenerator {
 
         if (floor - 4 > 0 && (x1 - 1 - e) - (x0 + 1 + s) > 2) {
             for (let x = x0 + 1 + s; x < x1 - 1 - e; x++) {
-                const rnd1 = ((Math.random() * 3) | 0), rnd2 = ((Math.random() * 4) | 0),
-                    rnd3 = ((Math.random() * 4) | 0), rnd4 = ((Math.random() * 4) | 0);
+                const rnd1 = ((Math.random() * SPECIAL_BLOCK_PROB) | 0), rnd2 = ((Math.random() * SPECIAL_POWERUP_PROB) | 0),
+                    rnd3 = ((Math.random() * NORMAL_BLOCK_PROB) | 0), rnd4 = ((Math.random() * NORMAL_POWERUP_PROB) | 0);
 
                 decorate.SetRandomValues(rnd1, rnd2, rnd3, rnd4);
 

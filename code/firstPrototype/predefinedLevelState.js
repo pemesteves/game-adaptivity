@@ -16,7 +16,25 @@ class PredefinedLevelState extends LevelState {
 
     GetLevel() {
         //const lvl = new LevelGenerator(320, 15).CreateLevel(0, 1);
-        const lvl = new PredefinedLevelGenerator(levels[levelsOrder[currentLevel]]).CreateLevel();
+
+        let _level = levels[levelsOrder[currentLevel]];
+ /*       const l = _level.EnemySpriteTemplates.length;
+        while(_level.EnemySpriteTemplates.length > l / 3){
+            const random = Math.floor(Math.random() * _level.EnemySpriteTemplates.length);
+            _level.EnemySpriteTemplates.splice(random, 1)[0];
+        }
+        */
+        const lvl = new PredefinedLevelGenerator(_level).CreateLevel();
+/*
+        for (let i = 0; i < lvl.Map.length; i++) {
+            for (let j = 0; j < lvl.Map[i].length; j++) {
+                if (lvl.Map[i][j] === 16) {
+                    lvl.Map[i][j] = Math.random() % 2 === 0 ? 17 : Math.random() % 2 === 0 ? 18 : Math.random() % 2 === 0 ? 21 : 22; 
+                }
+            }
+        }
+*/
+        
         return lvl;
     }
 
