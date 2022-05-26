@@ -18,7 +18,7 @@ progressBar.innerHTML = `${currentLevel + 1}/${NUM_LEVELS}`;
 
 var survey;
 
-fetch('questionnaire/level.json').then(rsp => { return rsp.json(); }).then(jsonData => {
+fetch('questionnaire/secondPrototype/level.json').then(rsp => { return rsp.json(); }).then(jsonData => {
     survey = new Survey.Model(jsonData);
     $("#surveyContainer").Survey({
         model: survey,
@@ -35,13 +35,6 @@ fetch('questionnaire/level.json').then(rsp => { return rsp.json(); }).then(jsonD
               const data = levelData[key];
               if (typeof data === 'object' && !Array.isArray(data) && data !== null) Object.keys(data).forEach(key => { parameters[key] = JSON.stringify(data); });
               else parameters[key] = JSON.stringify(data);
-            });
-
-            const level_questionnaire = e.data;
-            Object.keys(level_questionnaire.LevelQuestionnaire).forEach(key => {
-              const data = level_questionnaire.LevelQuestionnaire[key];
-              if (typeof data === 'object' && !Array.isArray(data) && data !== null) Object.keys(data).forEach(key => { parameters[key] = data; });
-              else parameters[key] = data;
             });
     
             fetch("https://script.google.com/macros/s/AKfycbw4QiYfu-bw-rFncH2Bnhd6PlvghbJX-2dIDPksACnOcTShkFHBU9_XcbP0u4ewZRmaiA/exec", {

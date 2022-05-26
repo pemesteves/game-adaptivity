@@ -2,13 +2,16 @@ class GameplayMetrics {
     static MinRegisterDistance = 10;
 
     constructor() {
+        this.noCoins = 0;
+        this.noEnemies = 0;
+        this.noPowerups = 0;
+        
         this.causeOfDeath = -1;
-
         this.timeLeft = -1;
+        this.actions = [];
 
         this.levelState = null;
-
-        this.actions = [];
+        this.level = null;
     }
 
     SetLevelState(levelState) {
@@ -30,11 +33,17 @@ class GameplayMetrics {
 
     RegisterLanding() { }
 
-    RegisterNoCoins(no) { }
+    RegisterNoCoins(no) {
+        this.noCoins = no;
+    }
 
-    RegisterNoPowerups(no) { }
+    RegisterNoPowerups(no) { 
+        this.noPowerups = no;
+    }
 
-    RegisterNoEnemies(no) { }
+    RegisterNoEnemies(no) { 
+        this.noEnemies = no;
+    }
     
     KilledEnemy(template) { }
 
@@ -49,11 +58,15 @@ class GameplayMetrics {
         this.timeLeft = t < 0 ? 0 : t;
     }
 
+    SetLevel(lvl) {
+        this.level = lvl;
+    }
+
     PrintMetrics() {
         return {
-            "causeOfDeath": this.causeOfDeath,
-            "timeLeft": this.timeLeft,
-            "actions": this.actions,
+            "noCoins": this.noCoins,
+            "noEnemies": this.noEnemies,
+            "noPowerups": this.noPowerups
         };
     }
 

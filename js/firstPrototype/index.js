@@ -11,7 +11,7 @@ fetch('levels/levels.json').then(rsp => { return rsp.json(); }).then(jsonData =>
   localStorage.setItem("levelsOrder", JSON.stringify(Array.from(Array(jsonData.length).keys()).sort(() => Math.random() - 0.5)));
   localStorage.setItem("currentLevel", 0);
 
-  fetch('questionnaire/main.json').then(rsp => { return rsp.json(); }).then(jsonData => {
+  fetch('questionnaire/firstPrototype/main.json').then(rsp => { return rsp.json(); }).then(jsonData => {
     const surveyJSON = jsonData;
 
     const survey = new Survey.Model(surveyJSON);

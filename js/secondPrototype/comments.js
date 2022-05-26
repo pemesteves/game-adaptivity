@@ -8,7 +8,7 @@ if (currentLevel === null || guid === null) {
   throw '';
 }
 
-fetch('questionnaire/comments.json').then(rsp => { return rsp.json(); }).then(jsonData => {
+fetch('questionnaire/secondPrototype/comments.json').then(rsp => { return rsp.json(); }).then(jsonData => {
   const survey = new Survey.Model(jsonData);
   $("#surveyContainer").Survey({
     model: survey,
@@ -16,7 +16,11 @@ fetch('questionnaire/comments.json').then(rsp => { return rsp.json(); }).then(js
     onCompleting: (e) => {
       const sheetScriptURL = "https://script.google.com/macros/s/AKfycbw4QiYfu-bw-rFncH2Bnhd6PlvghbJX-2dIDPksACnOcTShkFHBU9_XcbP0u4ewZRmaiA/exec";
 
-      let url = `${sheetScriptURL}?Sheet=${encodeURIComponent("Comments")}&GUID=${encodeURIComponent(guid)}&Comments=${encodeURIComponent(e.data.Comments || "")}`;
+      const preference = localStorage.getItem('id') % 2 !== 0 && e.data.Preference === "1" ? 2 : 
+                         localStorage.getItem('id') % 2 !== 0 && e.data.Preference === "2" ? 1 :
+                         e.data.Preference;
+
+      let url = `${sheetScriptURL}?Sheet=${encodeURIComponent("Comments")}&GUID=${encodeURIComponent(guid)}&Preference=${encodeURIComponent(preference)}&Comments=${encodeURIComponent(e.data.Comments || "")}`;
 
       let req = new XMLHttpRequest();
       req.onreadystatechange = () => {

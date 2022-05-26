@@ -13,6 +13,22 @@ class PredefinedLevelState extends LevelState {
         this.agent = new PlayerAgent();
     }
 
+    CountCollectibles(lvl) {
+        let noCoins = 0, noPowerups = 0;
+        for (let i = 0; i < lvl.Map.length; i++) {
+            for (let j = 0; j < lvl.Map[i].length; j++) {
+                if (lvl.Map[i][j] === 17 || lvl.Map[i][j] === 21) noCoins++;
+                else if (lvl.Map[i][j] === 18 || lvl.Map[i][j] === 22) noPowerups++;
+            }
+        }
+        Mario.MarioCharacter.gameplayMetrics.RegisterNoCoins(noCoins);
+        Mario.MarioCharacter.gameplayMetrics.RegisterNoPowerups(noPowerups);
+    }
+
+    CountEnemies(lvl) {
+        Mario.MarioCharacter.gameplayMetrics.RegisterNoEnemies(lvl.EnemySpriteTemplates.length);
+    }
+
     GetLevel() {
         let level = localStorage.getItem('level');
         if (level === null) {
@@ -25,7 +41,12 @@ class PredefinedLevelState extends LevelState {
         const ID = localStorage.getItem('id');
 
         // Only odd IDs change the level (A/B testing, changing the order between subjects)
-        if (ID % 2 === currentLevel) return new PredefinedLevelGenerator(level).CreateLevel();
+        if (ID % 2 === currentLevel) {
+            const lvl = new PredefinedLevelGenerator(level).CreateLevel();
+            this.CountEnemies(lvl);
+            this.CountCollectibles(lvl);
+            return lvl;
+        }
 
         // Delete 1/3 of the enemies
         const l = level.EnemySpriteTemplates.length;
@@ -47,6 +68,8 @@ class PredefinedLevelState extends LevelState {
             }
         }
 
+        this.CountEnemies(lvl);
+        this.CountCollectibles(lvl);
         return lvl;
     }
 
@@ -57,26 +80,9 @@ class PredefinedLevelState extends LevelState {
 
     CheckForChange(context) {
         if (this.GotoLoseState || this.NextLevel) {
-            Mario.MarioCharacter.gameplayMetrics.SetActions(this.agent.GetActions());
             levelData = Mario.MarioCharacter.gameplayMetrics.PrintMetrics(); // Store Metrics
 
-            const lvl = this.Level;
-
-            // Count Enemies
-            levelData.noEnemies = lvl.EnemySpriteTemplates.length;
-
-            // Count Collectibles
-            let noCoins = 0, noPowerups = 0;
-            for (let i = 0; i < lvl.Map.length; i++) {
-                for (let j = 0; j < lvl.Map[i].length; j++) {
-                    if (lvl.Map[i][j] === 17 || lvl.Map[i][j] === 21) noCoins++;
-                    else if (lvl.Map[i][j] === 18 || lvl.Map[i][j] === 22) noPowerups++;
-                }
-            }
-            levelData.noCoins = noCoins;
-            levelData.noPowerups = noPowerups;
-
-            survey.nextPage();
+            survey.completeLastPage();
             survey.showNavigationButtons = true;
             context.ChangeState(new LoadingState());
         }

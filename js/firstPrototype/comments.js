@@ -10,7 +10,7 @@ if (levels === null || levelsOrder === null || currentLevel === null || guid ===
   throw '';
 }
 
-fetch('questionnaire/comments.json').then(rsp => { return rsp.json(); }).then(jsonData => {
+fetch('questionnaire/firstPrototype/comments.json').then(rsp => { return rsp.json(); }).then(jsonData => {
   const survey = new Survey.Model(jsonData);
   $("#surveyContainer").Survey({
     model: survey,

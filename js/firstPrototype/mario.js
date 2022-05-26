@@ -18,7 +18,7 @@ progressBar.innerHTML = `${currentLevel + 1}/${levels.length}`;
 
 var survey;
 
-fetch('questionnaire/level.json').then(rsp => { return rsp.json(); }).then(jsonData => {
+fetch('questionnaire/firstPrototype/level.json').then(rsp => { return rsp.json(); }).then(jsonData => {
     survey = new Survey.Model(jsonData);
     $("#surveyContainer").Survey({
         model: survey,

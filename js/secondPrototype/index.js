@@ -24,7 +24,7 @@ if ((guid = localStorage.getItem("guid")) === null) {
 
 localStorage.setItem("currentLevel", 0);
 
-fetch('questionnaire/main.json').then(rsp => { return rsp.json(); }).then(jsonData => {
+fetch('questionnaire/secondPrototype/main.json').then(rsp => { return rsp.json(); }).then(jsonData => {
   const surveyJSON = jsonData;
 
   const survey = new Survey.Model(surveyJSON);
