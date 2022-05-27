@@ -11,7 +11,9 @@ class GameplayMetrics {
         this.actions = [];
 
         this.levelState = null;
-        this.level = null;
+        this.level = "";
+        this.enemies = "";
+        this.collectables = "";
     }
 
     SetLevelState(levelState) {
@@ -59,14 +61,26 @@ class GameplayMetrics {
     }
 
     SetLevel(lvl) {
-        this.level = lvl;
+        this.level = JSON.stringify(lvl);
+    }
+
+    SetEnemies(en) {
+        this.enemies = en;
+    }
+
+    SetCollectables(clt) {
+        this.collectables = clt;
     }
 
     PrintMetrics() {
         return {
             "noCoins": this.noCoins,
             "noEnemies": this.noEnemies,
-            "noPowerups": this.noPowerups
+            "noPowerups": this.noPowerups,
+            "level": this.level,
+            "enemies": this.enemies,
+            "collectables": this.collectables,
+            "actions": this.actions
         };
     }
 

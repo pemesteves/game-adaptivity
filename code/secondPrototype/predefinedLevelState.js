@@ -13,7 +13,7 @@ class PredefinedLevelState extends LevelState {
         this.agent = new PlayerAgent();
     }
 
-    CountCollectibles(lvl) {
+    CountCollectables(lvl) {
         let noCoins = 0, noPowerups = 0;
         for (let i = 0; i < lvl.Map.length; i++) {
             for (let j = 0; j < lvl.Map[i].length; j++) {
@@ -32,7 +32,7 @@ class PredefinedLevelState extends LevelState {
     GetLevel() {
         let level = localStorage.getItem('level');
         if (level === null) {
-            level = new LevelGenerator(320, 15).CreateLevel(0, 1);
+            level = new LevelGenerator(320, 15).CreateLevel(0, 1).PrintLevel();
             localStorage.setItem('level', JSON.stringify(level));
         } else {
             level = JSON.parse(level);
@@ -42,9 +42,10 @@ class PredefinedLevelState extends LevelState {
 
         // Only odd IDs change the level (A/B testing, changing the order between subjects)
         if (ID % 2 === currentLevel) {
+            Mario.MarioCharacter.gameplayMetrics.SetLevel(level);
             const lvl = new PredefinedLevelGenerator(level).CreateLevel();
             this.CountEnemies(lvl);
-            this.CountCollectibles(lvl);
+            this.CountCollectables(lvl);
             return lvl;
         }
 
@@ -55,21 +56,29 @@ class PredefinedLevelState extends LevelState {
             level.EnemySpriteTemplates.splice(random, 1)[0];
         }
 
+        Mario.MarioCharacter.gameplayMetrics.SetEnemies(level.EnemySpriteTemplates);
         const lvl = new PredefinedLevelGenerator(level).CreateLevel();
 
         // Increase the number of coins
+        let collectables = [];
         for (let i = 0; i < lvl.Map.length; i++) {
             for (let j = 0; j < lvl.Map[i].length; j++) {
-                if (lvl.Map[i][j] === 16) {
-                    if (Math.random() * 3 < 1) continue;
+                if (lvl.Map[i][j] !== 16) continue;
 
-                    lvl.Map[i][j] = Math.random() * 2 < 1 ? 17 : Math.random() * 2 < 1 ? 18 : Math.random() * 2 < 1 ? 21 : 22;
+                if (Math.random() * 3 < 1) {
+                    collectables.push(16);
+                    continue;
                 }
+
+                lvl.Map[i][j] = Math.random() * 2 < 1 ? 17 : Math.random() * 2 < 1 ? 18 : Math.random() * 2 < 1 ? 21 : 22;
+                collectables.push(lvl.Map[i][j]);
             }
         }
 
+        Mario.MarioCharacter.gameplayMetrics.SetCollectables(collectables);
+
         this.CountEnemies(lvl);
-        this.CountCollectibles(lvl);
+        this.CountCollectables(lvl);
         return lvl;
     }
 
@@ -80,6 +89,7 @@ class PredefinedLevelState extends LevelState {
 
     CheckForChange(context) {
         if (this.GotoLoseState || this.NextLevel) {
+            Mario.MarioCharacter.gameplayMetrics.SetActions(this.agent.GetActions());
             levelData = Mario.MarioCharacter.gameplayMetrics.PrintMetrics(); // Store Metrics
 
             survey.completeLastPage();

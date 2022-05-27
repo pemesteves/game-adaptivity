@@ -15,11 +15,11 @@
 const ENEMY_PROB = 35; 
 
 /**
- * Probabilities of Creating Blocks with Collectibles
+ * Probabilities of Creating Blocks with Collectables
  * 
  * Default Values = 3, 4, 4, 4
  * 
- * Increasing these values leads to less collectibles in the level
+ * Increasing these values leads to less collectables in the level
  * 
  **/
 const SPECIAL_BLOCK_PROB = 3, SPECIAL_POWERUP_PROB = 4, NORMAL_BLOCK_PROB = 4, NORMAL_POWERUP_PROB = 4;
