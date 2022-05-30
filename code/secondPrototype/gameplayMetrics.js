@@ -14,6 +14,8 @@ class GameplayMetrics {
         this.level = "";
         this.enemies = "";
         this.collectibles = "";
+        this.straightSections = "";
+        this.hillStraightSections = "";
     }
 
     SetLevelState(levelState) {
@@ -72,6 +74,14 @@ class GameplayMetrics {
         this.collectibles = clt;
     }
 
+    SetStraightSections(strSec) {
+        this.straightSections = strSec;
+    }
+
+    SetHillStraightSections(hillStrSec) {
+        this.hillStraightSections = hillStrSec;
+    }
+
     PrintMetrics() {
         return {
             "noCoins": this.noCoins,
@@ -79,6 +89,8 @@ class GameplayMetrics {
             "noPowerups": this.noPowerups,
             "level": this.level,
             "enemies": this.enemies,
+            "straightSections": this.straightSections,
+            "hillStraightSections": this.hillStraightSections,
             "collectibles": this.collectibles,
             "actions": this.actions
         };

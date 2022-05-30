@@ -17,7 +17,7 @@ class PredefinedLevelState extends LevelState {
         let noCoins = 0, noPowerups = 0;
         for (let i = 0; i < lvl.Map.length; i++) {
             for (let j = 0; j < lvl.Map[i].length; j++) {
-                if (lvl.Map[i][j] === 17 || lvl.Map[i][j] === 21) noCoins++;
+                if (lvl.Map[i][j] === 17 || lvl.Map[i][j] === 21 || lvl.Map[i][j] === 34) noCoins++;
                 else if (lvl.Map[i][j] === 18 || lvl.Map[i][j] === 22) noPowerups++;
             }
         }
@@ -55,8 +55,33 @@ class PredefinedLevelState extends LevelState {
             const random = Math.floor(Math.random() * level.EnemySpriteTemplates.length);
             level.EnemySpriteTemplates.splice(random, 1)[0];
         }
-
+        
         Mario.MarioCharacter.gameplayMetrics.SetEnemies(level.EnemySpriteTemplates);
+
+        // Put coins on Straight Sections if they can be decorated
+        const strSec = level.StraightSections;
+        for (let i = 0; i < strSec.length; i++) {
+            let section = strSec[i].Decorate;
+            if (section === null) continue;
+
+            section.EBegin = 0;
+            section.SBegin = 0;
+        }
+
+        Mario.MarioCharacter.gameplayMetrics.SetStraightSections(level.StraightSections);
+        
+        // Put coins on Straight Sections with hills if they can be decorated
+        const hillStrSec = level.HillStraightSections;
+        for (let i = 0; i < hillStrSec.length; i++) {
+            let section = hillStrSec[i].Decorate;
+            if (section === null) continue;
+
+            section.EBegin = 0;
+            section.SBegin = 0;
+        }
+
+        Mario.MarioCharacter.gameplayMetrics.SetHillStraightSections(level.HillStraightSections);
+
         const lvl = new PredefinedLevelGenerator(level).CreateLevel();
 
         // Increase the number of coins
