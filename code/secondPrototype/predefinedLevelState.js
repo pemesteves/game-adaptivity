@@ -13,7 +13,7 @@ class PredefinedLevelState extends LevelState {
         this.agent = new PlayerAgent();
     }
 
-    CountCollectables(lvl) {
+    CountCollectibles(lvl) {
         let noCoins = 0, noPowerups = 0;
         for (let i = 0; i < lvl.Map.length; i++) {
             for (let j = 0; j < lvl.Map[i].length; j++) {
@@ -45,7 +45,7 @@ class PredefinedLevelState extends LevelState {
             Mario.MarioCharacter.gameplayMetrics.SetLevel(level);
             const lvl = new PredefinedLevelGenerator(level).CreateLevel();
             this.CountEnemies(lvl);
-            this.CountCollectables(lvl);
+            this.CountCollectibles(lvl);
             return lvl;
         }
 
@@ -60,25 +60,25 @@ class PredefinedLevelState extends LevelState {
         const lvl = new PredefinedLevelGenerator(level).CreateLevel();
 
         // Increase the number of coins
-        let collectables = [];
+        let collectibles = [];
         for (let i = 0; i < lvl.Map.length; i++) {
             for (let j = 0; j < lvl.Map[i].length; j++) {
                 if (lvl.Map[i][j] !== 16) continue;
 
                 if (Math.random() * 3 < 1) {
-                    collectables.push(16);
+                    collectibles.push(16);
                     continue;
                 }
 
                 lvl.Map[i][j] = Math.random() * 2 < 1 ? 17 : Math.random() * 2 < 1 ? 18 : Math.random() * 2 < 1 ? 21 : 22;
-                collectables.push(lvl.Map[i][j]);
+                collectibles.push(lvl.Map[i][j]);
             }
         }
 
-        Mario.MarioCharacter.gameplayMetrics.SetCollectables(collectables);
+        Mario.MarioCharacter.gameplayMetrics.SetCollectibles(collectibles);
 
         this.CountEnemies(lvl);
-        this.CountCollectables(lvl);
+        this.CountCollectibles(lvl);
         return lvl;
     }
 

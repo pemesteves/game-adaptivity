@@ -13,7 +13,7 @@ class GameplayMetrics {
         this.levelState = null;
         this.level = "";
         this.enemies = "";
-        this.collectables = "";
+        this.collectibles = "";
     }
 
     SetLevelState(levelState) {
@@ -68,8 +68,8 @@ class GameplayMetrics {
         this.enemies = en;
     }
 
-    SetCollectables(clt) {
-        this.collectables = clt;
+    SetCollectibles(clt) {
+        this.collectibles = clt;
     }
 
     PrintMetrics() {
@@ -79,7 +79,7 @@ class GameplayMetrics {
             "noPowerups": this.noPowerups,
             "level": this.level,
             "enemies": this.enemies,
-            "collectables": this.collectables,
+            "collectibles": this.collectibles,
             "actions": this.actions
         };
     }

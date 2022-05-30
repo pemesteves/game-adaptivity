@@ -16,11 +16,20 @@ fetch('questionnaire/secondPrototype/comments.json').then(rsp => { return rsp.js
     onCompleting: (e) => {
       const sheetScriptURL = "https://script.google.com/macros/s/AKfycbw4QiYfu-bw-rFncH2Bnhd6PlvghbJX-2dIDPksACnOcTShkFHBU9_XcbP0u4ewZRmaiA/exec";
 
-      const preference = localStorage.getItem('id') % 2 !== 0 && e.data.Preference === "1" ? 2 : 
-                         localStorage.getItem('id') % 2 !== 0 && e.data.Preference === "2" ? 1 :
-                         e.data.Preference;
+      const ID = localStorage.getItem('id');
+
+      const preference = ID % 2 !== 0 && e.data.Preference === "1" ? 2 :
+          ID % 2 !== 0 && e.data.Preference === "2" ? 1 :
+          e.data.Preference;
 
       let url = `${sheetScriptURL}?Sheet=${encodeURIComponent("Comments")}&GUID=${encodeURIComponent(guid)}&Preference=${encodeURIComponent(preference)}&Comments=${encodeURIComponent(e.data.Comments || "")}`;
+
+      const elementPreferences = e.data.Preferences_Elements;
+
+      Object.keys(elementPreferences).forEach(key => {
+        const data = elementPreferences[key];
+        url += `&${key}=${ID % 2 !== 0 && data === "1" ? 2 : ID % 2 !== 0 && data === "2" ? 1 : data}`;
+      });
 
       let req = new XMLHttpRequest();
       req.onreadystatechange = () => {

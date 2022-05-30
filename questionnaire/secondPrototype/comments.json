@@ -7,13 +7,54 @@
             "name": "page6",
             "elements": [
                 {
+                    "type": "matrix",
+                    "name": "Preferences_Elements",
+                    "title": "Which level did you feel had MORE...",
+                    "columns": [
+                        {
+                            "value": "1",
+                            "text": "Level 1"
+                        },
+                        {
+                            "value": "2",
+                            "text": "Level 2"
+                        },
+                        "None"
+                    ],
+                    "rows": [
+                        {
+                            "value": "Coins",
+                            "text": "...coins?"
+                        },
+                        {
+                            "value": "Powerups",
+                            "text": "...powerups?"
+                        },
+                        {
+                            "value": "Enemies",
+                            "text": "...enemies?"
+                        },
+                        {
+                            "value": "Gaps",
+                            "text": "...gaps?"
+                        }
+                    ],
+                    "isAllRowRequired": true
+                },
+                {
                     "type": "radiogroup",
                     "name": "Preference",
                     "title": "Which level did you prefer?",
                     "isRequired": true,
                     "choices": [
-                        "1",
-                        "2"
+                        {
+                            "value": "1",
+                            "text": "Level 1"
+                        },
+                        {
+                            "value": "2",
+                            "text": "Level 2"
+                        }
                     ],
                     "hasNone": true
                 },
