@@ -1,0 +1,11 @@
+div#questionnaire-intro {
+    padding: 1rem 2rem 0.25rem 2rem;
+    background-color: rgba(159, 159, 159, 0.1);
+}
+
+#questionnaire-intro > h1 {
+    font-size: 1.5rem;
+    margin-bottom: 1rem;
+    padding-bottom: .25rem;
+    border-bottom: 1px solid rgba(68, 68, 68, 0.1);
+}

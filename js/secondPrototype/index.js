@@ -14,13 +14,13 @@ function getBrowser() {
 
 Survey.StylesManager.applyTheme("modern");
 
-fetch('https://api.countapi.xyz/create?key=xpto&namespace=pemesteves.github.io&enable_reset=1', {
+fetch('https://api.countapi.xyz/create?key=experienceID&namespace=pemesteves.itch.io&enable_reset=1', {
   method: 'GET',
   contentType: 'application/json',
 }).then(_ => {
   return;
 }).then(_ => {
-  fetch('https://api.countapi.xyz/hit/pemesteves.github.io/xpto', {
+  fetch('https://api.countapi.xyz/hit/pemesteves.itch.io/experienceID', {
     method: 'GET',
     contentType: 'application/json',
   }).then(rsp => {

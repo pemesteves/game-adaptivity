@@ -7,6 +7,11 @@
             "name": "page6",
             "elements": [
                 {
+                    "type": "html",
+                    "name": "LevelIntro",
+                    "html": "<div id=\"questionnaire-intro\">\n<h1>How to answer this questionnaire?</h1>\n<p>In the following questionnaire, you must state which level you feel had <b>MORE</b> of each element. If you think that both levels had the same amount of the element, you should answer with <b>NONE</b>.</p>\n\n<p>Then, you need to state your preference between the two levels, and if you do not have any, you should answer <b>NONE</b>.</p>\n\n<p>Finally, you can leave some comments regarding the whole experience and some justification for your answers if you want.</p>\n\n<p>Please answer as honestly as possible.</p>\n</div>"
+                },
+                {
                     "type": "matrix",
                     "name": "Preferences_Elements",
                     "title": "Which level did you feel had MORE...",
