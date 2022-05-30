@@ -1,3 +1,17 @@
+function getBrowser() {
+  const isOpera = (!!window.opr && !!opr.addons) || !!window.opera || navigator.userAgent.indexOf(' OPR/') >= 0;
+  const isFirefox = typeof InstallTrigger !== 'undefined';
+  const isSafari = /constructor/i.test(window.HTMLElement) || (function (p) { return p.toString() === "[object SafariRemoteNotification]"; })(!window['safari'] || (typeof safari !== 'undefined' && window['safari'].pushNotification));
+  const isIE = /*@cc_on!@*/false || !!document.documentMode;
+  const isEdge = !isIE && !!window.StyleMedia;
+  const isChrome = !!window.chrome && (!!window.chrome.webstore || !!window.chrome.runtime);
+  const isEdgeChromium = isChrome && (navigator.userAgent.indexOf("Edg") != -1);
+  const isBlink = (isChrome || isOpera) && !!window.CSS;
+
+  return encodeURIComponent(isFirefox ? "Firefox" : isChrome ? "Chrome" : isSafari ? "Safari" : isOpera ? "Opera" : 
+         isIE ? "IE" : isEdge ? "Edge" : isEdgeChromium ? "EdgeChromium" : isBlink ? "Chromium-based" : "Unknown");
+}
+
 Survey.StylesManager.applyTheme("modern");
 
 fetch('https://api.countapi.xyz/create?key=xpto&namespace=pemesteves.github.io&enable_reset=1', {
@@ -39,7 +53,7 @@ fetch('questionnaire/secondPrototype/main.json').then(rsp => { return rsp.json()
     onCompleting: (e) => {
       e.allowComplete = false;
 
-      let url = `https://script.google.com/macros/s/AKfycbw4QiYfu-bw-rFncH2Bnhd6PlvghbJX-2dIDPksACnOcTShkFHBU9_XcbP0u4ewZRmaiA/exec?Sheet=${encodeURIComponent("Demographics")}&GUID=${encodeURIComponent(guid)}`;
+      let url = `https://script.google.com/macros/s/AKfycbw4QiYfu-bw-rFncH2Bnhd6PlvghbJX-2dIDPksACnOcTShkFHBU9_XcbP0u4ewZRmaiA/exec?Sheet=${encodeURIComponent("Demographics")}&GUID=${encodeURIComponent(guid)}&Browser=${getBrowser()}`;
 
       const questionnaire = e.data;
       Object.keys(questionnaire).forEach(key => {
