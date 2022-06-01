@@ -5126,7 +5126,9 @@ class GameplayMetrics {
             "straightSections": this.straightSections,
             "hillStraightSections": this.hillStraightSections,
             "collectibles": this.collectibles,
-            "actions": this.actions
+            "actions": this.actions,
+            "timeLeft": this.timeLeft,
+            "causeOfDeath": this.causeOfDeath
         };
     }
 
