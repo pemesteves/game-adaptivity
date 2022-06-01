@@ -9,6 +9,7 @@ class GameplayMetrics {
         this.causeOfDeath = -1;
         this.timeLeft = -1;
         this.actions = [];
+        this.ticks = 0;
 
         this.levelState = null;
         this.level = "";
@@ -60,6 +61,7 @@ class GameplayMetrics {
 
         const t = this.levelState.GetTimeLeft();
         this.timeLeft = t < 0 ? 0 : t;
+        this.ticks = this.levelState.agent.ticks;
     }
 
     SetLevel(lvl) {
@@ -94,7 +96,8 @@ class GameplayMetrics {
             "collectibles": this.collectibles,
             "actions": this.actions,
             "timeLeft": this.timeLeft,
-            "causeOfDeath": this.causeOfDeath
+            "causeOfDeath": this.causeOfDeath,
+            "ticks": this.ticks
         };
     }
 
