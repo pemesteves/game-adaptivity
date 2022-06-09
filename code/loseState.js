@@ -53,6 +53,6 @@ class LoseState extends Engine.GameState {
     }
 
     CheckForChange(context) {
-        if (this.wasKeyDown && !Engine.KeyboardInput.IsKeyDown(Engine.Keys.S)) context.ChangeState(new PredefinedTitleState());
+        if (this.wasKeyDown && !Engine.KeyboardInput.IsKeyDown(Engine.Keys.S)) context.ChangeState(new TitleState());
     }
 };

@@ -121,7 +121,7 @@ class LoadingState extends Engine.GameState {
             //set up the global map state variable
             Mario.GlobalMapState = new MapState();
 
-            context.ChangeState(new PredefinedTitleState());
+            context.ChangeState(new (Mario.PLAY_PROTOTYPE ? PredefinedTitleState : TitleState)());
         }
     }
 };

@@ -8,6 +8,10 @@
 class Mario {
     static MarioCharacter;
     static GlobalMapState;
+	/**
+	 * PLAY_PROTOTYPE should be true to allow to play the prototypes developed. Otherwise, the normal Infinite Mario Bros game will be played
+	 **/ 
+	static PLAY_PROTOTYPE = false;
 };
 
 /**
@@ -3787,7 +3791,7 @@ class LoadingState extends Engine.GameState {
             //set up the global map state variable
             Mario.GlobalMapState = new MapState();
 
-            context.ChangeState(new PredefinedTitleState());
+            context.ChangeState(new (Mario.PLAY_PROTOTYPE ? PredefinedTitleState : TitleState)());
         }
     }
 };
@@ -3847,7 +3851,7 @@ class LoseState extends Engine.GameState {
     }
 
     CheckForChange(context) {
-        if (this.wasKeyDown && !Engine.KeyboardInput.IsKeyDown(Engine.Keys.S)) context.ChangeState(new PredefinedTitleState());
+        if (this.wasKeyDown && !Engine.KeyboardInput.IsKeyDown(Engine.Keys.S)) context.ChangeState(new TitleState());
     }
 };
 
@@ -3910,7 +3914,7 @@ class WinState extends Engine.GameState {
 
     CheckForChange = function (context) {
         if (this.waitTime <= 0 && this.wasKeyDown && !Engine.KeyboardInput.IsKeyDown(Engine.Keys.S)) {
-            context.ChangeState(new PredefinedTitleState());
+            context.ChangeState(new TitleState());
         }
     }
 };

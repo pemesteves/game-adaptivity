@@ -57,7 +57,7 @@ class WinState extends Engine.GameState {
 
     CheckForChange = function (context) {
         if (this.waitTime <= 0 && this.wasKeyDown && !Engine.KeyboardInput.IsKeyDown(Engine.Keys.S)) {
-            context.ChangeState(new PredefinedTitleState());
+            context.ChangeState(new TitleState());
         }
     }
 };
