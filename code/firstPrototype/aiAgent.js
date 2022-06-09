@@ -6,6 +6,8 @@
 class AIAgent extends Agent {
     constructor(actions) {
         super(actions);
+
+        this.currentEvent = 0;
     }
 
     Update(delta) {

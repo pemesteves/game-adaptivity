@@ -5184,14 +5184,12 @@ class PredefinedTitleState extends TitleState {
     Code by Pedro Esteves, 2022.
 **/
 
-class Agent extends NotchSprite {
+class Agent {
     constructor(actions) {
-        super();
         this.actions = actions;
 
         this.ticks = 0;
         this.time = 0;
-        this.currentEvent = 0;
     }
 
     Update(delta) {
@@ -5238,6 +5236,8 @@ class PlayerAgent extends Agent {
 class AIAgent extends Agent {
     constructor(actions) {
         super(actions);
+
+        this.currentEvent = 0;
     }
 
     Update(delta) {
