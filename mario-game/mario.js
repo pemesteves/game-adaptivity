@@ -815,6 +815,7 @@ class NotchSprite extends Engine.Drawable {
 };
 
 class CauseOfDeath {
+    static Nothing = -1;
     static Hole = 1;
     static Enemy = 2;
     static Time = 3;
@@ -5044,7 +5045,7 @@ class GameplayMetrics {
         this.noEnemies = 0;
         this.noPowerups = 0;
         
-        this.causeOfDeath = -1;
+        this.causeOfDeath = CauseOfDeath.Nothing;
         this.timeLeft = -1;
         this.actions = [];
         this.ticks = 0;

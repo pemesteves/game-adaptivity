@@ -12,7 +12,7 @@ class GameplayMetrics {
         this.powerups = [];
         this.noPowerups = -1;
 
-        this.causeOfDeath = -1;
+        this.causeOfDeath = CauseOfDeath.Nothing;
 
         this.enemies = [];
         this.noEnemies = -1;
