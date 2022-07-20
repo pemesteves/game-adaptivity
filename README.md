@@ -1,6 +1,6 @@
 # Exploring player adaptivity in level design: a platformer case study
 
-This repository contains the code for two studies of a Master’s thesis on Game Adaptivity, entitled ‘Exploring player adaptivity in level design: a platformer case study.’
+This repository contains the code for two studies of a Master’s thesis on Game Adaptivity, entitled ‘Exploring Player Adaptivity through Level Design: A Platformer Case Study.’
 
 This document describes the repository's contents. It was firstly cloned from the [Infinite Mario Bros JS port repository](https://github.com/OpenHTML5Games/games-mirror/tree/gh-pages/dist/mariohtml5) and refactored to meet the thesis’ requirements. 
 Two studies were conducted during this thesis, divided across the repository using folders named ‘firstPrototype’ and ‘secondPrototype.’
