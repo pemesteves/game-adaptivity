@@ -1,4 +1,4 @@
-# Exploring player adaptivity in level design: a platformer case study
+# Exploring Player Adaptivity through Level Design: A Platformer Case Study
 
 This repository contains the code for two studies of a Master’s thesis on Game Adaptivity, entitled ‘Exploring Player Adaptivity through Level Design: A Platformer Case Study.’
 
