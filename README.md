@@ -9,14 +9,14 @@ It also includes questionnaires used in the studies and files for data analysis.
 
 ## Contents
 
-1. Infinite Mario Bros
-   1.1. Engine
-   1.2. Code
-   1.3. Assets
-   1.4. Compilation
-2. Questionnaires
-3. Data Collection
-4. Data Analysis
+- Infinite Mario Bros
+  - Engine
+  - Code
+  - Assets
+  - Compilation
+- Questionnaires
+- Data Collection
+- Data Analysis
 
 ## 1. Infinite Mario Bros
 
